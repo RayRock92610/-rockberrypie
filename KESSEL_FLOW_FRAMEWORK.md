@@ -36,3 +36,14 @@
 * **Logic:** Monitors hardware handshakes and automatically restores the ADB bridge on Port 37881 if dropped.
 * **Status:** ACTIVE
 * **Tooling:** `bin/kf_revive.sh`, `kf_node_link.sh`
+
+## [COGNITIVE LAYER: THE 7 AUTONOMOUS PHASES]
+This layer defines the decision-making cycle of the Kessel Flow during execution.
+
+* **07. Perception:** Sensor-level awareness of hardware nodes and log generation.
+* **08. Planning:** Heuristic determination of the required execution chain.
+* **09. Control:** Low-level management of ADB, ports, and environment shells.
+* **10. Action:** The physical execution of the signed logic suite.
+* **11. Evaluation:** Real-time assessment of findings vs. Offensive Signatures.
+* **12. Memory:** Immediate archival to local logs and manifest updates.
+* **13. Supervisor:** The Master logic that monitors the health and success of phases 07-12.
