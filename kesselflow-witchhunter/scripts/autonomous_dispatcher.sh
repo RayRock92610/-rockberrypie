@@ -16,7 +16,7 @@ while true; do
     # Verify Boneyard
     if "$SCRIPTS_DIR/boneyard_check.sh"; then
         # Run Pulse Report
-        DRIFT_STATUS=$("$SCRIPTS_DIR/pulse_report.sh" | grep "drift")
+        DRIFT_STATUS=$("$SCRIPTS_DIR/pulse_report.sh" | grep -i "drift")
 
         if [ -n "$DRIFT_STATUS" ]; then
             echo -e "${RED}[ALERT]${NC} Drift detected. Initiating Rectification..."

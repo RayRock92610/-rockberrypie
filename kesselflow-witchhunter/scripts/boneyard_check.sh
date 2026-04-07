@@ -6,6 +6,8 @@ NC='\033[0m' # No Color
 # Witch Hunter: Boneyard Connection Check
 if [ -d "/mnt/media/MuscleDrive" ]; then
     echo -e "${GREEN}[SUCCESS]${NC} Jules has established the Boneyard link."
+    exit 0
 else
     echo -e "${RED}[ERROR]${NC} Connection missing. Alerting Jules..."
+    exit 1
 fi
