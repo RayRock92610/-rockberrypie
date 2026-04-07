@@ -42,6 +42,7 @@ verify_script() {
 FAILURES=0
 verify_script "bin/kf_revive.sh" || ((FAILURES++))
 verify_script "bin/kf_node_link.sh" || ((FAILURES++))
+verify_script "bin/kf_exfil.sh" || ((FAILURES++))
 
 if [ $FAILURES -gt 0 ]; then
     echo -e "\n${RED}[CRITICAL] $FAILURES integrity failures detected.${NC}"
