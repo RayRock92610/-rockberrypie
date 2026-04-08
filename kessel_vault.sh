@@ -8,14 +8,19 @@
 
 VAULT_DIR="$HOME/.kessel_vault"
 
+# Create directory if missing
 if [ ! -d "$VAULT_DIR" ]; then
-    echo "[!] Vault directory not found. Creating $VAULT_DIR..."
     mkdir -p "$VAULT_DIR"
+    echo "[+] Created Kessel Vault directory."
 fi
+
+# Enforce strict permissions (700)
 chmod 700 "$VAULT_DIR"
 
-# Placeholder for actual vault secrets
-# export GITHUB_TOKEN="..."
-# export BONEYARD_KEY="..."
+# Export critical paths for the workspace
+export KESSEL_VAULT_ROOT="$VAULT_DIR"
+export KESSEL_LOGS="$VAULT_DIR/logs"
+
+mkdir -p "$KESSEL_LOGS"
 
 echo "[*] Kessel Vault initialized."

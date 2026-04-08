@@ -1,11 +1,11 @@
 #!/bin/bash
 
 # Source the Vault safely
-VAULT_SCRIPT="$(dirname "$0")/kessel_vault.sh"
-if [ -f "$VAULT_SCRIPT" ]; then
-    source "$VAULT_SCRIPT"
+VAULT_PATH="$HOME/.kessel_vault/kessel_vault.sh"
+if [[ -f "$VAULT_PATH" ]]; then
+    source "$VAULT_PATH"
 else
-    echo "[!] Warning: kessel_vault.sh not found. Proceeding without vault secrets."
+    echo "[!] Warning: Kessel Vault not found at $VAULT_PATH. Proceeding with limited context."
 fi
 
 # Source the core alignment to ensure identity is locked
