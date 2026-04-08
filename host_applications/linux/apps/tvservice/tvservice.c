@@ -236,7 +236,8 @@ static const char* threed_str(uint32_t struct_3d_mask, int json_output) {
    if(!json_output)
       tmp = status_sprintf(struct_desc, struct_desc_length, &offset, "3D:");
    if(struct_3d_mask) {
-      for(j = 0; !tmp && j < vcos_countof(three_d_format_names); j++) {
+      const size_t three_d_format_names_count = vcos_countof(three_d_format_names);
+      for(j = 0; !tmp && j < three_d_format_names_count; j++) {
          if(struct_3d_mask & (1 << j)) {
             tmp = status_sprintf(struct_desc, struct_desc_length, &offset, json_output ? "\"%s\"," : "%s|", three_d_format_names[j]);
             added++;
