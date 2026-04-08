@@ -23,3 +23,7 @@ add_library (dtovl ${SHARED}
 target_link_libraries(dtovl fdt)
 
 install (TARGETS dtovl DESTINATION lib)
+
+add_executable(dtoverlay_test dtoverlay_test.c)
+add_test(NAME dtoverlay_test COMMAND dtoverlay_test)
+target_link_libraries(dtoverlay_test dtovl)
