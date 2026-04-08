@@ -674,6 +674,24 @@ VCOS_STATUS_T gx_priv_resource_fill(GRAPHICS_RESOURCE_HANDLE res,
    return VCOS_SUCCESS;
 }
 
+static VCOS_STATUS_T gx_get_pitch(uint32_t width, GRAPHICS_RESOURCE_TYPE_T restype, int *pitch)
+{
+   switch (restype)
+   {
+      case GRAPHICS_RESOURCE_RGB565:
+         *pitch = ((width + 31)&(~31)) << 1;
+         break;
+      case GRAPHICS_RESOURCE_RGB888:
+      case GRAPHICS_RESOURCE_RGBA32:
+         *pitch = ((width + 31)&(~31)) << 2;
+         break;
+      default:
+         GX_LOG("Unsupported pixel format");
+         return VCOS_EINVAL;
+   }
+   return VCOS_SUCCESS;
+}
+
 VCOS_STATUS_T gx_priv_get_pixels(const GRAPHICS_RESOURCE_HANDLE res, void **p_pixels, GX_RASTER_ORDER_T raster_order)
 {
    VCOS_STATUS_T status = VCOS_SUCCESS;
@@ -692,23 +710,9 @@ VCOS_STATUS_T gx_priv_get_pixels(const GRAPHICS_RESOURCE_HANDLE res, void **p_pi
 
    graphics_get_resource_size(res, &width, &height);
 
-   /* FIXME: implement e.g. gx_get_pitch */
-   switch (res->restype)
-   {
-      case GRAPHICS_RESOURCE_RGB565:
-         pitch = ((width + 31)&(~31)) << 1;
-         break;
-      case GRAPHICS_RESOURCE_RGB888:
-      case GRAPHICS_RESOURCE_RGBA32:
-         pitch = ((width + 31)&(~31)) << 2;
-         break;
-      default:
-      {
-         GX_LOG("Unsupported pixel format");
-         status = VCOS_EINVAL;
-         goto finish;
-      }
-   }
+   status = gx_get_pitch(width, res->restype, &pitch);
+   if (status != VCOS_SUCCESS)
+      goto finish;
    
    data_size = pitch * height;
 
