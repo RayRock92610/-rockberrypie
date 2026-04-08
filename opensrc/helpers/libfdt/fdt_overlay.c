@@ -233,6 +233,7 @@ static int overlay_update_local_node_references(void *fdto,
 		int fixup_len;
 		int tree_len;
 		int i;
+		int num_fixups;
 
 		fixup_val = fdt_getprop_by_offset(fdto, fixup_prop,
 						  &name, &fixup_len);
@@ -250,7 +251,8 @@ static int overlay_update_local_node_references(void *fdto,
 			return tree_len;
 		}
 
-		for (i = 0; i < (fixup_len / sizeof(uint32_t)); i++) {
+		num_fixups = fixup_len / sizeof(uint32_t);
+		for (i = 0; i < num_fixups; i++) {
 			fdt32_t adj_val;
 			uint32_t poffset;
 
