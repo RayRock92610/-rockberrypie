@@ -63,7 +63,8 @@ MMAL_STATUS_T mmal_parse_video_size(uint32_t *w, uint32_t *h, const char *str)
       { "qcif",   352/2, 288/2 },
    };
    size_t i;
-   for (i=0; i<vcos_countof(sizes); i++)
+   const size_t num_sizes = vcos_countof(sizes);
+   for (i=0; i<num_sizes; i++)
    {
       if (vcos_strcasecmp(str, sizes[i].name) == 0)
       {
