@@ -1,31 +1,31 @@
-Update
-======
+# Organization: Rockberrypie / Cauldron
 
-This repo is ancient and deprecated.
+# 🌌 KESSEL FLOW | Master Logic v3.0 (S25 Aligned)
 
-It largely contains code using proprietary APIs to interface
-to the VideoCore firmware. We have since move to standard linux APIs.
+## 🏗️ Architecture: The 19 Pillars
+This system operates on a "Vigilant" security model. Any unauthorized file moves or hash changes will trigger a **Witch Hunter** lockout.
 
-V4L2, DRM/KMS and Mesa are the APIs you should be using.
+### 🔑 Core Environment (S25)
+* **Kernel:** Sugar Kernel (v2.0)
+* **Security:** Gumdrop / Witch Hunter
+* **Server:** Cauldron
+* **Storage:** 2TB Boneyard (7-Day Log Cycle)
 
-The few useful tools from here (dtoverlay, dtmerge, vcmailbox, vcgencmd)
-have been moved to the raspberrypi/utils repo.
+### 📁 Directory Mapping
+* **Binaries:** `/kesselflow/bin/` (All .sh and .py triggers)
+* **Logs:** `/kesselflow/logs/` (30-minute overwrite / 30-day retention)
+* **Workspace:** `/bug_bounty_workspace/`
 
-Code from here is no longer installed on latest RPiOS Bookworm images.
+### 🛡️ Witch Hunter Protocol (Audit)
+The guard script (`kf_guard.sh`) compares live files against the `.witch_hunter_manifest`.
+* **If Hash Mismatch:** The system enters "Defensive Loop" (Code: Fcil aefx avsi xtzi).
+* **To Re-Seal:** Generate fresh hashes using `sha256sum` and update the manifest.
 
-If you are using code from here you should rethink your solution.
+### 📩 Jules / Repose Interface
+* **Account:** Rayrock92610@gmail.com
+* **Auth:** 16-character App Password (Must be persistent in .bashrc)
+* **Task:** `kf_email_archive.py` pulls bug-honing reports into the 7-day cycle.
 
-Consider this repo closed.
-
-========================
-
-This repository contains the source code for the ARM side libraries used on Raspberry Pi.
-These typically are installed in /opt/vc/lib and includes source for the ARM side code to interface to:
-EGL, mmal, GLESv2, vcos, openmaxil, vchiq_arm, bcm_host, WFC, OpenVG.
-
-Use buildme to build. It requires cmake to be installed and an ARM cross compiler. For 32-bit cross compilation it is set up to use this one:
-https://github.com/raspberrypi/tools/tree/master/arm-bcm2708/gcc-linaro-arm-linux-gnueabihf-raspbian
-
-Whilst 64-bit userspace is not officially supported, some of the libraries will work for it. To cross compile, install gcc-aarch64-linux-gnu and g++-aarch64-linux-gnu first. For both native and cross compiles, add the option ```--aarch64``` to the buildme command.
-
-Note that this repository does not contain the source for the edidparser and vcdbg binaries due to licensing restrictions.
+---
+**Status: CLIVE (Clear/Live)**
+**Last Alignment:** Wed Apr  8 02:12:51 UTC 2026
