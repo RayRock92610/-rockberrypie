@@ -726,24 +726,14 @@ VCOS_STATUS_T gx_priv_get_pixels(const GRAPHICS_RESOURCE_HANDLE res, void **p_pi
 
    /* Hand out image data formatted to match OpenGL RGBA format.
     */
-   switch (res->restype)
+   GX_COLOR_FORMAT color_format = gx_get_color_format(res->restype);
+   if (color_format == GX_COLOR_FORMAT_UNSUPPORTED)
    {
-      case GRAPHICS_RESOURCE_RGB565:
-         image_format = VG_sBGR_565;
-         break;
-      case GRAPHICS_RESOURCE_RGB888:
-         image_format = VG_sXBGR_8888;
-         break;
-      case GRAPHICS_RESOURCE_RGBA32:
-         image_format = VG_sABGR_8888;
-         break;
-      default:
-      {
-         GX_LOG("Unsupported pixel format");
-         status = VCOS_EINVAL;
-         goto finish;
-      }
-   }   
+      GX_LOG("Unsupported pixel format");
+      status = VCOS_EINVAL;
+      goto finish;
+   }
+   image_format = gx_color_format_to_vg(color_format);
 
    /* VG raster order is bottom-to-top */
    if (raster_order == GX_TOP_BOTTOM)
@@ -764,6 +754,36 @@ VCOS_STATUS_T gx_priv_get_pixels(const GRAPHICS_RESOURCE_HANDLE res, void **p_pi
 
 finish:
    return status;
+}
+
+GX_COLOR_FORMAT gx_get_color_format(GRAPHICS_RESOURCE_TYPE_T restype)
+{
+   switch (restype)
+   {
+      case GRAPHICS_RESOURCE_RGB565:
+         return GX_COLOR_FORMAT_565;
+      case GRAPHICS_RESOURCE_RGB888:
+         return GX_COLOR_FORMAT_888;
+      case GRAPHICS_RESOURCE_RGBA32:
+         return GX_COLOR_FORMAT_32;
+      default:
+         return GX_COLOR_FORMAT_UNSUPPORTED;
+   }
+}
+
+int gx_color_format_to_vg(GX_COLOR_FORMAT color_format)
+{
+   switch (color_format)
+   {
+      case GX_COLOR_FORMAT_565:
+         return VG_sBGR_565;
+      case GX_COLOR_FORMAT_888:
+         return VG_sXBGR_8888;
+      case GX_COLOR_FORMAT_32:
+         return VG_sABGR_8888;
+      default:
+         return 0;
+   }
 }
 
 static VCOS_STATUS_T convert_image_type(GRAPHICS_RESOURCE_TYPE_T image_type,
