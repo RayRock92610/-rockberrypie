@@ -45,6 +45,7 @@ verify_script "bin/kf_node_link.sh" || ((FAILURES++))
 verify_script "bin/kf_exfil.sh" || ((FAILURES++))
 verify_script "bin/kf_sift.sh" || ((FAILURES++))
 verify_script "bin/kf_master.sh" || ((FAILURES++))
+verify_script "bin/kf_email_archive.py" || ((FAILURES++))
 
 if [ $FAILURES -gt 0 ]; then
     echo -e "\n${RED}[CRITICAL] $FAILURES integrity failures detected.${NC}"
