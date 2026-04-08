@@ -271,8 +271,9 @@ static void vidtex_gl_term(VIDTEX_T *vt)
 static void vidtex_destroy_images(VIDTEX_T *vt)
 {
    VIDTEX_IMAGE_SLOT_T *slot;
+   const size_t num_slots = vcos_countof(vt->slots);
 
-   for (slot = vt->slots; slot < vt->slots + vcos_countof(vt->slots); slot++)
+   for (slot = vt->slots; slot < vt->slots + num_slots; slot++)
    {
       slot->video_frame = NULL;
 
@@ -381,6 +382,7 @@ static void vidtex_draw(VIDTEX_T *vt, void *video_frame)
    EGLImageKHR image;
    VIDTEX_IMAGE_SLOT_T *slot;
    static uint32_t frame_num = 0;
+   const size_t num_slots = vcos_countof(vt->slots);
 
    vcos_assert(video_frame);
 
@@ -397,7 +399,7 @@ static void vidtex_draw(VIDTEX_T *vt, void *video_frame)
     *      vidtex termination; it never has holes. */
    image = EGL_NO_IMAGE_KHR;
 
-   for (slot = vt->slots; slot < vt->slots + vcos_countof(vt->slots); slot++)
+   for (slot = vt->slots; slot < vt->slots + num_slots; slot++)
    {
       if (slot->video_frame == video_frame)
       {
@@ -438,7 +440,7 @@ static void vidtex_draw(VIDTEX_T *vt, void *video_frame)
       }
    }
 
-   if (slot == vt->slots + vcos_countof(vt->slots))
+   if (slot == vt->slots + num_slots)
    {
       vcos_log_error("Exceeded configured max number of EGL images");
    }

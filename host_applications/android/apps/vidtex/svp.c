@@ -330,11 +330,12 @@ void svp_destroy(SVP_T *svp)
    {
       MMAL_COMPONENT_T *components[] = { svp->reader, svp->video_decode, svp->camera };
       MMAL_COMPONENT_T **comp;
+      const size_t num_components = vcos_countof(components);
 
       /* Stop thread, disable connection and components */
       svp_stop(svp);
 
-      for (comp = components; comp < components + vcos_countof(components); comp++)
+      for (comp = components; comp < components + num_components; comp++)
       {
          mmal_component_disable(*comp);
       }
@@ -345,7 +346,7 @@ void svp_destroy(SVP_T *svp)
          mmal_connection_destroy(svp->connection);
       }
 
-      for (comp = components; comp < components + vcos_countof(components); comp++)
+      for (comp = components; comp < components + num_components; comp++)
       {
          mmal_component_destroy(*comp);
       }
