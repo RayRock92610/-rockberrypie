@@ -47,3 +47,17 @@ This layer defines the decision-making cycle of the Kessel Flow during execution
 * **11. Evaluation:** Real-time assessment of findings vs. Offensive Signatures.
 * **12. Memory:** Immediate archival to local logs and manifest updates.
 * **13. Supervisor:** The Master logic that monitors the health and success of phases 07-12.
+
+## [IDENTITY LAYER: THE 4 SPECIALIST ROLES]
+Defining the functional perspectives of the Kessel Flow operation.
+
+* **14. AI Automation Specialist:** Agentic oversight and autonomous script management.
+* **15. Workflow Automation Engineer:** Optimization of logic chaining and sequential execution.
+* **16. AI Operation Specialist:** Hardware health, thermal management, and power persistence.
+* **17. Automation Architect:** System-wide blueprint integrity and strategic oversight.
+
+## [SECURITY & INTERFACE LAYER: THE 2 CORE PROTOCOLS]
+The final wrappers ensuring safety and visibility.
+
+* **18. Witch Hunter Protocol:** Specialized defense against Logic Poisoning and script tampering.
+* **19. Candyland Interface:** The unified visual logic and candy-themed UI for environmental awareness.
