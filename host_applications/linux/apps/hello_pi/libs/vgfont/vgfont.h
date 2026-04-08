@@ -66,6 +66,13 @@ typedef enum
 
 } GRAPHICS_RESOURCE_TYPE_T;
 
+typedef enum
+{
+   GX_COLOR_FORMAT_UNSUPPORTED,
+   GX_COLOR_FORMAT_565,
+   GX_COLOR_FORMAT_888,
+   GX_COLOR_FORMAT_32
+} GX_COLOR_FORMAT;
 
 typedef struct GRAPHICS_RESOURCE_HANDLE_TABLE_T *GRAPHICS_RESOURCE_HANDLE;
 
@@ -132,5 +139,8 @@ int32_t graphics_resource_text_dimensions( GRAPHICS_RESOURCE_HANDLE resource_han
                                            const uint32_t text_length,
                                            uint32_t *width,
                                            uint32_t *height );
+
+GX_COLOR_FORMAT gx_get_color_format(GRAPHICS_RESOURCE_TYPE_T restype);
+int gx_color_format_to_vg(GX_COLOR_FORMAT color_format);
 
 #endif
