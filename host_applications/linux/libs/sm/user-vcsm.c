@@ -34,6 +34,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <unistd.h>
 #include <sys/mman.h>
 #include <sys/ioctl.h>
+#include <sys/stat.h>
 
 
 #include <vmcs_sm_ioctl.h>
@@ -275,13 +276,20 @@ int vcsm_init_ex( int want_export, int fd )
 
    if (fd != -1)
    {
+      struct stat stat_fd, stat_file;
+
       vcsm_handle = dup(fd);
 
-      // FIXME: Sanity check which device that the fd actually relates to.
-      // For now we have to guess based on whether export is requested.
-      // (the main use case is from Chromium which will be requesting export).
-      if (want_export)
+      if (fstat(vcsm_handle, &stat_fd) == 0 &&
+          stat(VCSM_CMA_DEVICE_NAME, &stat_file) == 0 &&
+          stat_fd.st_rdev == stat_file.st_rdev)
+      {
          using_vc_sm_cma = 1;
+      }
+      else
+      {
+         using_vc_sm_cma = 0;
+      }
 
       goto out;
    }
