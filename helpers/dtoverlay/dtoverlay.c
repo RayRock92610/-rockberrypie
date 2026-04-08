@@ -425,7 +425,8 @@ static int dtoverlay_set_node_name(DTBLOB_T *dtb, int node_off,
    // a parent)  and replace with the new name
 
    dynstring_init(&prop_buf);
-   for (fixup_idx = 0; fixup_idx < ARRAY_SIZE(fixup_nodes); fixup_idx++)
+   const unsigned int num_fixup_nodes = ARRAY_SIZE(fixup_nodes);
+   for (fixup_idx = 0; fixup_idx < num_fixup_nodes; fixup_idx++)
    {
       int prop_off;
 
