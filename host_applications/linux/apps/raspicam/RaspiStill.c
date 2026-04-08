@@ -525,9 +525,11 @@ static int parse_cmdline(int argc, const char **argv, RASPISTILL_STATE *state)
          // so check if a) we have another parameter, b) its not the start of the next option
          if (i + 1 < argc  && argv[i+1][0] != '-')
          {
-            if (sscanf(argv[i + 1], "%u", &state->demoInterval) == 1)
+            if (sscanf(argv[i + 1], "%d", &state->demoInterval) == 1)
             {
-               // TODO : What limits do we need for timeout?
+               if (state->demoInterval <= 0)
+                  state->demoInterval = 250; // ms
+
                state->demoMode = 1;
                i++;
             }
