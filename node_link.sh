@@ -1,7 +1,12 @@
 #!/bin/bash
 
-# Source the Vault
-source ./kessel_vault.sh
+# Source the Vault safely
+VAULT_SCRIPT="$(dirname "$0")/kessel_vault.sh"
+if [ -f "$VAULT_SCRIPT" ]; then
+    source "$VAULT_SCRIPT"
+else
+    echo "[!] Warning: kessel_vault.sh not found. Proceeding without vault secrets."
+fi
 
 # Source the core alignment to ensure identity is locked
 # Assumes kessel_core.sh is in the same directory
