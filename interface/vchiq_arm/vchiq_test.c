@@ -642,7 +642,8 @@ vchiq_ping_test(void)
       return VCHIQ_ERROR;
    }
 
-   for (i = 0; i < sizeof(sizes)/sizeof(sizes[0]); i++)
+   const unsigned int num_sizes = vcos_countof(sizes);
+   for (i = 0; i < num_sizes; i++)
    {
       const int iter_count = g_params.iters;
       do_vchi_ping_test(vchi_service, sizes[i], 0, 0, iter_count);
@@ -677,7 +678,7 @@ vchiq_ping_test(void)
       return VCHIQ_ERROR;
    }
 
-   for (i = 0; i < sizeof(sizes)/sizeof(sizes[0]); i++)
+   for (i = 0; i < num_sizes; i++)
    {
       const int iter_count = g_params.iters;
       do_ping_test(vchiq_service, sizes[i], 0, 0, iter_count);
@@ -909,12 +910,13 @@ bulk_tests_only:
    for (size = 64; size < FUN2_MAX_DATA_SIZE; size<<=1)
    {
       static const int aligns[] = { 0, 1, 31 };
+      const unsigned int num_aligns = vcos_countof(aligns);
 
-      for (i = 0; i < vcos_countof(aligns); i++)
+      for (i = 0; i < num_aligns; i++)
       {
          int srvr_align = aligns[i];
          unsigned int j;
-         for (j = 0; j < vcos_countof(aligns); j++)
+         for (j = 0; j < num_aligns; j++)
          {
             int k;
             int align = aligns[j];
