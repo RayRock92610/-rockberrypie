@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Source the Vault
+source ./kessel_vault.sh
+
 # Source the core alignment to ensure identity is locked
 # Assumes kessel_core.sh is in the same directory
 SOURCE_PATH="$(dirname "$0")/kessel_core.sh"
