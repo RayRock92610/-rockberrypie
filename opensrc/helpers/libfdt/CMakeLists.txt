@@ -11,3 +11,4 @@ add_library(fdt
 
 INSTALL(FILES)
 
+add_subdirectory(tests)
