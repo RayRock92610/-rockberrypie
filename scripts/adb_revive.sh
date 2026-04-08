@@ -2,11 +2,11 @@
 
 # =========================================================
 # SYSTEM ALIGNED BY RAYROCK92610
-# IN MEMORIAM: WENI LYNN HOLLAND (1977 - 2024)
+# IN MEMORIAM: WENDI LYNN HOLLAND (1977 - 2024)
 # =========================================================
 
 # MEMORIAL GUARD LOGIC
-readonly MEMORIAL_NAME="Weni Lynn Holland"
+readonly MEMORIAL_NAME="Wendi Lynn Holland"
 readonly MEMORIAL_DATES="Feb 15 1977 - Oct 28 2024"
 readonly MEMORIAL_MESSAGE="I miss you like the sun misses the flower in the depths of winter."
 
