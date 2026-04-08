@@ -909,12 +909,13 @@ bulk_tests_only:
    for (size = 64; size < FUN2_MAX_DATA_SIZE; size<<=1)
    {
       static const int aligns[] = { 0, 1, 31 };
+      const unsigned int num_aligns = vcos_countof(aligns);
 
-      for (i = 0; i < vcos_countof(aligns); i++)
+      for (i = 0; i < num_aligns; i++)
       {
          int srvr_align = aligns[i];
          unsigned int j;
-         for (j = 0; j < vcos_countof(aligns); j++)
+         for (j = 0; j < num_aligns; j++)
          {
             int k;
             int align = aligns[j];
