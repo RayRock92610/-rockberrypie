@@ -1126,9 +1126,10 @@ static VC_CONTAINER_STATUS_T asf_find_packet_header( VC_CONTAINER_T *p_ctx,
       search_size = module->packet_size -
          (STREAM_POSITION(p_ctx) - module->data_offset) % module->packet_size;
 
-   for(; search_size > sizeof(h); search_size--)
+   const size_t h_size = sizeof(h);
+   for(; search_size > h_size; search_size--)
    {
-      if(PEEK_BYTES(p_ctx, h, sizeof(h)) != sizeof(h))
+      if(PEEK_BYTES(p_ctx, h, h_size) != h_size)
          return STREAM_STATUS(p_ctx);
 
       if(!h[0] && !h[1] && h[2] == 0x82)
