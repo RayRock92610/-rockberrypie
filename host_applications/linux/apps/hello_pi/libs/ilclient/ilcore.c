@@ -173,7 +173,8 @@ OMX_ERRORTYPE OMX_APIENTRY OMX_GetHandle(
          // All fields should be non-zero.
          int i;
          uint32_t *p = (uint32_t *) pComp;
-         for(i=0; i<sizeof(OMX_COMPONENTTYPE)>>2; i++)
+         const size_t num_words = sizeof(OMX_COMPONENTTYPE) >> 2;
+         for(i=0; i<num_words; i++)
             if(*p++ == 0)
                eError = OMX_ErrorInvalidComponent;
 
