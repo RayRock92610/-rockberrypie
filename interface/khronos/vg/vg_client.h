@@ -212,6 +212,7 @@ typedef struct {
 
 extern VG_CLIENT_STATE_T *vg_client_state_alloc(VG_CLIENT_SHARED_STATE_T *shared_state);
 extern void vg_client_state_free(VG_CLIENT_STATE_T *state);
+extern void vg_client_set_error(CLIENT_THREAD_STATE_T *thread, VGErrorCode error);
 
 static INLINE VG_CLIENT_STATE_T *vg_get_client_state(CLIENT_THREAD_STATE_T *thread)
 {
