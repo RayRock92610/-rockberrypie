@@ -278,6 +278,16 @@ VCOS_STATUS_T gx_priv_render_text( GX_DISPLAY_T *disp,
 void gx_priv_flush(GRAPHICS_RESOURCE_HANDLE res);
 
 /**
+ * Get the pitch given width and restype.
+ *
+ * @param width       Width of the resource.
+ * @param restype     Graphics resource type.
+ * @return            Pitch, or 0 on unsupported type.
+ *
+ ***********************************************************/
+int32_t gx_get_pitch(uint32_t width, GRAPHICS_RESOURCE_TYPE_T restype);
+
+/**
  * Called after the EGL/VG initialisation of a window has completed
  * following its creation.
  *
