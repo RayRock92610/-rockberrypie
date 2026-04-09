@@ -610,6 +610,7 @@ vchiq_ping_test(void)
 
    static int sizes[] = { 0, 1024, 2048, VCHIQ_MAX_MSG_SIZE };
    unsigned int i;
+   const size_t num_sizes = sizeof(sizes)/sizeof(sizes[0]);
 
    fourcc = VCHIQ_MAKE_FOURCC(g_servname[0], g_servname[1], g_servname[2], g_servname[3]);
 
@@ -642,7 +643,7 @@ vchiq_ping_test(void)
       return VCHIQ_ERROR;
    }
 
-   for (i = 0; i < sizeof(sizes)/sizeof(sizes[0]); i++)
+   for (i = 0; i < num_sizes; i++)
    {
       const int iter_count = g_params.iters;
       do_vchi_ping_test(vchi_service, sizes[i], 0, 0, iter_count);
@@ -677,7 +678,7 @@ vchiq_ping_test(void)
       return VCHIQ_ERROR;
    }
 
-   for (i = 0; i < sizeof(sizes)/sizeof(sizes[0]); i++)
+   for (i = 0; i < num_sizes; i++)
    {
       const int iter_count = g_params.iters;
       do_ping_test(vchiq_service, sizes[i], 0, 0, iter_count);
@@ -761,6 +762,7 @@ do_functional_test(void)
    VCHIQ_SERVICE_PARAMS_T service_params;
    VCHIQ_CONFIG_T config;
    unsigned int size, i;
+   const size_t clnt_service1_data_size = sizeof(clnt_service1_data);
 
    vcos_event_create(&func_test_sync, "test_sync");
 
@@ -846,7 +848,7 @@ do_functional_test(void)
    EXPECT(vchiq_queue_message(service, elements, 4), VCHIQ_SUCCESS);
 
    EXPECT(vchiq_queue_bulk_transmit(service2, clnt_service2_data, sizeof(clnt_service2_data), (void *)0x2001), VCHIQ_SUCCESS);
-   for (i = 0; i < sizeof(clnt_service1_data); i++)
+   for (i = 0; i < clnt_service1_data_size; i++)
    {
       clnt_service1_data[i] = (char)i;
    }
