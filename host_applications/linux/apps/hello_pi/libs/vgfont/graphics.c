@@ -674,6 +674,42 @@ VCOS_STATUS_T gx_priv_resource_fill(GRAPHICS_RESOURCE_HANDLE res,
    return VCOS_SUCCESS;
 }
 
+static VCOS_STATUS_T get_gx_color_format(GRAPHICS_RESOURCE_TYPE_T restype, GX_COLOR_FORMAT_T *color_format)
+{
+   switch (restype)
+   {
+      case GRAPHICS_RESOURCE_RGB565:
+         *color_format = GX_COLOR_FORMAT_RGB565;
+         return VCOS_SUCCESS;
+      case GRAPHICS_RESOURCE_RGB888:
+         *color_format = GX_COLOR_FORMAT_RGB888;
+         return VCOS_SUCCESS;
+      case GRAPHICS_RESOURCE_RGBA32:
+         *color_format = GX_COLOR_FORMAT_RGBA32;
+         return VCOS_SUCCESS;
+      default:
+         return VCOS_EINVAL;
+   }
+}
+
+static VCOS_STATUS_T gx_color_format_to_vg_format(GX_COLOR_FORMAT_T color_format, VGImageFormat *vg_format)
+{
+   switch (color_format)
+   {
+      case GX_COLOR_FORMAT_RGB565:
+         *vg_format = VG_sBGR_565;
+         return VCOS_SUCCESS;
+      case GX_COLOR_FORMAT_RGB888:
+         *vg_format = VG_sXBGR_8888;
+         return VCOS_SUCCESS;
+      case GX_COLOR_FORMAT_RGBA32:
+         *vg_format = VG_sABGR_8888;
+         return VCOS_SUCCESS;
+      default:
+         return VCOS_EINVAL;
+   }
+}
+
 VCOS_STATUS_T gx_priv_get_pixels(const GRAPHICS_RESOURCE_HANDLE res, void **p_pixels, GX_RASTER_ORDER_T raster_order)
 {
    VCOS_STATUS_T status = VCOS_SUCCESS;
@@ -722,28 +758,22 @@ VCOS_STATUS_T gx_priv_get_pixels(const GRAPHICS_RESOURCE_HANDLE res, void **p_pi
       status = VCOS_ENOMEM;
       goto finish;
    }
-   /* FIXME: introduce e.g. GX_COLOR_FORMAT and mapping to VGImageFormat... */
-
    /* Hand out image data formatted to match OpenGL RGBA format.
     */
-   switch (res->restype)
+   GX_COLOR_FORMAT_T color_format;
+   status = get_gx_color_format(res->restype, &color_format);
+   if (status != VCOS_SUCCESS)
    {
-      case GRAPHICS_RESOURCE_RGB565:
-         image_format = VG_sBGR_565;
-         break;
-      case GRAPHICS_RESOURCE_RGB888:
-         image_format = VG_sXBGR_8888;
-         break;
-      case GRAPHICS_RESOURCE_RGBA32:
-         image_format = VG_sABGR_8888;
-         break;
-      default:
-      {
-         GX_LOG("Unsupported pixel format");
-         status = VCOS_EINVAL;
-         goto finish;
-      }
-   }   
+      GX_LOG("Unsupported pixel format");
+      goto finish;
+   }
+
+   status = gx_color_format_to_vg_format(color_format, &image_format);
+   if (status != VCOS_SUCCESS)
+   {
+      GX_LOG("Unsupported pixel format");
+      goto finish;
+   }
 
    /* VG raster order is bottom-to-top */
    if (raster_order == GX_TOP_BOTTOM)
