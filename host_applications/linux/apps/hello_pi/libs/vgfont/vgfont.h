@@ -123,6 +123,8 @@ int32_t graphics_get_resource_size(
    uint32_t *w,
    uint32_t *h);
 
+uint32_t gx_get_pitch(uint32_t width, GRAPHICS_RESOURCE_TYPE_T restype);
+
 int32_t graphics_update_start(void);
 
 int32_t graphics_update_end( void );
