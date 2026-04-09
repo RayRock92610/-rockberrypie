@@ -846,7 +846,8 @@ do_functional_test(void)
    EXPECT(vchiq_queue_message(service, elements, 4), VCHIQ_SUCCESS);
 
    EXPECT(vchiq_queue_bulk_transmit(service2, clnt_service2_data, sizeof(clnt_service2_data), (void *)0x2001), VCHIQ_SUCCESS);
-   for (i = 0; i < sizeof(clnt_service1_data); i++)
+   size = sizeof(clnt_service1_data);
+   for (i = 0; i < size; i++)
    {
       clnt_service1_data[i] = (char)i;
    }
