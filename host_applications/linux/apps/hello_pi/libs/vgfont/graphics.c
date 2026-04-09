@@ -674,6 +674,28 @@ VCOS_STATUS_T gx_priv_resource_fill(GRAPHICS_RESOURCE_HANDLE res,
    return VCOS_SUCCESS;
 }
 
+static GX_COLOR_FORMAT gx_get_color_format(GRAPHICS_RESOURCE_TYPE_T res_type)
+{
+   switch (res_type)
+   {
+      case GRAPHICS_RESOURCE_RGB565: return GX_COLOR_FORMAT_RGB565;
+      case GRAPHICS_RESOURCE_RGB888: return GX_COLOR_FORMAT_RGB888;
+      case GRAPHICS_RESOURCE_RGBA32: return GX_COLOR_FORMAT_RGBA32;
+      default: return GX_COLOR_FORMAT_UNKNOWN;
+   }
+}
+
+static VGImageFormat gx_color_format_to_vg(GX_COLOR_FORMAT format)
+{
+   switch (format)
+   {
+      case GX_COLOR_FORMAT_RGB565: return VG_sBGR_565;
+      case GX_COLOR_FORMAT_RGB888: return VG_sXBGR_8888;
+      case GX_COLOR_FORMAT_RGBA32: return VG_sABGR_8888;
+      default: return (VGImageFormat)0;
+   }
+}
+
 VCOS_STATUS_T gx_priv_get_pixels(const GRAPHICS_RESOURCE_HANDLE res, void **p_pixels, GX_RASTER_ORDER_T raster_order)
 {
    VCOS_STATUS_T status = VCOS_SUCCESS;
@@ -722,28 +744,16 @@ VCOS_STATUS_T gx_priv_get_pixels(const GRAPHICS_RESOURCE_HANDLE res, void **p_pi
       status = VCOS_ENOMEM;
       goto finish;
    }
-   /* FIXME: introduce e.g. GX_COLOR_FORMAT and mapping to VGImageFormat... */
-
    /* Hand out image data formatted to match OpenGL RGBA format.
     */
-   switch (res->restype)
+   GX_COLOR_FORMAT color_format = gx_get_color_format(res->restype);
+   if (color_format == GX_COLOR_FORMAT_UNKNOWN)
    {
-      case GRAPHICS_RESOURCE_RGB565:
-         image_format = VG_sBGR_565;
-         break;
-      case GRAPHICS_RESOURCE_RGB888:
-         image_format = VG_sXBGR_8888;
-         break;
-      case GRAPHICS_RESOURCE_RGBA32:
-         image_format = VG_sABGR_8888;
-         break;
-      default:
-      {
-         GX_LOG("Unsupported pixel format");
-         status = VCOS_EINVAL;
-         goto finish;
-      }
-   }   
+      GX_LOG("Unsupported pixel format");
+      status = VCOS_EINVAL;
+      goto finish;
+   }
+   image_format = gx_color_format_to_vg(color_format);
 
    /* VG raster order is bottom-to-top */
    if (raster_order == GX_TOP_BOTTOM)
