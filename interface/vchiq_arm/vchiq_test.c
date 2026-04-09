@@ -642,7 +642,9 @@ vchiq_ping_test(void)
       return VCHIQ_ERROR;
    }
 
-   for (i = 0; i < sizeof(sizes)/sizeof(sizes[0]); i++)
+   {
+   const size_t sizes_count = sizeof(sizes)/sizeof(sizes[0]);
+   for (i = 0; i < sizes_count; i++)
    {
       const int iter_count = g_params.iters;
       do_vchi_ping_test(vchi_service, sizes[i], 0, 0, iter_count);
@@ -667,6 +669,7 @@ vchiq_ping_test(void)
       do_vchi_ping_test(vchi_service, sizes[i], 0, 1000, iter_count/50);
       do_vchi_ping_test(vchi_service, sizes[i], 1000, 1000, iter_count/50);
    }
+   }
 
    vchi_service_close(vchi_service);
 
@@ -677,7 +680,9 @@ vchiq_ping_test(void)
       return VCHIQ_ERROR;
    }
 
-   for (i = 0; i < sizeof(sizes)/sizeof(sizes[0]); i++)
+   {
+   const size_t sizes_count = sizeof(sizes)/sizeof(sizes[0]);
+   for (i = 0; i < sizes_count; i++)
    {
       const int iter_count = g_params.iters;
       do_ping_test(vchiq_service, sizes[i], 0, 0, iter_count);
@@ -701,6 +706,7 @@ vchiq_ping_test(void)
       do_ping_test(vchiq_service, sizes[i], 1000, 0, iter_count/50);
       do_ping_test(vchiq_service, sizes[i], 0, 1000, iter_count/50);
       do_ping_test(vchiq_service, sizes[i], 1000, 1000, iter_count/50);
+   }
    }
 
    vchiq_close_service(vchiq_service);
@@ -846,9 +852,12 @@ do_functional_test(void)
    EXPECT(vchiq_queue_message(service, elements, 4), VCHIQ_SUCCESS);
 
    EXPECT(vchiq_queue_bulk_transmit(service2, clnt_service2_data, sizeof(clnt_service2_data), (void *)0x2001), VCHIQ_SUCCESS);
-   for (i = 0; i < sizeof(clnt_service1_data); i++)
    {
-      clnt_service1_data[i] = (char)i;
+      const size_t clnt_service1_data_size = sizeof(clnt_service1_data);
+      for (i = 0; i < clnt_service1_data_size; i++)
+      {
+         clnt_service1_data[i] = (char)i;
+      }
    }
    EXPECT(vchiq_queue_bulk_transmit(service, clnt_service1_data, sizeof(clnt_service1_data), (void*)0x1001), VCHIQ_SUCCESS);
 
@@ -909,12 +918,13 @@ bulk_tests_only:
    for (size = 64; size < FUN2_MAX_DATA_SIZE; size<<=1)
    {
       static const int aligns[] = { 0, 1, 31 };
+      const size_t aligns_count = vcos_countof(aligns);
 
-      for (i = 0; i < vcos_countof(aligns); i++)
+      for (i = 0; i < aligns_count; i++)
       {
          int srvr_align = aligns[i];
          unsigned int j;
-         for (j = 0; j < vcos_countof(aligns); j++)
+         for (j = 0; j < aligns_count; j++)
          {
             int k;
             int align = aligns[j];
