@@ -94,8 +94,15 @@ VCOS_STATUS_T gx_priv_font_init(const char *font_dir)
    }
 
    int fd = -1;
+   int snprintf_ret;
    // search for the font
-   snprintf(fname, sizeof(fname), "%s/%s", font_dir, default_font.file);
+   snprintf_ret = snprintf(fname, sizeof(fname), "%s/%s", font_dir, default_font.file);
+   if (snprintf_ret >= (int)sizeof(fname))
+   {
+      GX_ERROR("Font path truncated '%s'", font_dir);
+      ret = VCOS_ENOSPC;
+      goto fail_open;
+   }
    fd = open(fname, O_RDONLY);
 
    if (fd < 0)
