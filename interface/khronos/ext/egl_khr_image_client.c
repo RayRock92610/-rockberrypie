@@ -174,27 +174,24 @@ EGLAPI EGLImageKHR EGLAPIENTRY eglCreateImageKHR (EGLDisplay dpy, EGLContext ctx
 #else
                if ((buf[0] == 0) || (buf[1] != (uint32_t)(-1))) { /* only allow regular server-side pixmaps */
 #endif
-                  /* This is a client-side pixmap! TODO: implement these properly */
+                  /* This is a client-side pixmap! TODO: Requires deeper architectural knowledge of the EGL image extension implementation to support client-side pixmaps correctly */
                   KHRN_IMAGE_WRAP_T image;
                   if (platform_get_pixmap_info((EGLNativePixmapType)buffer, &image))
                   {
-//meego hack          
                      if(image.aux!=0)
                      {
-                        //image.aux refers to a server side EGL surface 
-                        //that already contains the data we're interested in
+                        /* image.aux refers to a server side EGL surface
+                           that already contains the data we're interested in */
                         buf[0] = (uint32_t)image.aux;
                         target = EGL_IMAGE_FROM_SURFACE_BRCM;
                         khrn_platform_release_pixmap_info((EGLNativePixmapType)buffer, &image);                        
                      }
-//                                         
                      else
                      {
                         buf[0] = image.width | image.height << 16;
                         target = EGL_NATIVE_PIXMAP_CLIENT_SIDE_BRCM;
                         khrn_platform_release_pixmap_info((EGLNativePixmapType)buffer, &image);
                      }
-
                   }
                   else
                   {
