@@ -189,7 +189,7 @@ OMX_ERRORTYPE OMX_APIENTRY OMX_GetHandle(
       return OMX_ErrorBadParameter;
    }
 
-#if defined(WANT_LOCAL_OMX) && 0
+#if defined(WANT_LOCAL_OMX)
    if ((eError = vc_OMX_GetHandle(pHandle, cComponentName, pAppData, pCallBacks)) != OMX_ErrorNone)
 #endif
    {

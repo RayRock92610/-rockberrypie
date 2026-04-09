@@ -47,6 +47,31 @@ else ()
 
    target_link_libraries (openmaxil vcilcs vcos dl)
 
+   option(WANT_LOCAL_OMX "Link to local OpenMAX IL core" OFF)
+
+   if (WANT_LOCAL_OMX)
+       # Define search paths common to VideoCore IV/VI architectures
+       set(VC_LIB_PATHS
+           /opt/vc/lib
+           ${PROJECT_SOURCE_DIR}/build/lib
+           ${CMAKE_SYSROOT}/usr/lib
+       )
+
+       find_library(OMX_CORE_PATH
+           NAMES il_core openmaxil
+           PATHS ${VC_LIB_PATHS}
+           NO_DEFAULT_PATH
+       )
+
+       if (OMX_CORE_PATH)
+           message(STATUS "[KF-BUILD] Local OpenMAX IL Core detected: ${OMX_CORE_PATH}")
+           target_link_libraries(openmaxil PRIVATE ${OMX_CORE_PATH})
+           target_compile_definitions(openmaxil PRIVATE WANT_LOCAL_OMX)
+       else()
+           message(FATAL_ERROR "[KF-BUILD] WANT_LOCAL_OMX=ON but libil_core not found in: ${VC_LIB_PATHS}")
+       endif()
+   endif()
+
 endif ()
 
 install (TARGETS openmaxil DESTINATION lib)
