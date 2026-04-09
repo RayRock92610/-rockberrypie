@@ -83,21 +83,27 @@ uint64_t khronos_platform_get_process_id()
 }
 
 static bool process_attached = false;
+static VCOS_ONCE_T setup_once = VCOS_ONCE_INIT;
+
+static void actual_platform_init(void)
+{
+   vcos_log_trace("Attaching process");
+   client_process_attach();
+   process_attached = true;
+
+   vc_vchi_khronos_init();
+}
 
 void *platform_tls_get(PLATFORM_TLS_T tls)
 {
    void *ret;
 
-   if (!process_attached)
-      /* TODO: this isn't thread safe */
-   {
-      vcos_log_trace("Attaching process");
-      client_process_attach();
-      process_attached = true;
-      tls = client_tls;
+   vcos_once(&setup_once, actual_platform_init);
 
-      vc_vchi_khronos_init();
-   }
+   /* client_tls is initialized in client_process_attach,
+    * so we must use the global client_tls here to override
+    * any uninitialized value that was passed in. */
+   tls = client_tls;
 
    ret = vcos_tls_get(tls);
    if (!ret)
