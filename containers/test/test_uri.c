@@ -769,6 +769,9 @@ int main(int argc, char **argv)
    VC_URI_PARTS_T *uri;
    int error_count = 0;
    size_t ii;
+   const size_t num_parse_uris = ARRAY_SIZE(test_parse_uris);
+   const size_t num_build_uris = ARRAY_SIZE(test_build_uris);
+   const size_t num_merge_uris = ARRAY_SIZE(test_merge_uris);
 
    uri = vc_uri_create();
    if (!uri)
@@ -781,19 +784,19 @@ int main(int argc, char **argv)
    error_count +=  test_parameter_validation(uri);
 
    LOG_INFO(NULL, "Test parsing URIs:");
-   for (ii = 0; ii < ARRAY_SIZE(test_parse_uris); ii++)
+   for (ii = 0; ii < num_parse_uris; ii++)
    {
       error_count += test_parsing_uri(uri, test_parse_uris[ii].before, test_parse_uris[ii].after);
    }
 
    LOG_INFO(NULL, "Test building URIs:");
-   for (ii = 0; ii < ARRAY_SIZE(test_build_uris); ii++)
+   for (ii = 0; ii < num_build_uris; ii++)
    {
       error_count += test_building_uri(uri, &test_build_uris[ii]);
    }
 
    LOG_INFO(NULL, "Test merging URIs:");
-   for (ii = 0; ii < ARRAY_SIZE(test_merge_uris); ii++)
+   for (ii = 0; ii < num_merge_uris; ii++)
    {
       error_count += test_merging_uri(uri, &test_merge_uris[ii]);
    }
