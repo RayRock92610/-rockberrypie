@@ -152,13 +152,21 @@ static void renormalise(float *verts, int numvertices)
 static void deindex(float *dst, const float *src, const unsigned short *indexes, GLsizei size, GLsizei count)
 {
    int i;
-   for (i=0; i<count; i++) {
-      int ind = size * (indexes[0]-1);
-      *dst++ = src[ind + 0];
-      *dst++ = src[ind + 1];
-      // todo: optimise - move out of loop
-      if (size >= 3) *dst++ = src[ind + 2];
-      indexes += 3;
+   if (size >= 3) {
+      for (i=0; i<count; i++) {
+         int ind = size * (indexes[0]-1);
+         *dst++ = src[ind + 0];
+         *dst++ = src[ind + 1];
+         *dst++ = src[ind + 2];
+         indexes += 3;
+      }
+   } else {
+      for (i=0; i<count; i++) {
+         int ind = size * (indexes[0]-1);
+         *dst++ = src[ind + 0];
+         *dst++ = src[ind + 1];
+         indexes += 3;
+      }
    }
 }
 
