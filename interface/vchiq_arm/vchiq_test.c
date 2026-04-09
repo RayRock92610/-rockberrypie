@@ -761,6 +761,7 @@ do_functional_test(void)
    VCHIQ_SERVICE_PARAMS_T service_params;
    VCHIQ_CONFIG_T config;
    unsigned int size, i;
+   const size_t clnt_service1_data_size = sizeof(clnt_service1_data);
 
    vcos_event_create(&func_test_sync, "test_sync");
 
@@ -846,7 +847,7 @@ do_functional_test(void)
    EXPECT(vchiq_queue_message(service, elements, 4), VCHIQ_SUCCESS);
 
    EXPECT(vchiq_queue_bulk_transmit(service2, clnt_service2_data, sizeof(clnt_service2_data), (void *)0x2001), VCHIQ_SUCCESS);
-   for (i = 0; i < sizeof(clnt_service1_data); i++)
+   for (i = 0; i < clnt_service1_data_size; i++)
    {
       clnt_service1_data[i] = (char)i;
    }
