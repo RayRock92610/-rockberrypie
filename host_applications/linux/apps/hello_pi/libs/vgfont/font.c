@@ -148,11 +148,39 @@ void gx_priv_font_term(void)
    vcos_free(default_font.mem);
 }
 
+/**
+ * Internal worker for actual glyph blitting.
+ * Separated to allow for future caching/UTF-8 implementation.
+ */
+static void render_text_internal(VGFT_FONT_T *font, uint32_t fg_colour, int32_t x, int32_t y, const char *text, uint32_t text_length) {
+   VGfloat vg_colour[4];
+   VGPaint fg;
+
+   // setup the foreground colour
+   fg = vgCreatePaint();
+   if (!fg)
+   {
+      return;
+   }
+
+   // draw the foreground text
+   vgSetParameteri(fg, VG_PAINT_TYPE, VG_PAINT_TYPE_COLOR);
+   gx_priv_colour_to_paint(fg_colour, vg_colour);
+   vgSetParameterfv(fg, VG_PAINT_COLOR, 4, vg_colour);
+   vgSetPaint(fg, VG_FILL_PATH);
+
+   vgft_font_draw(font, (VGfloat)x, (VGfloat)y, text, text_length, VG_FILL_PATH);
+
+   vgDestroyPaint(fg);
+
+   vcos_assert(vgGetError() == 0);
+}
+
 /** Render text.
   *
-  * FIXME: Not at all optimal - re-renders each time.
-  * FIXME: Not UTF-8 aware
-  * FIXME: better caching
+  * TODO: Implement glyph caching (See ARCH_DOC-102).
+  * Current re-render per call is suboptimal for high-frequency updates.
+  * TODO: Upgrade to UTF-8 aware parsing.
   */
 VCOS_STATUS_T gx_priv_render_text( GX_DISPLAY_T *disp,
                                    GRAPHICS_RESOURCE_HANDLE res,
@@ -166,9 +194,7 @@ VCOS_STATUS_T gx_priv_render_text( GX_DISPLAY_T *disp,
                                    uint32_t text_length,
                                    uint32_t text_size )
 {
-   VGfloat vg_colour[4];
    VGFT_FONT_T *font;
-   VGPaint fg;
    GX_CLIENT_STATE_T save;
    VCOS_STATUS_T status = VCOS_SUCCESS;
    int clip = 1;
@@ -230,25 +256,9 @@ VCOS_STATUS_T gx_priv_render_text( GX_DISPLAY_T *disp,
          } // if
       } // if
    } // if
-   // setup the foreground colour
-   fg = vgCreatePaint();
-   if (!fg)
-   {
-      status = VCOS_ENOMEM;
-      goto finish;
-   }
 
-   // draw the foreground text
-   vgSetParameteri(fg, VG_PAINT_TYPE, VG_PAINT_TYPE_COLOR);
-   gx_priv_colour_to_paint(fg_colour, vg_colour);
-   vgSetParameterfv(fg, VG_PAINT_COLOR, 4, vg_colour);
-   vgSetPaint(fg, VG_FILL_PATH);
+   render_text_internal(font, fg_colour, x, y, text, text_length);
 
-   vgft_font_draw(font, (VGfloat)x, (VGfloat)y, text, text_length, VG_FILL_PATH);
-
-   vgDestroyPaint(fg);
-
-   vcos_assert(vgGetError() == 0);
    vgSeti(VG_SCISSORING, VG_FALSE);
 
 finish:
