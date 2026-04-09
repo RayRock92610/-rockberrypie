@@ -23,3 +23,5 @@ add_library (dtovl ${SHARED}
 target_link_libraries(dtovl fdt)
 
 install (TARGETS dtovl DESTINATION lib)
+
+add_subdirectory(tests)
