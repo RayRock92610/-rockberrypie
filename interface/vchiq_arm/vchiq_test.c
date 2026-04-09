@@ -774,6 +774,7 @@ do_functional_test(void)
    if (func_data_test_start != -1)
       goto bulk_tests_only;
 
+   EXPECT(vchiq_connect((VCHIQ_INSTANCE_T)NULL), VCHIQ_ERROR);
    EXPECT(vchiq_initialise(&instance), VCHIQ_SUCCESS);
    EXPECT(vchiq_get_config(instance, sizeof(config) - 1, &config), VCHIQ_SUCCESS); // too small, but allowed for backwards compatibility
    EXPECT(vchiq_get_config(instance, sizeof(config) + 1, &config), VCHIQ_ERROR);   // too large
