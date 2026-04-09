@@ -865,6 +865,7 @@ do_functional_test(void)
    INIT_PARAMS(&service_params, FUNC_FOURCC, func_clnt_callback, NULL, VCHIQ_TEST_VER);
    EXPECT(vchiq_open_service(instance, &service_params, &service), VCHIQ_ERROR); /* Instance not initialised */
    EXPECT(vchiq_add_service(instance, &service_params, &service), VCHIQ_ERROR); /* Instance not initialised */
+   EXPECT(vchiq_connect(NULL), VCHIQ_ERROR); /* Invalid instance */
    EXPECT(vchiq_connect(instance), VCHIQ_ERROR); /* Instance not initialised */
 
 bulk_tests_only:
