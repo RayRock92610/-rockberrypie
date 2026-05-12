@@ -376,7 +376,7 @@ GL_API void GL_APIENTRY glBufferData (GLenum target, GLsizeiptr size, const GLvo
       if(buffer.id != ~0 && buffer.mapped_pointer != 0)
       {
          /* buffer is mapped */
-         set_error(state, GL_INVALID_OPERATION);
+         glxx_set_error(state, GL_INVALID_OPERATION);
       }
       else
       {
@@ -441,7 +441,7 @@ GL_API void GL_APIENTRY glBufferSubData (GLenum target, GLintptr base, GLsizeipt
       if(buffer.id != ~0 && buffer.mapped_pointer != 0)
       {
          /* buffer is mapped */
-         set_error(state, GL_INVALID_OPERATION);
+         glxx_set_error(state, GL_INVALID_OPERATION);
       }
       else
       {
@@ -824,7 +824,7 @@ GL_API void GL_APIENTRY glCompressedTexSubImage2D (GLenum target, GLint level, G
       {
       case GL_ETC1_RGB8_OES:
          // Cannot specify subimages of ETC1 textures
-         set_error(state, GL_INVALID_OPERATION);
+         glxx_set_error(state, GL_INVALID_OPERATION);
          break;
       case GL_PALETTE4_RGB8_OES:
       case GL_PALETTE4_RGBA8_OES:
@@ -837,7 +837,7 @@ GL_API void GL_APIENTRY glCompressedTexSubImage2D (GLenum target, GLint level, G
       case GL_PALETTE8_RGBA4_OES:
       case GL_PALETTE8_RGB5_A1_OES:
          // Cannot specify subimages of paletted textures
-         set_error(state, GL_INVALID_OPERATION);
+         glxx_set_error(state, GL_INVALID_OPERATION);
          break;
       default:
          // Some format we don't recognise

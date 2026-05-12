@@ -254,7 +254,7 @@ static int load_wavefront_obj(const char *modelname, WAVEFRONT_MODEL_T *model, s
       case 'm': vc_assert(strncmp(s, "mtllib", sizeof "mtllib"-1)==0); break;
       case 'o': break;
       case 'u': 
-         if (sscanf(s, "usemtl %s", /*MAX_MATERIAL_NAME-1, */model->material[m->num_materials].name) == 1) {
+         if (sscanf(s, "usemtl %31s", /*MAX_MATERIAL_NAME-1, */model->material[m->num_materials].name) == 1) {
             if (m->num_materials < MAX_MATERIALS) {
                if (m->num_materials > 0 && ((pf-qf)/3 == m->material_index[m->num_materials-1] || strcmp(model->material[m->num_materials-1].name, model->material[m->num_materials].name)==0)) {
                   strcpy(model->material[m->num_materials-1].name, model->material[m->num_materials].name);

@@ -243,7 +243,7 @@ static const char* threed_str(uint32_t struct_3d_mask, int json_output) {
          }
       }
       if(!tmp && added > 0)
-         struct_desc[strlen(struct_desc)-1] = '\0'; //Get rid of final "|"
+         { offset--; struct_desc[offset] = '\0'; } //Get rid of final "|"
    } else if(!tmp && !added && !json_output) {
       status_sprintf(struct_desc, struct_desc_length, &offset, "none");
    }
@@ -918,7 +918,7 @@ int main( int argc, char **argv )
          case OPT_SDTVON:
          {
             char mode_str[32], aspect_str[32], progressive_str[32];
-            int s = sscanf( optarg, "%s %s %s", mode_str, aspect_str, progressive_str );
+            int s = sscanf( optarg, "%31s %31s %31s", mode_str, aspect_str, progressive_str );
             if ( s != 2 && s != 3 )
             {
                LOG_ERR( "Invalid arguments '%s'", optarg );
