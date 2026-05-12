@@ -11,3 +11,6 @@ add_library(fdt
 
 INSTALL(FILES)
 
+add_executable(fdt_empty_tree_test fdt_empty_tree_test.c)
+target_link_libraries(fdt_empty_tree_test fdt)
+add_test(NAME fdt_empty_tree_test COMMAND fdt_empty_tree_test)
