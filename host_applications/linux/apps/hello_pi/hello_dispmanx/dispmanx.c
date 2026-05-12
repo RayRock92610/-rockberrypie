@@ -52,6 +52,7 @@ typedef struct
     DISPMANX_RESOURCE_HANDLE_T  resource;
     DISPMANX_ELEMENT_HANDLE_T   element;
     uint32_t                    vc_image_ptr;
+    VCOS_SEMAPHORE_T            sem;
 
 } RECT_VARS_T;
 
@@ -93,6 +94,9 @@ int main(void)
 
     bcm_host_init();
 
+    ret = vcos_semaphore_create(&vars->sem, "dispmanx", 0);
+    assert(ret == VCOS_SUCCESS);
+
     printf("Open display[%i]...\n", screen );
     vars->display = vc_dispmanx_display_open( screen );
 
@@ -103,7 +107,6 @@ int main(void)
     vars->image = calloc( 1, pitch * height );
     assert(vars->image);
 
-    FillRect( type, vars->image, pitch, aligned_height,  0,  0, width,      height,      0xFFFF );
     FillRect( type, vars->image, pitch, aligned_height,  0,  0, width,      height,      0xF800 );
     FillRect( type, vars->image, pitch, aligned_height, 20, 20, width - 40, height - 40, 0x07E0 );
     FillRect( type, vars->image, pitch, aligned_height, 40, 40, width - 80, height - 80, 0x001F );
@@ -145,7 +148,7 @@ int main(void)
     assert( ret == 0 );
 
     printf( "Sleeping for 10 seconds...\n" );
-    sleep( 10 );
+    vcos_semaphore_wait_timeout(&vars->sem, 10000);
 
     vars->update = vc_dispmanx_update_start( 10 );
     assert( vars->update );
@@ -157,6 +160,8 @@ int main(void)
     assert( ret == 0 );
     ret = vc_dispmanx_display_close( vars->display );
     assert( ret == 0 );
+
+    vcos_semaphore_delete(&vars->sem);
 
     return 0;
 }
