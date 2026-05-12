@@ -131,14 +131,6 @@ void *platform_tls_get_check(PLATFORM_TLS_T tls)
  * -------------------------------------------------------------------- */
 void platform_hint_thread_finished()
 {
-   /*
-      todo: should we do this:
-
-      vcos_thread_deregister_at_exit(client_thread_detach);
-      client_thread_detach();
-
-      here?
-   */
 }
 
 #ifndef KHRN_PLATFORM_VCOS_NO_MALLOC
