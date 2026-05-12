@@ -234,6 +234,16 @@ static void set_error(VGErrorCode error)
              RPC_ENUM(error));
 }
 
+void vg_client_set_error(CLIENT_THREAD_STATE_T *thread, VGErrorCode error)
+{
+   if (thread) {
+      RPC_CALL1(vgSetError_impl,
+                thread,
+                VGSETERROR_ID,
+                RPC_ENUM(error));
+   }
+}
+
 static VGErrorCode get_error(void)
 {
    CLIENT_THREAD_STATE_T *thread = CLIENT_GET_THREAD_STATE();

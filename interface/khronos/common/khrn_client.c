@@ -32,6 +32,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "interface/khronos/common/khrn_client_rpc.h"
 #include "interface/khronos/egl/egl_client_config.h"
 #include "interface/khronos/glxx/glxx_client.h"
+#include "interface/khronos/vg/vg_client.h"
 
 #if defined(V3D_LEAN)
 #include "interface/khronos/common/khrn_int_misc_impl.h"
@@ -593,10 +594,12 @@ static void callback_set_error(KHRN_POINTER_MAP_T *map, uint32_t key, void *valu
    
    if (context->servercontext == *((uint32_t *)data)){
       CLIENT_THREAD_STATE_T *thread = context->thread;
-      /* todo: VG */      
       if (thread && IS_OPENGLES_11_OR_20(thread)) {
          vcos_log_error("GL OOM context %d", context->servercontext);
          glxx_set_error(GLXX_GET_CLIENT_STATE(thread), GL_OUT_OF_MEMORY);
+      } else if (thread && context->type == OPENVG) {
+         vcos_log_error("VG OOM context %d", context->servercontext);
+         vg_client_set_error(thread, VG_OUT_OF_MEMORY_ERROR);
       }
    }
 }
