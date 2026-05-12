@@ -1,0 +1,10 @@
+include_directories(${PROJECT_SOURCE_DIR}/host_applications/linux/libs/bcm_host/include)
+include_directories(${PROJECT_SOURCE_DIR}/interface/vcos)
+include_directories(${PROJECT_SOURCE_DIR}/interface/vcos/pthreads)
+include_directories(${PROJECT_SOURCE_DIR}/interface/vmcs_host/linux)
+include_directories(${PROJECT_SOURCE_DIR}/interface/vmcs_host/khronos)
+include_directories(${PROJECT_SOURCE_DIR}/interface/vchiq_arm)
+include_directories(${PROJECT_SOURCE_DIR}/interface/khronos/include)
+
+add_executable(test_tvservice test_tvservice.c)
+add_test(NAME test_tvservice COMMAND test_tvservice)
