@@ -1,0 +1,18 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: require-sidecar-injection
+spec:
+  validationFailureAction: enforce
+  rules:
+  - name: check-istio-sidecar
+    match:
+      resources:
+        kinds:
+        - Pod
+    validate:
+      message: "Istio sidecar injection is required."
+      pattern:
+        metadata:
+          labels:
+            sidecar.istio.io/inject: "true"
