@@ -1,0 +1,68 @@
+name: SOP Change Control Validation
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '**/*.md' # Only trigger when Markdown files are modified
+jobs:
+  validate-metadata:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code Layers
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetch all history so we can cross-reference Git tags
+
+      - name: Identify and Validate Staged Documents
+        run: |
+          echo "=== Starting Remote SOP Compliance Scan ==="
+
+          # Get a list of all Markdown files changed in this Pull Request
+          CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD | grep -E '\.md$' || true)
+
+          if [ -z "$CHANGED_FILES" ]; then
+            echo "[+] No document edits detected in this transaction. Skipping validation."
+            exit 0
+          fi
+
+          for FILE in $CHANGED_FILES; do
+            # Skip file validation if it was deleted in the PR
+            if [ ! -f "$FILE" ]; then
+              echo "[*] Skipping deleted file: $FILE"
+              continue
+            fi
+
+            echo "[*] Scanning document metadata validation paths for: $FILE"
+
+            # Parse compliance attributes
+            OWNER_MATCH=$(grep -i "owner:" "$FILE" || true)
+            VERSION_MATCH=$(grep -oE "v[0-9]+\.[0-9]+" "$FILE" | head -n 1 || true)
+
+            # Enforce SOP Section 2: Assign Ownership
+            if [ -z "$OWNER_MATCH" ]; then
+              echo "::error file=$FILE::Compliance Rejection: Missing required 'Owner:' metadata block."
+              exit 1
+            fi
+
+            # Enforce SOP Section 3: Semantic Versioning
+            if [ -z "$VERSION_MATCH" ]; then
+              echo "::error file=$FILE::Compliance Rejection: Missing or malformed version format (Expected vX.Y)."
+              exit 1
+            fi
+
+            echo "[+] Verified Owner: $(echo "$OWNER_MATCH" | xargs)"
+            echo "[+] Detected Version: $VERSION_MATCH"
+
+            # Enforce Change Control Rules: Check for duplicate/stale tags
+            if git tag | grep -Fx "$VERSION_MATCH" > /dev/null 2>&1; then
+              echo "::error file=$FILE::Change Control Error: Version '$VERSION_MATCH' has already been published. You must increment the version string."
+              exit 1
+            fi
+
+            echo "[+] $FILE successfully passed all pipeline compliance checks."
+          done
+
+          echo "========================================="
+          echo "[+] SUCCESS: All documents conform to SOP baselines."
+          echo "========================================="
