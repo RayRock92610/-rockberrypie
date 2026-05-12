@@ -1,0 +1,7 @@
+settings:
+  auths:
+    kubernetes:
+      type: bearer_token
+      token: ${KUBERNETES_TOKEN}
+  env:
+    KUBERNETES_CONTEXT: "death-star-primary-cluster"

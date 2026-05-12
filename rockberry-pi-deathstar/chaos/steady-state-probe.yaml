@@ -1,0 +1,13 @@
+steady-state-hypothesis:
+  title: gRPC Targeting Telemetry Stream is Active
+  probes:
+    - name: grpc-telemetry-probe
+      type: probe
+      tolerance: true
+      provider:
+        type: python
+        module: chaosk8s.probes
+        func: microservice_is_available
+        arguments:
+          name: targeting-service
+          ns: weapon-system

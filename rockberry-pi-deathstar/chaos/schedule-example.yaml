@@ -1,0 +1,21 @@
+apiVersion: chaostoolkit.org/v1alpha1
+kind: ChaosExperiment
+metadata:
+  name: daily-reactor-stress-test
+  namespace: weapon-system
+spec:
+  schedule: "0 2 * * *" # Daily at 2 AM
+  experiment:
+    version: 1.0.0
+    title: Scheduled Chaos Toolkit execution
+    method:
+      - type: action
+        name: terminate-random-pod
+        provider:
+          type: python
+          module: chaosk8s.pod.actions
+          func: terminate_pods
+          arguments:
+            label_selector: "app=deathstar"
+            ns: weapon-system
+            rand: true

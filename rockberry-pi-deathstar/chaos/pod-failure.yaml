@@ -1,0 +1,30 @@
+version: 1.0.0
+title: What happens when we terminate a Death Star core subsystem pod?
+description: If a core subsystem pod (e.g., energy-allocation) is terminated, the system should auto-recover and maintain targeting capabilities.
+tags:
+  - kubernetes
+  - pod-failure
+  - resilience
+
+steady-state-hypothesis:
+  title: Targeting service is healthy
+  probes:
+    - name: targeting-service-health
+      type: http
+      tolerance: 200
+      provider:
+        type: http
+        url: http://targeting-service.weapon-system.svc.cluster.local/healthz
+        timeout: 3
+
+method:
+  - type: action
+    name: terminate-subsystem-pod
+    provider:
+      type: python
+      module: chaosk8s.pod.actions
+      func: terminate_pods
+      arguments:
+        label_selector: "app=deathstar"
+        ns: weapon-system
+        rand: true
