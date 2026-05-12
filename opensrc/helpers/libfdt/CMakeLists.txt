@@ -11,3 +11,6 @@ add_library(fdt
 
 INSTALL(FILES)
 
+
+add_executable(test_fdt_delprop test_fdt_delprop.c)
+target_link_libraries(test_fdt_delprop fdt)
