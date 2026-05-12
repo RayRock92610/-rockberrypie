@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+package targeting;
+
+option go_package = "github.com/organization/rockberry-pi-deathstar/src/targeting/proto";
+
+// The Targeting service definition.
+service TargetingService {
+  // Initiates a target lock sequence.
+  rpc LockTarget (TargetRequest) returns (TargetResponse) {}
+
+  // Streams real-time telemetry from the targeting sensors.
+  rpc StreamTelemetry (TargetRequest) returns (stream TelemetryUpdate) {}
+}
+
+// The request message containing the target's coordinates.
+message TargetRequest {
+  string target_id = 1;
+  double latitude = 2;
+  double longitude = 3;
+  double elevation = 4;
+}
+
+// The response message confirming the target lock.
+message TargetResponse {
+  bool lock_acquired = 1;
+  string message = 2;
+  int64 estimated_time_to_firing = 3;
+}
+
+// Real-time telemetry updates.
+message TelemetryUpdate {
+  string target_id = 1;
+  double current_distance = 2;
+  bool atmospheric_interference = 3;
+}

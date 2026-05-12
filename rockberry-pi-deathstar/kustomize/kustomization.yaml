@@ -1,0 +1,12 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../kubernetes/argocd/application.yaml
+  - ../kubernetes/istio/peer-authentication.yaml
+  - ../kubernetes/kyverno/cluster-policy.yaml
+
+# Common labels applied to all resources in this environment
+commonLabels:
+  app.kubernetes.io/part-of: rockberry-pi-deathstar
+  environment: staging
