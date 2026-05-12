@@ -142,13 +142,11 @@ static uint32_t from_hex(const char *str, uint32_t str_len)
 /*****************************************************************************/
 static uint32_t escaped_length( const char *str, RESERVED_CHARS_TABLE_T reserved )
 {
-   uint32_t ii;
    uint32_t esclen = 0;
    char c;
 
-   for (ii = strlen(str); ii > 0; ii--)
+   while ((c = *str++) != '\0')
    {
-      c = *str++;
       if (URI_RESERVED(c, reserved))
       {
          /* Reserved character needs escaping as %xx */
@@ -165,13 +163,12 @@ static uint32_t escaped_length( const char *str, RESERVED_CHARS_TABLE_T reserved
 static uint32_t escape_string( const char *str, char *escaped,
       RESERVED_CHARS_TABLE_T reserved )
 {
-   uint32_t ii;
    uint32_t esclen = 0;
 
    if (!str)
       return 0;
 
-   for (ii = strlen(str); ii > 0; ii--)
+   while (*str != '\0')
    {
       char c = *str++;
 
