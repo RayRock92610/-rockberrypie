@@ -44,6 +44,10 @@ extern const char *gencmd_get_build_version(void);
 #error
 #endif
 
+/* Sentinel Diagnostic: Arch Verification */
+vcos_static_assert(sizeof(void*) == 8); /* Sentinel: 64-bit environment detected */
+vcos_static_assert(sizeof(uint32_t) == 4); /* Sentinel: Handle size invariant */
+
 /******************************************************************************
 Local types and defines.
 ******************************************************************************/
@@ -470,15 +474,23 @@ RETURNS
 int vc_gencmd_number_property(char *text, const char *property, int *number) {
    char *value, temp;
    int length, retval;
+   unsigned int temp_val = 0;
+   int temp_num = 0;
    if (vc_gencmd_string_property(text, property, &value, &length) == 0)
       return 0;
    temp = value[length];
    value[length] = 0;
    /* coverity[secure_coding] - this is not insecure */
-   retval = sscanf(value, "0x%x", (unsigned int*)number);
-   if (retval != 1)
+   retval = sscanf(value, "0x%x", &temp_val);
+   if (retval == 1) {
+       *number = (int)temp_val;
+   } else {
       /* coverity[secure_coding] - this is not insecure */
-      retval = sscanf(value, "%d", number);
+      retval = sscanf(value, "%d", &temp_num);
+      if (retval == 1) {
+          *number = temp_num;
+      }
+   }
    value[length] = temp;
    return retval;
 
