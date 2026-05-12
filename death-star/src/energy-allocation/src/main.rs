@@ -1,28 +1,96 @@
 use std::collections::HashMap;
+use fixed::types::extra::U12;
+use fixed::FixedU32;
+use tokio::sync::{mpsc, oneshot};
+
+// 20 integer bits, 12 fractional bits
+pub type Energy = FixedU32<U12>;
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct Subsystem {
+pub struct SubsystemFixed {
+    pub name: String,
+    pub priority: u32,
+    pub requested: Energy,
+    pub guaranteed: Energy,
+}
+
+#[derive(Clone, Debug)]
+pub struct SubsystemTelemetry {
     pub name: String,
     pub priority: u32,
     pub requested: f64,
     pub guaranteed: f64,
 }
 
-pub fn allocate_energy(
-    total_energy: f64,
-    systems: &[Subsystem],
-) -> HashMap<String, f64> {
+// Message types for actor communication
+#[derive(Debug)]
+pub enum AllocatorMsg {
+    Telemetry(Vec<SubsystemTelemetry>),
+    GetAllocations(oneshot::Sender<HashMap<String, f64>>),
+}
+
+pub struct AllocatorActor {
+    receiver: mpsc::Receiver<AllocatorMsg>,
+    current_alloc: HashMap<String, Energy>,
+    total_energy: Energy,
+}
+
+impl AllocatorActor {
+    pub fn new(receiver: mpsc::Receiver<AllocatorMsg>, total_energy_f64: f64) -> Self {
+        Self {
+            receiver,
+            current_alloc: HashMap::new(),
+            total_energy: Energy::from_num(total_energy_f64),
+        }
+    }
+
+    pub async fn run(mut self) {
+        while let Some(msg) = self.receiver.recv().await {
+            match msg {
+                AllocatorMsg::Telemetry(telemetry) => {
+                    let systems: Vec<SubsystemFixed> = telemetry.into_iter().map(|t| {
+                        SubsystemFixed {
+                            name: t.name,
+                            priority: t.priority,
+                            requested: Energy::from_num(t.requested),
+                            guaranteed: Energy::from_num(t.guaranteed),
+                        }
+                    }).collect();
+                    self.current_alloc = allocate_energy_fixed(self.total_energy, &systems);
+                }
+                AllocatorMsg::GetAllocations(tx) => {
+                    let float_allocs = self.current_alloc.iter()
+                        .map(|(k, v)| (k.clone(), v.to_num::<f64>()))
+                        .collect();
+                    let _ = tx.send(float_allocs);
+                }
+            }
+        }
+    }
+}
+
+pub fn allocate_energy_fixed(
+    total_energy: Energy,
+    systems: &[SubsystemFixed],
+) -> HashMap<String, Energy> {
     let mut allocations = HashMap::new();
 
-    let guaranteed_sum: f64 = systems.iter().map(|s| s.guaranteed).sum();
+    let guaranteed_sum: Energy = systems.iter().map(|s| s.guaranteed).sum();
 
-    // Degradation trigger: if guarantees exceed total energy, clamp to total energy.
+    // Degradation trigger
     if guaranteed_sum > total_energy {
-        // Distribute proportionally based on guaranteed minimums if we can't meet them
-        let scale = if guaranteed_sum > 0.0 { total_energy / guaranteed_sum } else { 0.0 };
+        // We use integer arithmetic or float-conversion for scaling to avoid fixed-point division limits
+        // scale = total / guaranteed_sum
+        let scale_f: f64 = total_energy.to_num::<f64>() / guaranteed_sum.to_num::<f64>();
+        let scale = Energy::from_num(scale_f);
+
         return systems
             .iter()
-            .map(|s| (s.name.clone(), s.guaranteed * scale))
+            .map(|s| {
+                // Approximate scaling
+                let scaled_f = s.guaranteed.to_num::<f64>() * scale.to_num::<f64>();
+                (s.name.clone(), Energy::from_num(scaled_f))
+            })
             .collect();
     }
 
@@ -33,13 +101,15 @@ pub fn allocate_energy(
         let mut allocation = s.guaranteed;
 
         if total_priority > 0 {
-            let weighted = (s.priority as f64 / total_priority as f64) * remaining;
+            // (s.priority / total_priority) * remaining
+            let weight_f = (s.priority as f64) / (total_priority as f64);
+            let weighted_f = weight_f * remaining.to_num::<f64>();
+            let weighted = Energy::from_num(weighted_f);
 
-            // Only allocate up to what was requested, considering the guarantee
             let additional_needed = if s.requested > s.guaranteed {
                 s.requested - s.guaranteed
             } else {
-                0.0
+                Energy::from_num(0)
             };
 
             allocation += weighted.min(additional_needed);
@@ -51,36 +121,49 @@ pub fn allocate_energy(
     allocations
 }
 
-fn main() {
-    println!("Energy Allocation Service starting...");
+#[tokio::main]
+async fn main() {
+    println!("Hardened Energy Allocation Service (Fixed Point / Actor Model) starting...");
 
-    let systems = vec![
-        Subsystem {
+    let (tx, rx) = mpsc::channel(100);  // Bounded for backpressure
+    let actor = AllocatorActor::new(rx, 100.0);
+
+    // Spawn the actor task
+    tokio::spawn(actor.run());
+
+    // Send some telemetry
+    let telemetry = vec![
+        SubsystemTelemetry {
             name: "Weapon".to_string(),
             priority: 70,
             requested: 70.0,
             guaranteed: 0.0,
         },
-        Subsystem {
+        SubsystemTelemetry {
             name: "Shields".to_string(),
             priority: 40,
             requested: 40.0,
             guaranteed: 10.0,
         },
-        Subsystem {
+        SubsystemTelemetry {
             name: "Life Support".to_string(),
-            priority: 10, // Priority still matters for surplus
+            priority: 10,
             requested: 20.0,
             guaranteed: 10.0,
         },
     ];
 
-    let total_energy = 100.0;
-    let allocations = allocate_energy(total_energy, &systems);
+    let _ = tx.send(AllocatorMsg::Telemetry(telemetry)).await;
 
-    println!("Total Energy: {}", total_energy);
-    for (name, allocated) in allocations {
-        println!("{}: allocated {:.2}", name, allocated);
+    // Request the current allocations
+    let (resp_tx, resp_rx) = oneshot::channel();
+    let _ = tx.send(AllocatorMsg::GetAllocations(resp_tx)).await;
+
+    if let Ok(allocs) = resp_rx.await {
+        println!("Received Allocations from Actor:");
+        for (name, allocated) in allocs {
+            println!("{}: allocated {:.2}", name, allocated);
+        }
     }
 }
 
@@ -89,40 +172,40 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_normal_allocation() {
+    fn test_normal_allocation_fixed() {
         let systems = vec![
-            Subsystem { name: "Weapon".to_string(), priority: 70, requested: 70.0, guaranteed: 0.0 },
-            Subsystem { name: "Shields".to_string(), priority: 40, requested: 40.0, guaranteed: 10.0 },
-            Subsystem { name: "Life Support".to_string(), priority: 10, requested: 20.0, guaranteed: 10.0 },
+            SubsystemFixed { name: "Weapon".to_string(), priority: 70, requested: Energy::from_num(70.0), guaranteed: Energy::from_num(0.0) },
+            SubsystemFixed { name: "Shields".to_string(), priority: 40, requested: Energy::from_num(40.0), guaranteed: Energy::from_num(10.0) },
+            SubsystemFixed { name: "Life Support".to_string(), priority: 10, requested: Energy::from_num(20.0), guaranteed: Energy::from_num(10.0) },
         ];
 
-        let allocs = allocate_energy(100.0, &systems);
+        let allocs = allocate_energy_fixed(Energy::from_num(100.0), &systems);
 
-        // Guarantees = 20.0. Remaining = 80.0
-        // Priorities: W:70, S:40, L:10. Total Priority = 120
-        // Weapon gets: 0 + (70/120 * 80) = 46.66...
-        // Shields gets: 10 + min(40-10, (40/120 * 80)) = 10 + min(30, 26.66...) = 36.66...
-        // Life Support gets: 10 + min(20-10, (10/120 * 80)) = 10 + min(10, 6.66...) = 16.66...
+        let weapon_alloc = allocs["Weapon"].to_num::<f64>();
+        let shields_alloc = allocs["Shields"].to_num::<f64>();
+        let life_support_alloc = allocs["Life Support"].to_num::<f64>();
 
-        assert!((allocs["Weapon"] - 46.66).abs() < 0.1);
-        assert!((allocs["Shields"] - 36.66).abs() < 0.1);
-        assert!((allocs["Life Support"] - 16.66).abs() < 0.1);
+        assert!((weapon_alloc - 46.66).abs() < 0.1);
+        assert!((shields_alloc - 36.66).abs() < 0.1);
+        assert!((life_support_alloc - 16.66).abs() < 0.1);
     }
 
     #[test]
-    fn test_degradation_mode() {
+    fn test_degradation_mode_fixed() {
         let systems = vec![
-            Subsystem { name: "Weapon".to_string(), priority: 70, requested: 70.0, guaranteed: 0.0 },
-            Subsystem { name: "Shields".to_string(), priority: 40, requested: 40.0, guaranteed: 20.0 },
-            Subsystem { name: "Life Support".to_string(), priority: 10, requested: 20.0, guaranteed: 20.0 },
+            SubsystemFixed { name: "Weapon".to_string(), priority: 70, requested: Energy::from_num(70.0), guaranteed: Energy::from_num(0.0) },
+            SubsystemFixed { name: "Shields".to_string(), priority: 40, requested: Energy::from_num(40.0), guaranteed: Energy::from_num(20.0) },
+            SubsystemFixed { name: "Life Support".to_string(), priority: 10, requested: Energy::from_num(20.0), guaranteed: Energy::from_num(20.0) },
         ];
 
-        // Total guaranteed is 40.0, but we only have 20.0 energy
-        let allocs = allocate_energy(20.0, &systems);
+        let allocs = allocate_energy_fixed(Energy::from_num(20.0), &systems);
 
-        // Should scale proportionally: Shields gets 10, Life Support gets 10, Weapon gets 0
-        assert_eq!(allocs["Weapon"], 0.0);
-        assert_eq!(allocs["Shields"], 10.0);
-        assert_eq!(allocs["Life Support"], 10.0);
+        let weapon_alloc = allocs["Weapon"].to_num::<f64>();
+        let shields_alloc = allocs["Shields"].to_num::<f64>();
+        let life_support_alloc = allocs["Life Support"].to_num::<f64>();
+
+        assert_eq!(weapon_alloc, 0.0);
+        assert_eq!(shields_alloc, 10.0);
+        assert_eq!(life_support_alloc, 10.0);
     }
 }
