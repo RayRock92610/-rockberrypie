@@ -301,6 +301,7 @@ static const char *vc_uri_find_delimiter(const char *str, const char *delimiters
 static void vc_uri_set_path_extension(VC_URI_PARTS_T *p_uri)
 {
    char *end;
+   size_t path_len;
 
    if (!p_uri)
       return;
@@ -310,8 +311,10 @@ static void vc_uri_set_path_extension(VC_URI_PARTS_T *p_uri)
    if (!p_uri->path)
       return;
 
+   path_len = strlen(p_uri->path);
+
    /* Look for the magic dot */
-   for (end = p_uri->path + strlen(p_uri->path); *end != '.'; end--)
+   for (end = p_uri->path + path_len; *end != '.'; end--)
       if (end == p_uri->path || *end == '/' || *end == '\\')
          return;
 
