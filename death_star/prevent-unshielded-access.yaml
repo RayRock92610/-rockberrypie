@@ -1,0 +1,24 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: prevent-unshielded-access
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+  - name: check-istio-mtls
+    match:
+      any:
+      - resources:
+          kinds:
+          - Deployment
+          namespaces:
+          - weapon-systems
+    validate:
+      message: "All weapon systems must have Istio sidecars injected for mTLS."
+      pattern:
+        spec:
+          template:
+            metadata:
+              annotations:
+                sidecar.istio.io/inject: "true"

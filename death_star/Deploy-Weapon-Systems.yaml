@@ -1,0 +1,26 @@
+name: Deploy Weapon Systems
+on: [push]
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build & Push to ECR (Global)
+      run: |
+        docker build -t 123456789.dkr.ecr.us-east-1.amazonaws.com/superlaser:latest .
+        docker push 123456789.dkr.ecr.us-east-1.amazonaws.com/superlaser:latest
+
+  deploy-regions:
+    needs: build-and-push
+    strategy:
+      matrix:
+        region: [us-east-1, us-west-2]
+    runs-on: ubuntu-latest
+    steps:
+    - name: Update Kubeconfig
+      run: aws eks update-kubeconfig --name deathstar-${{ matrix.region }}
+
+    - name: GitOps Sync (ArgoCD CLI)
+      run: |
+        argocd app sync deathstar-app-${{ matrix.region }} --wait
