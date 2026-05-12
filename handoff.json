@@ -6,11 +6,12 @@
       "Create kessel-state directory",
       "Create kessel-state/README.md with Kessel Flow state management documentation",
       "Update kessel-state/README.md with complete production-ready documentation",
-      "Create kessel-state/deploy.sh installation script"
+      "Create kessel-state/deploy.sh installation script",
+      "Create kessel-state/kessel_status.py dashboard parser script"
     ]
   },
   "current_state": {
-    "kessel_flow": "Living DevOps ecosystem with daily 24hr SOP reviews, stored in Termux/BoneYard as markdown/JSON. Workflow tree includes pillars, scripts, and endpoints. SOPs updated daily without overwrites. Includes durable state management via Kessel-State.",
+    "kessel_flow": "Living DevOps ecosystem with durable state management via Kessel-State. Workflow tree includes pillars, scripts, and endpoints. Included native Python dashboard parser script.",
     "boneyard": "Offline storage"
   },
   "key_decisions": [
@@ -29,6 +30,10 @@
     {
       "decision": "State capture via PROMPT_COMMAND hook",
       "reason": "To ensure persistent, forensic-ready state for zero-context commands"
+    },
+    {
+      "decision": "Native Python dashboard script",
+      "reason": "To cleanly parse and display the ~/.kessel_state.json file in a readable terminal interface"
     }
   ],
   "priorities": [
@@ -36,8 +41,7 @@
     "Build handoff schema (handoff.json)",
     "Extend workflow tree",
     "Test cross-session continuity",
-    "Optimize drift detection",
-    "Build kessel status python dashboard parser script"
+    "Optimize drift detection"
   ],
-  "resume_prompt": "Resume from last session. Here's the handoff for KesselFlow / BoneYard:\n• Current State: KesselFlow is a living DevOps ecosystem with durable state management via Kessel-State. Workflow tree includes pillars, scripts, and endpoints.\n• Key Decisions: State capture via PROMPT_COMMAND hook for zero-context commands.\n• Priorities: Build kessel status python dashboard parser script to cleanly print out ~/.kessel_state.json.\nContinue from this as if it's continuous. Focus on the next priority: build out the native kessel status python dashboard parser script."
+  "resume_prompt": "Resume from last session. Here's the handoff for KesselFlow / BoneYard:\n• Current State: KesselFlow is a living DevOps ecosystem with durable state management via Kessel-State. Included native Python dashboard parser script (kessel_status.py).\n• Key Decisions: State capture via PROMPT_COMMAND hook for zero-context commands. Native Python dashboard script to read the state.\n• Priorities: Solidify 24hr SOP automation, extend workflow tree, test cross-session continuity, and optimize drift detection.\nContinue from this as if it's continuous. Focus on the next priority."
 }

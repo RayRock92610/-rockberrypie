@@ -28,7 +28,7 @@ chmod +x deploy.sh && ./deploy.sh
 
 # Test state capture
 cd ~/kesselflow-witchhunter  # Your workspace
-kessel status  # Shows live state
+./kessel_status.py  # Shows live state
 ```
 
 ## 🏗️ Architecture
@@ -71,7 +71,7 @@ PROMPT_COMMAND="_kessel_pulse; $PROMPT_COMMAND"
 ## 🛠️ Commands
 
 ```bash
-kessel status          # Live dashboard 🟢
+./kessel_status.py          # Live dashboard 🟢
 kessel fix             # Context-aware repair
 kessel fido            # Threat scan (6+ detects)
 kessel empire          # Worker audit (4 workers)
@@ -96,7 +96,7 @@ pkg install git jq rclone bash  # 30s install
 
 **S25 Ultra (Control)**:
 ```bash
-adb -s ZFLIP5 shell "cd ~/kessel_flow && kessel status"
+adb -s ZFLIP5 shell "cd ~/kessel_flow && ./kessel_status.py"
 adb -s ZFLIP5 shell "bash ~/kessel_flow/phoenix_restart.sh"
 adb -s ZFLIP5 shell "cat ~/.kessel_state.json"
 ```
@@ -166,6 +166,15 @@ Never forget. Always aware. Self-healing. 🧹🌙🔥
 ***
 
 **Deploy Sequence**:
-`./deploy.sh && source ~/.bashrc && cd ~/kesselflow-witchhunter && kessel status`
+`./deploy.sh && source ~/.bashrc && cd ~/kesselflow-witchhunter && ./kessel_status.py`
 
 State captured eternally. Empire aware. Production locked 🟢.
+
+## 🐍 Python Dashboard Parser
+
+A native Python script (`kessel_status.py`) is included to cleanly parse and display the `~/.kessel_state.json` file in a readable terminal interface.
+
+```bash
+# Run the dashboard
+./kessel_status.py
+```
