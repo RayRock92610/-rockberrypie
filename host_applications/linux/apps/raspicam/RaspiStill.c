@@ -460,8 +460,9 @@ static int parse_cmdline(int argc, const char **argv, RASPISTILL_STATE *state)
          {
             state->linkname = malloc(len + 10);
             vcos_assert(state->linkname);
-            if (state->linkname)
+            if (state->linkname) {
                strncpy(state->linkname, argv[i + 1], len+1);
+            }
             i++;
          }
          else

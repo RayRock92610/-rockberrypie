@@ -674,6 +674,21 @@ VCOS_STATUS_T gx_priv_resource_fill(GRAPHICS_RESOURCE_HANDLE res,
    return VCOS_SUCCESS;
 }
 
+static VGImageFormat gx_get_vg_format(GRAPHICS_RESOURCE_TYPE_T restype)
+{
+   switch (restype)
+   {
+      case GRAPHICS_RESOURCE_RGB565:
+         return VG_sBGR_565;
+      case GRAPHICS_RESOURCE_RGB888:
+         return VG_sXBGR_8888;
+      case GRAPHICS_RESOURCE_RGBA32:
+         return VG_sABGR_8888;
+      default:
+         return 0;
+   }
+}
+
 int32_t gx_get_pitch(uint32_t width, GRAPHICS_RESOURCE_TYPE_T restype)
 {
    int32_t pitch;
@@ -731,27 +746,12 @@ VCOS_STATUS_T gx_priv_get_pixels(const GRAPHICS_RESOURCE_HANDLE res, void **p_pi
       status = VCOS_ENOMEM;
       goto finish;
    }
-   /* FIXME: introduce e.g. GX_COLOR_FORMAT and mapping to VGImageFormat... */
-
-   /* Hand out image data formatted to match OpenGL RGBA format.
-    */
-   switch (res->restype)
+   image_format = gx_get_vg_format(res->restype);
+   if (image_format == 0)
    {
-      case GRAPHICS_RESOURCE_RGB565:
-         image_format = VG_sBGR_565;
-         break;
-      case GRAPHICS_RESOURCE_RGB888:
-         image_format = VG_sXBGR_8888;
-         break;
-      case GRAPHICS_RESOURCE_RGBA32:
-         image_format = VG_sABGR_8888;
-         break;
-      default:
-      {
-         GX_LOG("Unsupported pixel format");
-         status = VCOS_EINVAL;
-         goto finish;
-      }
+      GX_LOG("Unsupported pixel format");
+      status = VCOS_EINVAL;
+      goto finish;
    }   
 
    /* VG raster order is bottom-to-top */

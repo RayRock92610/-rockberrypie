@@ -87,7 +87,8 @@ int use_gencmd_service(void) {
    int ret = 0;
    int i=0;
    for(i = 0; i < gencmd_client.num_connections; i++) {
-      ret = (ret == 0) ? vchi_service_use(gencmd_client.open_handle[i]) : ret;
+      ret = vchi_service_use(gencmd_client.open_handle[i]);
+      if (ret != 0) break;
    }
    return ret;
 }
@@ -96,7 +97,8 @@ int release_gencmd_service(void) {
    int ret = 0;
    int i=0;
    for(i = 0; i < gencmd_client.num_connections; i++) {
-      ret = (ret == 0) ? vchi_service_release(gencmd_client.open_handle[i]) : ret;
+      ret = vchi_service_release(gencmd_client.open_handle[i]);
+      if (ret != 0) break;
    }
    return ret;
 }

@@ -217,7 +217,7 @@ static VC_CONTAINER_STATUS_T simple_read_header( VC_CONTAINER_T *ctx )
          LOG_FORMAT(ctx, CONFIG_VARIANT": %i", value);
       }
       /* URI for elementary stream */
-      else if (sscanf(module->line, CONFIG_URI" %s", track->priv->module->uri) == 1)
+      else if (sscanf(module->line, CONFIG_URI" %511s", track->priv->module->uri) == 1)
          LOG_FORMAT(ctx, CONFIG_URI": %s", track->priv->module->uri);
       /* COCDEC_VARIANT of elementary stream */
       else if (sscanf(module->line, CONFIG_CODEC_VARIANT" %4c", (char *)&fourcc) == 1)

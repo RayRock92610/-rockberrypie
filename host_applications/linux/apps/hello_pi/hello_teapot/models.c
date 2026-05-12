@@ -151,13 +151,21 @@ static void renormalise(float *verts, int numvertices)
 static void deindex(float *dst, const float *src, const unsigned short *indexes, GLsizei size, GLsizei count)
 {
    int i;
-   for (i=0; i<count; i++) {
-      int ind = size * (indexes[0]-1);
-      *dst++ = src[ind + 0];
-      *dst++ = src[ind + 1];
-      // todo: optimise - move out of loop
-      if (size >= 3) *dst++ = src[ind + 2];
-      indexes += 3;
+   if (size >= 3) {
+      for (i=0; i<count; i++) {
+         int ind = size * (indexes[0]-1);
+         *dst++ = src[ind + 0];
+         *dst++ = src[ind + 1];
+         *dst++ = src[ind + 2];
+         indexes += 3;
+      }
+   } else {
+      for (i=0; i<count; i++) {
+         int ind = size * (indexes[0]-1);
+         *dst++ = src[ind + 0];
+         *dst++ = src[ind + 1];
+         indexes += 3;
+      }
    }
 }
 
@@ -240,7 +248,7 @@ static int load_wavefront_obj(const char *modelname, WAVEFRONT_MODEL_T *model, s
       case 'm': vc_assert(strncmp(s, "mtllib", sizeof "mtllib"-1)==0); break;
       case 'o': break;
       case 'u': 
-         if (sscanf(s, "usemtl %s", /*MAX_MATERIAL_NAME-1, */model->material[m->num_materials].name) == 1) {
+         if (sscanf(s, "usemtl %31s", /*MAX_MATERIAL_NAME-1, */model->material[m->num_materials].name) == 1) {
             if (m->num_materials < MAX_MATERIALS) {
                if (m->num_materials > 0 && ((pf-qf)/3 == m->material_index[m->num_materials-1] || strcmp(model->material[m->num_materials-1].name, model->material[m->num_materials].name)==0)) {
                   strcpy(model->material[m->num_materials-1].name, model->material[m->num_materials].name);

@@ -52,6 +52,7 @@ typedef struct
     DISPMANX_RESOURCE_HANDLE_T  resource;
     DISPMANX_ELEMENT_HANDLE_T   element;
     uint32_t                    vc_image_ptr;
+    VCOS_SEMAPHORE_T            semaphore;
 
 } RECT_VARS_T;
 
@@ -144,8 +145,10 @@ int main(void)
     ret = vc_dispmanx_update_submit_sync( vars->update );
     assert( ret == 0 );
 
+    vcos_semaphore_create(&vars->semaphore, "dispmanx", 0);
     printf( "Sleeping for 10 seconds...\n" );
-    sleep( 10 );
+    vcos_semaphore_wait_timeout(&vars->semaphore, 10000);
+    vcos_semaphore_delete(&vars->semaphore);
 
     vars->update = vc_dispmanx_update_start( 10 );
     assert( vars->update );
