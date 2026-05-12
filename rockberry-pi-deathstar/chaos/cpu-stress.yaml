@@ -1,0 +1,15 @@
+apiVersion: chaos-mesh.org/v1alpha1
+kind: StressChaos
+metadata:
+  name: deathstar-cpu-stress
+  namespace: weapon-system
+spec:
+  mode: one
+  selector:
+    labelSelectors:
+      "app": "deathstar"
+  stressors:
+    cpu:
+      workers: 2
+      load: 100
+  duration: "45s"

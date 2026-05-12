@@ -1,0 +1,22 @@
+apiVersion: chaos-mesh.org/v1alpha1
+kind: NetworkChaos
+metadata:
+  name: reactor-conduit-latency
+  namespace: weapon-system
+spec:
+  action: delay
+  mode: one
+  selector:
+    labelSelectors:
+      app: energy-allocation
+  delay:
+    latency: "500ms"
+    correlation: "100"
+    jitter: "50ms"
+  duration: "5m"
+  direction: to
+  target:
+    selector:
+      labelSelectors:
+        app: targeting-service
+    mode: all
