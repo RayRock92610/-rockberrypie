@@ -6,7 +6,13 @@
   "current_state": {
     "environment": "KesselFlow Termux Emulation",
     "sop_cadence": "24hr",
-    "storage": "/sdcard/boneyard/KesselFlow/SOPs"
+    "storage": "/sdcard/boneyard/KesselFlow/SOPs",
+    "workflow_tree": [
+      "~/kesselflow/scripts/sop_sync.sh",
+      "~/kesselflow/current_state.json",
+      "/sdcard/boneyard/KesselFlow/SOPs/master_state.json"
+    ],
+    "next_agent": "WitchHunter"
   },
   "key_decisions": [
     "Adopted daily 24hr SOP cadence for consistency",
@@ -14,11 +20,10 @@
     "Utilizing handoff.md and handoff.json for session continuity"
   ],
   "priorities": [
-    "Solidify 24hr SOP automation",
-    "Build handoff schema",
-    "Extend workflow tree",
     "Test cross-session continuity",
-    "Optimize drift detection"
+    "Integrate WitchHunter agent into the workflow tree",
+    "Monitor automated state verification via cron",
+    "Implement Git-native Markdown workflow for SOPs"
   ],
-  "resume_prompt": "Resume from last session. I have reviewed the structured handoff in `handoff.md` and `handoff.json`. Continue extending the workflow tree by introducing the next agent pillar or service endpoint. Run a test drift via `sop_sync.sh` to ensure the delta is properly logged to BoneYard history."
+  "resume_prompt": "Resume from last session. I have reviewed the structured handoff in `handoff.md` and `handoff.json`. We updated `sop_sync.sh` to enforce Git-based versioning and metadata compliance (Owner/Version) for Markdown SOPs. Continue implementing the CI/CD validations."
 }
