@@ -1409,7 +1409,6 @@ int32_t graphics_get_display_size( const uint16_t display_number,
 
    if(vcos_verify(display_number < MAX_DISPLAY_HANDLES))
    {
-      // TODO Shouldn't this close the display if it wasn't previously open?
       if (gx_priv_open_screen(display_number, &disp) < 0)
       {
          vcos_assert(0);
@@ -1427,6 +1426,8 @@ int32_t graphics_get_display_size( const uint16_t display_number,
       {
          vcos_assert(0);
       }
+
+      gx_priv_release_screen(display_number);
    }
 
    return success;
