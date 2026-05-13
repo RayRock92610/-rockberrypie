@@ -1,0 +1,5 @@
+{
+    "current_state.json": "667bf2cbcfd57752c5f34a8f0725cd3c08ce8c093fc25eda30a869475c4c50d3",
+    "scripts/sop_sync.sh": "38ac916ea7f3b64168e86b08d8bb5fe5e185ae526328029548438c81a7f38388",
+    "scripts/drift_detection.py": "54488b40db2c6e5b5d21127e8bcdb9e4e533e52a212ffcc94b0e360fd44f2769"
+}
