@@ -247,7 +247,8 @@ static int load_wavefront_obj(const char *modelname, WAVEFRONT_MODEL_T *model, s
 
       s = line;
 
-      if (s[strlen(s)-1] == 10) s[strlen(s)-1]=0;
+      size_t slen = strlen(s);
+      if (slen > 0 && s[slen-1] == 10) s[slen-1]=0;
       switch (s[0]) {
       case '#': break; // comment
       case '\r': case '\n': case '\0': break; // blank line
