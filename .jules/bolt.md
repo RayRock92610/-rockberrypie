@@ -4,3 +4,6 @@
 ## 2026-05-16 - Optimize duplicate strlen calls in models.c
 **Learning:** Legacy parsing loops in this codebase (like `load_wavefront_obj`) often contain duplicate calls to `strlen` in condition checks and statements (e.g., `if (s[strlen(s)-1] == 10) s[strlen(s)-1]=0;`). Since `strlen` is O(N), this results in unnecessary O(2N) operations.
 **Action:** Always check string parsing loops for repeated evaluations of `strlen` on the same variable, and cache the result in a local variable like `size_t slen = strlen(s);` to reduce overhead to O(N).
+## 2024-05-17 - Optimize string length operations (O(N) to O(1))
+**Learning:** Checking string emptiness using `strlen(str)` requires iterating over the entire string, resulting in O(N) overhead. When dealing with repeated string operations or fixed buffer checks, using `str[0] != '\0'` transforms this into a constant O(1) time check. Additionally, `strlen` calls inside parameters that will do pointer arithmetic repeatedly is an anti-pattern.
+**Action:** Replace `if (strlen(s))` with `if (s[0] != '\0')`. When combining string concatenations or using `strncat`, cache `strlen(s)` into a local variable rather than re-evaluating it repeatedly within logic paths.

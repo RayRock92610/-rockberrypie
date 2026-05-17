@@ -379,13 +379,14 @@ MODEL_T load_wavefront(const char *modelname, const char *texturename)
       sizeof(unsigned short)*3*MAX_VERTICES); //each face has 9 vertices
    if (!m) return 0;
 
-   if (strlen(modelname) + 5 <= sizeof modelname_obj) {
+   size_t modelname_len = strlen(modelname);
+   if (modelname_len + 5 <= sizeof modelname_obj) {
       strcpy(modelname_obj, modelname);
       strcat(modelname_obj, ".dat");
       s = load_wavefront_dat(modelname_obj, model, m);
    }
    if (s==0) {}
-   else if (strncmp(modelname + strlen(modelname) - 4, ".obj", 4) == 0) {
+   else if (modelname_len >= 4 && strncmp(modelname + modelname_len - 4, ".obj", 4) == 0) {
       #ifdef DUMP_OBJ_DAT
       int size;
       FILE *fp;
@@ -401,7 +402,7 @@ MODEL_T load_wavefront(const char *modelname, const char *texturename)
       fwrite(m, 1, size, fp);
       fclose(fp);
       #endif
-   } else if (strncmp(modelname + strlen(modelname) - 4, ".dat", 4) == 0) {
+   } else if (modelname_len >= 4 && strncmp(modelname + modelname_len - 4, ".dat", 4) == 0) {
       s = load_wavefront_dat(modelname, model, m);
    }
    if (s != 0) return 0;
