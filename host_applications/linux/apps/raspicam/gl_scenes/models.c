@@ -152,21 +152,36 @@ static void renormalise(float *verts, int numvertices)
 static void deindex(float *dst, const float *src, const unsigned short *indexes, GLsizei size, GLsizei count)
 {
    int i;
-   if (size >= 3) {
-      for (i=0; i<count; i++) {
-         int ind = size * (indexes[0]-1);
-         *dst++ = src[ind + 0];
-         *dst++ = src[ind + 1];
-         *dst++ = src[ind + 2];
-         indexes += 3;
-      }
+   // Runtime execution gate: Handle the standard 3D/XYZ or texture coordinate mapping
+   if (size == 3) {
+       for (i = 0; i < count; i++) {
+           int ind = 3 * (indexes[0] - 1);
+           *dst++ = src[ind + 0];
+           *dst++ = src[ind + 1];
+           *dst++ = src[ind + 2];
+           indexes += 3;
+       }
+   } else if (size == 2) {
+       for (i = 0; i < count; i++) {
+           int ind = 2 * (indexes[0] - 1);
+           *dst++ = src[ind + 0];
+           *dst++ = src[ind + 1];
+           indexes += 3;
+       }
    } else {
-      for (i=0; i<count; i++) {
-         int ind = size * (indexes[0]-1);
-         *dst++ = src[ind + 0];
-         *dst++ = src[ind + 1];
-         indexes += 3;
-      }
+       // Fallback path to ensure architectural reliability for non-standard sizes (e.g., 1 or 4)
+       for (i = 0; i < count; i++) {
+           int ind = size * (indexes[0] - 1);
+           *dst++ = src[ind + 0];
+           *dst++ = src[ind + 1];
+           if (size >= 3) {
+               *dst++ = src[ind + 2];
+           }
+           if (size == 4) {
+               *dst++ = src[ind + 3];
+           }
+           indexes += 3;
+       }
    }
 }
 
