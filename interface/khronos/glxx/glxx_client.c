@@ -5019,12 +5019,19 @@ GL_APICALL void GL_APIENTRY glShaderSource(GLuint shader, GLsizei count, const c
 
       int total = (int)(rpc_pad_bulk(count * 4) + rpc_pad_bulk(count * 4));
       int i;
+      /* Optimization: Cache lengths to avoid redundant O(N) strlen() calls on large shader strings.
+       * We use a stack buffer for common small arrays to avoid malloc overhead. */
+      GLint cached_len_buf[32];
+      GLint *cached_len = (count <= 32) ? cached_len_buf : khrn_platform_malloc(count * sizeof(GLint), "glShaderSource lengths");
 
       for (i = 0; i < count; i++) {
-         if (!length || length[i] < 0)
-            total += rpc_pad_bulk(string[i] ? (int)strlen(string[i]) + 1 : 1);
-         else
+         if (!length || length[i] < 0) {
+            cached_len[i] = string[i] ? (GLint)strlen(string[i]) + 1 : 1;
+            total += rpc_pad_bulk(cached_len[i]);
+         } else {
+            cached_len[i] = length[i];
             total += rpc_pad_bulk(length[i]);
+         }
       }
 
       rpc_begin(thread);
@@ -5054,7 +5061,7 @@ GL_APICALL void GL_APIENTRY glShaderSource(GLuint shader, GLsizei count, const c
          GLint len;
 
          if (!length || length[i] < 0) {
-            len = string[i] ? (GLint) strlen(string[i]) + 1 : 1;
+            len = cached_len[i];
 
 //            rpc_send_bulk(&len, sizeof(GLint)); /* todo: this now violates the semantics of rpc_send_bulk. todo: check for other violations in GL */
 
@@ -5068,9 +5075,9 @@ GL_APICALL void GL_APIENTRY glShaderSource(GLuint shader, GLsizei count, const c
          GLint len;
 
          if (!length || length[i] < 0) {
-            len = string[i] ? strlen(string[i]) + 1 : 1;
+            len = cached_len[i];
          } else
-            len = length[i];
+            len = cached_len[i];
 
          /* TODO: we currently treat null strings as empty strings
           * But we shouldn't need to deal with them (VND-116)
@@ -5078,16 +5085,27 @@ GL_APICALL void GL_APIENTRY glShaderSource(GLuint shader, GLsizei count, const c
          rpc_send_bulk(thread, string[i] ? string[i] : "", (uint32_t)len);
       }
       rpc_end(thread);
+      if (cached_len != cached_len_buf) {
+         khrn_platform_free(cached_len);
+      }
 #else
       CLIENT_THREAD_STATE_T *thread = CLIENT_GET_THREAD_STATE();
       int total = (int)(rpc_pad_bulk(count * 4) + rpc_pad_bulk(count * 4) + rpc_pad_bulk(sizeof(GLint)));
       int i;
+      /* Optimization: Cache lengths to avoid redundant O(N) strlen() calls on large shader strings.
+       * We use a stack buffer for common small arrays to avoid malloc overhead. */
+      GLint cached_len_buf[32];
+      GLint *cached_len = (count <= 32) ? cached_len_buf : khrn_platform_malloc(count * sizeof(GLint), "glShaderSource lengths");
 
-      for (i = 0; i < count; i++)
-         if (!length || length[i] < 0)
-            total += rpc_pad_bulk(string[i] ? (int)strlen(string[i]) + 1 : 1);
-         else
+      for (i = 0; i < count; i++) {
+         if (!length || length[i] < 0) {
+            cached_len[i] = string[i] ? (GLint)strlen(string[i]) + 1 : 1;
+            total += rpc_pad_bulk(cached_len[i]);
+         } else {
+            cached_len[i] = length[i];
             total += rpc_pad_bulk(length[i]);
+         }
+      }
 
       rpc_begin(thread);
 
@@ -5106,16 +5124,19 @@ GL_APICALL void GL_APIENTRY glShaderSource(GLuint shader, GLsizei count, const c
          GLint len;
 
          if (!length || length[i] < 0) {
-            len = string[i] ? (GLint) strlen(string[i]) + 1 : 1;
+            len = cached_len[i];
 
             rpc_send_bulk(thread, &len, sizeof(GLint)); /* todo: this now violates the semantics of rpc_send_bulk. todo: check for other violations in GL */
          } else
-            len = length[i];
+            len = cached_len[i];
 
          /* TODO: we currently treat null strings as empty strings
           * But we shouldn't need to deal with them (VND-116)
           */
          rpc_send_bulk(thread, string[i] ? string[i] : "", (uint32_t)len);
+      }
+      if (cached_len != cached_len_buf) {
+         khrn_platform_free(cached_len);
       }
 
       rpc_end(thread);
