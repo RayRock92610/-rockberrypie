@@ -722,6 +722,7 @@ typedef struct MMAL_COMPONENT_SUPPLIER_T
    struct MMAL_COMPONENT_SUPPLIER_T *next;
    MMAL_COMPONENT_SUPPLIER_FUNCTION_T create;
    char prefix[SUPPLIER_PREFIX_LEN];
+   size_t prefix_len;
 } MMAL_COMPONENT_SUPPLIER_T;
 
 /** List of component suppliers.
@@ -742,7 +743,7 @@ static MMAL_STATUS_T mmal_component_supplier_create(const char *name, MMAL_COMPO
    /* walk list of suppliers to see if any can create this component */
    while (supplier)
    {
-      if (strlen(supplier->prefix) == dot_size && !memcmp(supplier->prefix, name, dot_size))
+      if (supplier->prefix_len == dot_size && !memcmp(supplier->prefix, name, dot_size))
       {
          status = supplier->create(name, component);
          if (status == MMAL_SUCCESS)
@@ -765,6 +766,7 @@ void mmal_component_supplier_register(const char *prefix,
       supplier->create = create_fn;
       strncpy(supplier->prefix, prefix, SUPPLIER_PREFIX_LEN);
       supplier->prefix[SUPPLIER_PREFIX_LEN-1] = '\0';
+      supplier->prefix_len = strlen(supplier->prefix);
 
       supplier->next = suppliers;
       suppliers = supplier;
