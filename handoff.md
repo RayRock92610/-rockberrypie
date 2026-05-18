@@ -1,30 +1,49 @@
-# KesselFlow / BoneYard Session Handoff
+## KesselFlow / BoneYard Handoff
 
-## Current State
-KesselFlow is a living DevOps ecosystem running in an emulated Termux environment. It utilizes a daily 24hr SOP review cadence. Files are stored in the BoneYard (`/sdcard/boneyard/KesselFlow/SOPs/`) as markdown/JSON.
+### Current State
+KesselFlow is a living DevOps ecosystem with daily 24hr SOP reviews. State and scripts are stored locally at `$HOME/kesselflow/` and persistently synced to Termux/BoneYard at `/sdcard/boneyard/`. The workflow tree includes the primary state file (`current_state.json`), operational scripts (`sop_sync.sh`), and the structured logging endpoints in BoneYard. SOPs and state files are updated daily without overwriting history, utilizing a Truth-First Veracity Check mechanism.
 
-We implemented the 24hr SOP synchronization via `sop_sync.sh` installed as a Termux cron job to verify state drift against the canonical `master_state.json`. We also successfully performed a test drift run by modifying `current_state.json` with a new agent, 'WitchHunter'.
+**Updated Workflow Tree:**
+```text
+/home/jules/kesselflow
+├── cron/
+├── current_state.json
+└── scripts/
+    └── sop_sync.sh
 
-The workflow tree now includes:
-- `~/kesselflow/scripts/sop_sync.sh`: The main veracity checking script.
-- `~/kesselflow/current_state.json`: The local state file.
-- `/sdcard/boneyard/KesselFlow/SOPs/master_state.json`: The authoritative state.
+/sdcard/boneyard
+├── KesselFlow/
+│   └── SOPs/
+│       ├── history/
+│       │   └── delta_2026-05-18_1944.log
+│       └── master_state.json
+└── logs/
+    └── sop_delta.log
+```
 
-## Key Decisions
-- **Daily 24hr SOP Cadence**: Enforces consistency across sessions.
-- **Termux Cron Integration**: Automated state sync ensures the BoneYard remains updated without manual intervention.
-- **Structured Handoffs**: Critical for continuous execution memory (implemented via `handoff.md` and `handoff.json`).
+**SOP Delta (Example from this session):**
+```text
+Files /home/jules/kesselflow/current_state.json and /sdcard/boneyard/KesselFlow/SOPs/master_state.json differ
+```
 
-## Last Priorities (Completed/Active)
-1. Solidify 24hr SOP automation (Implemented Termux cron).
-2. Build handoff schema (`handoff.json` structured).
-3. Extend workflow tree (`sop_sync.sh` added, tested with 'WitchHunter').
-4. Test cross-session continuity.
-5. Optimize drift detection (Implemented diff check in `sop_sync.sh`).
+### Key Decisions
+- **Daily 24hr SOP cadence:** Maintained for consistency.
+- **External memory via handoff docs:** Confirmed using structured JSON (`handoff.json`) and Markdown (`handoff.md`).
+- **Structured handoffs:** Maintained for continuity across sessions.
+- **Drift Detection:** Implemented `sop_sync.sh` to perform lightweight `diff` checks between the current local state and the BoneYard master state, logging differences into a history directory rather than overwriting.
 
-## Resume Prompt
-"Resume from last session. I have reviewed the structured handoff in `handoff.md` and `handoff.json`. We extended the workflow tree by introducing the next agent pillar ('WitchHunter') and tested drift via `sop_sync.sh` to ensure the delta is properly logged to BoneYard history. Continue integrating the WitchHunter agent into the ecosystem."
+### Last Priorities
+1. Solidify 24hr SOP automation (Note: `crontab` is unavailable in the current simulated environment; an alternative scheduling daemon or environment configuration is required).
+2. Build handoff schema (`handoff.json` created and maintained).
+3. Extend workflow tree (Directories structured and verified).
+4. Test cross-session continuity (State updates and delta logging tested successfully).
+5. Optimize drift detection (`sop_sync.sh` handles this efficiently).
 
-### Recent Updates
-- Updated `sop_sync.sh` to enforce Git-based versioning and metadata compliance for Markdown SOPs.
-- Tested the new metadata drift detection and tagging validation successfully.
+### Resume Prompt
+Resume from last session. Here's the handoff for KesselFlow / BoneYard:
+
+• Current State: KesselFlow is a living DevOps ecosystem with daily 24hr SOP reviews, stored locally and mirrored in BoneYard. Workflow tree includes `current_state.json`, `sop_sync.sh`, and delta history logs. SOPs are updated daily without overwrites via drift detection.
+• Key Decisions: Daily 24hr SOP cadence, external memory via handoff docs, structured handoffs, and non-destructive drift detection logging via `sop_sync.sh`.
+• Priorities: Solidify 24hr SOP automation (find an alternative to cron in this environment), extend workflow tree further, and refine cross-session continuity testing.
+
+Continue from this as if it's continuous. Focus on the next priority: finding an alternative to cron for the 24hr SOP automation or extending the workflow tree further.
