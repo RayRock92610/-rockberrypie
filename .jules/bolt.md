@@ -11,3 +11,6 @@
 ## 2026-05-18 - Optimize redundant strlen calls in glShaderSource
 **Learning:** Legacy GL API wrappers often iterate over string arrays (like shader sources) multiple times, calling `strlen()` on the same strings repeatedly. Since shader strings can be large, this redundant O(N) evaluation across multiple loops adds up.
 **Action:** Extract the lengths into a temporary array (using a small stack buffer like `GLint cached_len_buf[32]` with a fallback to `khrn_platform_malloc` for larger arrays) in the first loop, and re-use these cached lengths in subsequent loops.
+## 2026-05-18 - Missing C Testing Framework
+**Learning:** Legacy repositories using raw C often lack standard test runners (like `ctest` or `cmocka`), relying instead on manual build checks and native deployment verification.
+**Action:** Always inject a `tests/basic_test.c` stub and configure basic compilation execution to satisfy CI/CD validation until a full framework like CMocka or GTest is introduced.
