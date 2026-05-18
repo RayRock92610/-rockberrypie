@@ -504,6 +504,7 @@ VC_CONTAINER_STATUS_T simple_reader_open( VC_CONTAINER_T *ctx )
    {
       VC_CONTAINER_TRACK_T *track = ctx->tracks[i];
       char *uri;
+      size_t track_uri_len = track->priv->module->uri ? strlen(track->priv->module->uri) : 0;
 
       track->priv->module->io = vc_container_io_open(track->priv->module->uri,
          VC_CONTAINER_IO_MODE_READ, &status);
@@ -512,7 +513,7 @@ VC_CONTAINER_STATUS_T simple_reader_open( VC_CONTAINER_T *ctx )
        * try again with that new path */
       if (!track->priv->module->io &&
           (uri = malloc(io_uri_len +
-              strlen(track->priv->module->uri) + 1)) != NULL)
+              track_uri_len + 1)) != NULL)
       {
          char *end;
 
