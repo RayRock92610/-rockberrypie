@@ -47,3 +47,5 @@ Resume from last session. Here's the handoff for KesselFlow / BoneYard:
 • Priorities: Solidify 24hr SOP automation (find an alternative to cron in this environment), extend workflow tree further, and refine cross-session continuity testing.
 
 Continue from this as if it's continuous. Focus on the next priority: finding an alternative to cron for the 24hr SOP automation or extending the workflow tree further.
+Owner: Jules
+Version: v1.1
