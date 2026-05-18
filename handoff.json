@@ -1,29 +1,42 @@
 {
   "session": {
-    "status": "handoff",
-    "timestamp": "2024-05-13T00:46:00Z"
+    "status": "active",
+    "timestamp": "2026-05-18T19:44:00Z"
   },
   "current_state": {
-    "kesselflow_status": "Active and monitoring",
-    "boneyard_status": "Mounted and logging",
-    "workflow_tree": [
-      "agents",
-      "services",
-      "scripts",
-      "endpoints"
-    ],
-    "next_agent": "Termux Cron Job / SOP Automation"
+    "version": "1.0",
+    "ecosystem": "KesselFlow",
+    "status": "living DevOps ecosystem",
+    "sop_cadence": "daily 24hr reviews",
+    "storage": {
+      "local": "$HOME/kesselflow/",
+      "boneyard": "/sdcard/boneyard/"
+    },
+    "workflow_tree": {
+      "home": [
+        "current_state.json",
+        "scripts/sop_sync.sh",
+        "cron/"
+      ],
+      "boneyard": [
+        "KesselFlow/SOPs/master_state.json",
+        "KesselFlow/SOPs/history/",
+        "logs/sop_delta.log"
+      ]
+    }
   },
   "key_decisions": [
-    "Implemented lightweight bash script for immediate state synchronization.",
-    "Added a complete Python drift detection script for file hash-based integrity checking.",
-    "Configured a 24-hour cron job for automation."
+    "Daily 24hr SOP cadence for consistency",
+    "External memory via handoff docs",
+    "Structured handoffs for continuity",
+    "Implemented sop_sync.sh for truth-first veracity checks and lightweight drift detection"
   ],
   "priorities": [
-    "Test cross-session continuity using the newly established drift logs and baseline.",
-    "Extend the workflow tree to include new operational pillars and specific agent templates.",
-    "Integrate the JSON-based drift detection into the main daily reporting cycle.",
-    "Expand `handoff.json` schema to include specific capability states."
+    "Solidify 24hr SOP automation (crontab missing in current environment, needs alternative scheduling or environment fix)",
+    "Build handoff schema (handoff.json updated)",
+    "Extend workflow tree",
+    "Test cross-session continuity",
+    "Optimize drift detection"
   ],
-  "resume_prompt": "Resume from last session. The KesselFlow SOP synchronization script (`sop_sync.sh`) and drift detection script (`drift_detection.py`) have been deployed and a 24-hour cron job has been configured to automate the process. The environment successfully logged a delta when `current_state.json` was updated. Continue by testing cross-session continuity, extending the workflow tree with new operational pillars, and integrating the python drift detection results into the daily reporting cycle. Use the current `handoff.json` as the baseline."
+  "resume_prompt": "Resume from last session. Here's the handoff for KesselFlow / BoneYard:\n\n• Current State: KesselFlow is a living DevOps ecosystem with daily 24hr SOP reviews, stored in Termux/BoneYard as markdown/JSON. Workflow tree includes scripts (sop_sync.sh) and endpoints, with SOPs updated daily without overwrites.\n• Key Decisions: Daily 24hr SOP cadence, external memory via handoff docs, structured handoffs, and drift detection via sop_sync.sh.\n• Priorities: Solidify 24hr SOP automation (cron alternative), extend workflow tree, test cross-session continuity, and optimize drift detection.\n\nContinue from this as if it's continuous. Focus on the next priority: finding an alternative to cron for the 24hr SOP automation or extending the workflow tree."
 }

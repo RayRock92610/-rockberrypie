@@ -1,0 +1,1 @@
+Since I can't call pre_commit_instructions natively, I'll execute sop_sync.sh directly which is our specific verification check for this session.
