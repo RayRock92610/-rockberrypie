@@ -11,3 +11,6 @@
 ## 2026-05-18 - Optimize redundant strlen calls in glShaderSource
 **Learning:** Legacy GL API wrappers often iterate over string arrays (like shader sources) multiple times, calling `strlen()` on the same strings repeatedly. Since shader strings can be large, this redundant O(N) evaluation across multiple loops adds up.
 **Action:** Extract the lengths into a temporary array (using a small stack buffer like `GLint cached_len_buf[32]` with a fallback to `khrn_platform_malloc` for larger arrays) in the first loop, and re-use these cached lengths in subsequent loops.
+## 2026-05-18 - Optimize Sequential strlen Evaluations
+**Learning:** Legacy parsing logic (like in `load_wavefront` in `models.c`) often evaluates `strlen(variable)` multiple times within sequential `if/else if` blocks without caching the result. When these loops run frequently or on large strings, it creates redundant O(N) operations.
+**Action:** When inspecting sequential condition blocks, check if the same pointer is passed to `strlen()` multiple times. If so, cache the length into a local variable like `size_t len = strlen(ptr);` before the conditional block (ensuring the pointer is null-checked first) to convert subsequent evaluations to O(1).

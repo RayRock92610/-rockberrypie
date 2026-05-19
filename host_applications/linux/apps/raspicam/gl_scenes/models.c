@@ -391,8 +391,13 @@ MODEL_T load_wavefront(const char *modelname, const char *texturename)
    struct wavefront_model_loading_s *m;
    int s=-1;
    char modelname_obj[128];
+   size_t modelname_len;
    model = malloc(sizeof *model);
    if (!model || !modelname) return NULL;
+
+   // Bolt: Optimization to avoid redundant O(N) evaluations of strlen
+   modelname_len = strlen(modelname);
+
    memset (model, 0, sizeof *model);
    model->texture = 0; //load_texture(texturename);
    m = allocbuffer(sizeof *m + 
@@ -400,13 +405,13 @@ MODEL_T load_wavefront(const char *modelname, const char *texturename)
       sizeof(unsigned short)*3*MAX_VERTICES); //each face has 9 vertices
    if (!m) return 0;
 
-   if (strlen(modelname) + 5 <= sizeof modelname_obj) {
+   if (modelname_len + 5 <= sizeof modelname_obj) {
       strcpy(modelname_obj, modelname);
       strcat(modelname_obj, ".dat");
       s = load_wavefront_dat(modelname_obj, model, m);
    }
    if (s==0) {}
-   else if (strncmp(modelname + strlen(modelname) - 4, ".obj", 4) == 0) {
+   else if (strncmp(modelname + modelname_len - 4, ".obj", 4) == 0) {
       #ifdef DUMP_OBJ_DAT
       int size;
       FILE *fp;
@@ -422,7 +427,7 @@ MODEL_T load_wavefront(const char *modelname, const char *texturename)
       fwrite(m, 1, size, fp);
       fclose(fp);
       #endif
-   } else if (strncmp(modelname + strlen(modelname) - 4, ".dat", 4) == 0) {
+   } else if (strncmp(modelname + modelname_len - 4, ".dat", 4) == 0) {
       s = load_wavefront_dat(modelname, model, m);
    }
    if (s != 0) return 0;
