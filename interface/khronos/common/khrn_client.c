@@ -389,17 +389,17 @@ void client_send_make_current(CLIENT_THREAD_STATE_T *thread)
 
    if (!thread->opengl.context || !thread->opengl.draw)
    {
-      vcos_log_trace("Send null make current %x %x",
-                 (unsigned int)(char *)thread->opengl.context, (unsigned int)(char *)thread->opengl.draw);
+      vcos_log_trace("Send null make current %zx %zx",
+                 (size_t)(char *)thread->opengl.context, (size_t)(char *)thread->opengl.draw);
    }
    else
    {
-      vcos_log_trace("Send make current %d[%d %s%s] %d[%d %d%s]",
-            (int)thread->opengl.context->name,
+      vcos_log_trace("Send make current %zu[%d %s%s] %zu[%d %d%s]",
+            (size_t)thread->opengl.context->name,
             thread->opengl.context->servercontext,
             thread->opengl.context->is_current ? " C" : "",
             thread->opengl.context->is_destroyed ? " D" : "",
-            (int)thread->opengl.draw->name,
+            (size_t)thread->opengl.draw->name,
             thread->opengl.draw->serverbuffer,
             thread->opengl.draw->context_binding_count,
             thread->opengl.draw->is_destroyed ? " D" : "");

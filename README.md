@@ -1,3 +1,7 @@
+# Rockberrypie VideoCore ARM Libraries
+
+This repository contains the source code for the ARM side libraries used on Raspberry Pi.
+
 # Organization: Rockberrypie / Cauldron
 
 Update
