@@ -1201,7 +1201,7 @@ static void set_ifv(
          don't store on client as it can change
       */
 
-      VGfloat glyph_origin[2];
+      VGfloat glyph_origin[2] = {0.0f, 0.0f};
       if (count != 2) { set_error(VG_ILLEGAL_ARGUMENT_ERROR); break; }
       (void)params_to_floats(
          glyph_origin,
@@ -1315,7 +1315,7 @@ static void get_ifv(
    }
    case VG_GLYPH_ORIGIN:
    {
-      VGfloat glyph_origin[2];
+      VGfloat glyph_origin[2] = {0.0f, 0.0f};
       if (count > 2) { set_error(VG_ILLEGAL_ARGUMENT_ERROR); break; }
       get_fv_server(VG_GLYPH_ORIGIN, 2, glyph_origin);
       floats_to_params(
