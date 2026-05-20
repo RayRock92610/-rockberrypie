@@ -14,3 +14,6 @@
 ## 2026-05-18 - Optimize Sequential strlen Evaluations
 **Learning:** Legacy parsing logic (like in `load_wavefront` in `models.c`) often evaluates `strlen(variable)` multiple times within sequential `if/else if` blocks without caching the result. When these loops run frequently or on large strings, it creates redundant O(N) operations.
 **Action:** When inspecting sequential condition blocks, check if the same pointer is passed to `strlen()` multiple times. If so, cache the length into a local variable like `size_t len = strlen(ptr);` before the conditional block (ensuring the pointer is null-checked first) to convert subsequent evaluations to O(1).
+## 2026-05-18 - Optimize redundant string checks and strlen evaluations
+**Learning:** Checking string emptiness using `strlen(str) > 0` is O(N) and creates an unnecessary full pass over the string. Furthermore, calling `strlen(str)` multiple times across sequential conditional blocks on the same modifying string incurs compounding O(N) operations.
+**Action:** Replace `if(strlen(str))` with O(1) checks like `if(str[0] != '\0')`. Before sequential string appends (e.g., `strncat`), cache the initial string length `size_t len = strlen(str);` and incrementally update it (`len += strlen(tmp)`) instead of recalculating `strlen(str)` repeatedly.

@@ -1639,9 +1639,11 @@ int raspicamcontrol_set_annotate(MMAL_COMPONENT_T *camera, const int settings, c
          annotate.text[MMAL_CAMERA_ANNOTATE_MAX_TEXT_LEN_V3-1] = '\0';
       }
 
+      size_t text_len = strlen(annotate.text);
+
       if (process_datetime && (settings & ANNOTATE_TIME_TEXT))
       {
-         if(strlen(annotate.text))
+         if(annotate.text[0] != '\0')
          {
             strftime(tmp, 32, " %X", &tm );
          }
@@ -1649,12 +1651,15 @@ int raspicamcontrol_set_annotate(MMAL_COMPONENT_T *camera, const int settings, c
          {
             strftime(tmp, 32, "%X", &tm );
          }
-         strncat(annotate.text, tmp, MMAL_CAMERA_ANNOTATE_MAX_TEXT_LEN_V3 - strlen(annotate.text) - 1);
+         size_t tmp_len = strlen(tmp);
+         size_t max_append = MMAL_CAMERA_ANNOTATE_MAX_TEXT_LEN_V3 - text_len - 1;
+         strncat(annotate.text, tmp, max_append);
+         text_len += (tmp_len < max_append) ? tmp_len : max_append;
       }
 
       if (process_datetime && (settings & ANNOTATE_DATE_TEXT))
       {
-         if(strlen(annotate.text))
+         if(annotate.text[0] != '\0')
          {
             strftime(tmp, 32, " %x", &tm );
          }
@@ -1662,7 +1667,10 @@ int raspicamcontrol_set_annotate(MMAL_COMPONENT_T *camera, const int settings, c
          {
             strftime(tmp, 32, "%x", &tm );
          }
-         strncat(annotate.text, tmp, MMAL_CAMERA_ANNOTATE_MAX_TEXT_LEN_V3 - strlen(annotate.text) - 1);
+         size_t tmp_len = strlen(tmp);
+         size_t max_append = MMAL_CAMERA_ANNOTATE_MAX_TEXT_LEN_V3 - text_len - 1;
+         strncat(annotate.text, tmp, max_append);
+         text_len += (tmp_len < max_append) ? tmp_len : max_append;
       }
 
       if (settings & ANNOTATE_SHUTTER_SETTINGS)
