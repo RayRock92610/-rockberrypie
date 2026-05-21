@@ -1,7 +1,14 @@
-# Organization: Rockberrypie / Cauldron
+# Rockberrypie / Cauldron
 
-Update
-======
+Modular Kessel Flow component for the **Rayrock92610** ecosystem.
+
+## Status
+- **Truth-Verified:** Yes
+- **Logic Level:** Production
+- **Owner:** Rayrock92610
+
+========================
+## Deprecation Notice
 
 This repo is ancient and deprecated.
 

@@ -1,7 +1,7 @@
 {
   "session": {
     "status": "active",
-    "timestamp": "2026-05-18T19:44:00Z"
+    "timestamp": "2026-05-21T13:15:00Z"
   },
   "current_state": {
     "version": "1.0",
@@ -16,7 +16,7 @@
       "home": [
         "current_state.json",
         "scripts/sop_sync.sh",
-        "cron/"
+        "systemd/"
       ],
       "boneyard": [
         "KesselFlow/SOPs/master_state.json",
@@ -29,14 +29,13 @@
     "Daily 24hr SOP cadence for consistency",
     "External memory via handoff docs",
     "Structured handoffs for continuity",
-    "Implemented sop_sync.sh for truth-first veracity checks and lightweight drift detection"
+    "Implemented sop_sync.sh for truth-first veracity checks and lightweight drift detection",
+    "Implemented systemd timer for 24hr automation because cron is missing in current Termux/Ubuntu environment"
   ],
   "priorities": [
-    "Solidify 24hr SOP automation (crontab missing in current environment, needs alternative scheduling or environment fix)",
-    "Build handoff schema (handoff.json updated)",
+    "Test cross-session continuity with systemd timer",
     "Extend workflow tree",
-    "Test cross-session continuity",
-    "Optimize drift detection"
+    "Optimize drift detection further"
   ],
-  "resume_prompt": "Resume from last session. Here's the handoff for KesselFlow / BoneYard:\n\n• Current State: KesselFlow is a living DevOps ecosystem with daily 24hr SOP reviews, stored in Termux/BoneYard as markdown/JSON. Workflow tree includes scripts (sop_sync.sh) and endpoints, with SOPs updated daily without overwrites.\n• Key Decisions: Daily 24hr SOP cadence, external memory via handoff docs, structured handoffs, and drift detection via sop_sync.sh.\n• Priorities: Solidify 24hr SOP automation (cron alternative), extend workflow tree, test cross-session continuity, and optimize drift detection.\n\nContinue from this as if it's continuous. Focus on the next priority: finding an alternative to cron for the 24hr SOP automation or extending the workflow tree."
+  "resume_prompt": "Resume from last session. Here's the handoff for KesselFlow / BoneYard:\n\n• Current State: KesselFlow is a living DevOps ecosystem with daily 24hr SOP reviews, stored in Termux/BoneYard as markdown/JSON. Workflow tree includes scripts (sop_sync.sh) and endpoints, with SOPs updated daily without overwrites. Systemd timers replace cron for scheduling.\n• Key Decisions: Daily 24hr SOP cadence, external memory via handoff docs, structured handoffs, drift detection via sop_sync.sh, and systemd for scheduling.\n• Priorities: Test cross-session continuity with systemd timer, extend workflow tree, and optimize drift detection further.\n\nContinue from this as if it's continuous. Focus on the next priority: extending the workflow tree or optimizing drift detection."
 }
