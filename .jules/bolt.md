@@ -14,3 +14,6 @@
 ## 2026-05-18 - Optimize Sequential strlen Evaluations
 **Learning:** Legacy parsing logic (like in `load_wavefront` in `models.c`) often evaluates `strlen(variable)` multiple times within sequential `if/else if` blocks without caching the result. When these loops run frequently or on large strings, it creates redundant O(N) operations.
 **Action:** When inspecting sequential condition blocks, check if the same pointer is passed to `strlen()` multiple times. If so, cache the length into a local variable like `size_t len = strlen(ptr);` before the conditional block (ensuring the pointer is null-checked first) to convert subsequent evaluations to O(1).
+## 2026-05-21 - [Jules: Architecture Bottleneck Logging]
+**Learning:** Found pre-existing `vcos_static_assert` failure and architectural casting bottlenecks (`-Wpointer-to-int-cast`) when running the native build (`./buildme --native`) on a 64-bit environment, particularly concerning 64-to-32 bit architectural casting and truncation errors in `khrn_client.c` where pointers are being directly cast to `unsigned int`.
+**Action:** Document these critical build warnings correctly to `bolt.md` during autonomous recon per the operational boundary requirements for the Senior Repo SRE role.

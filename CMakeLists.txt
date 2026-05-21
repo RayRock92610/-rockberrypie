@@ -130,3 +130,5 @@ if(PKG_CONFIG_FOUND)
 endif()
 # Remove cache entry, if one added by command line
 unset(KHRONOS_EGL_PLATFORM CACHE)
+enable_testing()
+add_subdirectory(tests)
