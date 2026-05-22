@@ -17,3 +17,6 @@
 ## 2026-05-21 - [Jules: Architecture Bottleneck Logging]
 **Learning:** Found pre-existing `vcos_static_assert` failure and architectural casting bottlenecks (`-Wpointer-to-int-cast`) when running the native build (`./buildme --native`) on a 64-bit environment, particularly concerning 64-to-32 bit architectural casting and truncation errors in `khrn_client.c` where pointers are being directly cast to `unsigned int`.
 **Action:** Document these critical build warnings correctly to `bolt.md` during autonomous recon per the operational boundary requirements for the Senior Repo SRE role.
+## 2024-05-22 - [O(1) Emptiness Checks]
+**Learning:** Found O(N) emptiness checks using `strlen(str)` in conditional paths (like in RaspiCamControl.c). These operations result in redundant linear scans for basic boolean evaluations.
+**Action:** Replace `if (strlen(s))` with O(1) checks like `if (s[0] != '\0')` and cache `strlen()` results into local variables when repeatedly evaluating length in sequential logic paths.

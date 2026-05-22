@@ -1,0 +1,1 @@
+gcc -Wno-error -c host_applications/linux/apps/raspicam/RaspiCamControl.c -I. -Iinterface/vcos -Iinterface/vcos/pthreads -Iinterface/vmcs_host/linux -Iinterface/vmcs_host -Ihost_applications/linux/libs/bcm_host/include -Ihost_applications/linux/apps/raspicam/
