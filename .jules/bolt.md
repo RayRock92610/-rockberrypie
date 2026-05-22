@@ -17,3 +17,6 @@
 ## 2026-05-21 - [Jules: Architecture Bottleneck Logging]
 **Learning:** Found pre-existing `vcos_static_assert` failure and architectural casting bottlenecks (`-Wpointer-to-int-cast`) when running the native build (`./buildme --native`) on a 64-bit environment, particularly concerning 64-to-32 bit architectural casting and truncation errors in `khrn_client.c` where pointers are being directly cast to `unsigned int`.
 **Action:** Document these critical build warnings correctly to `bolt.md` during autonomous recon per the operational boundary requirements for the Senior Repo SRE role.
+## 2026-05-22 - [Jules: Architecture Bottleneck Logging - Fallthrough and Enum Mismatches]
+**Learning:** Legacy containers code and vchiq lib have fallthrough warnings in switch statements, enum-integer mismatches in declarations/definitions, and redundant struct sizing assertions.
+**Action:** Always verify build warnings when porting legacy C code to 64-bit systems.
