@@ -20,3 +20,6 @@
 ## 2024-05-22 - [O(1) Emptiness Checks]
 **Learning:** Found O(N) emptiness checks using `strlen(str)` in conditional paths (like in RaspiCamControl.c). These operations result in redundant linear scans for basic boolean evaluations.
 **Action:** Replace `if (strlen(s))` with O(1) checks like `if (s[0] != '\0')` and cache `strlen()` results into local variables when repeatedly evaluating length in sequential logic paths.
+## 2026-05-25 - [Jules: Architecture Bottleneck Logging - Negative Array Size Assertions]
+**Learning:** Found multiple build-breaking `vcos_static_assert` errors during the 64-bit native build because `sizeof` comparisons (e.g., `sizeof(EGLConfig) == 4`) were evaluating to false, resulting in negative array sizes. Assembly compilation (`khrn_int_hash_asm.s`) also failed fundamentally due to 32-bit specific ARM assembly instructions being incompatible with the 64-bit environment.
+**Action:** Removed hard-coded 32-bit type size assertions and excluded the 32-bit specific assembly files from the 64-bit build to restore compilation compatibility.
