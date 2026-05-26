@@ -1201,7 +1201,7 @@ static void set_ifv(
          don't store on client as it can change
       */
 
-      VGfloat glyph_origin[2];
+      VGfloat glyph_origin[2] = {0, 0};
       if (count != 2) { set_error(VG_ILLEGAL_ARGUMENT_ERROR); break; }
       (void)params_to_floats(
          glyph_origin,
