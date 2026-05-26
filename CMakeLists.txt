@@ -131,4 +131,5 @@ endif()
 # Remove cache entry, if one added by command line
 unset(KHRONOS_EGL_PLATFORM CACHE)
 enable_testing()
+add_subdirectory(host_applications/linux/apps/hello_pi/libs/ilclient)
 add_subdirectory(tests)
