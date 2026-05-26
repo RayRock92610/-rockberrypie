@@ -109,7 +109,6 @@ static OMX_ERRORTYPE mmalomx_parameter_set_xlat(MMALOMX_COMPONENT_T *component,
       return OMX_ErrorNotImplemented;
    }
 
-   // FIXME: check size of mmal_generic is sufficient
    if (sizeof(mmal_generic) < xlat->mmal_size)
       return OMX_ErrorBadParameter;
 
@@ -202,7 +201,6 @@ static OMX_ERRORTYPE mmalomx_parameter_get_xlat(MMALOMX_COMPONENT_T *component,
       return OMX_ErrorNotImplemented;
    }
 
-   // FIXME: check size of mmal_generic is sufficient
    if (sizeof(mmal_generic) < xlat->mmal_size)
       return OMX_ErrorBadParameter;
 
