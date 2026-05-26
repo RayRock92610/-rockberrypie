@@ -2608,7 +2608,7 @@ void dtoverlay_init_map(const char *overlay_dir, const char *compatible,
 
     /* Handle the possibility that the supplied directory may or may not end
        with a slash */
-    sprintf(map_file, "%s%soverlay_map.dtb", overlay_dir,
+    snprintf(map_file, sizeof(map_file), "%s%soverlay_map.dtb", overlay_dir,
             (!dir_len || overlay_dir[dir_len - 1] != '/') ? "/" : "");
     fp = fopen(map_file, "rb");
     dtoverlay_init_map_from_fp(fp, compatible, compatible_len);
