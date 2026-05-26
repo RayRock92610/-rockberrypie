@@ -621,8 +621,7 @@ EGLAPI EGLSurface EGLAPIENTRY eglCreateWindowSurface(EGLDisplay dpy, EGLConfig c
             }
 
             if (width <= 0 || width > EGL_CONFIG_MAX_WIDTH || height <= 0 || height > EGL_CONFIG_MAX_HEIGHT) {
-               /* TODO: Maybe EGL_BAD_ALLOC might be more appropriate? */
-               thread->error = EGL_BAD_NATIVE_WINDOW;
+               thread->error = EGL_BAD_ALLOC;
                result = EGL_NO_SURFACE;
             } else {
                surface = egl_surface_create(
@@ -984,8 +983,7 @@ EGLAPI EGLSurface EGLAPIENTRY eglCreatePixmapSurface(EGLDisplay dpy, EGLConfig c
                } else
 #endif
                if (image.width > EGL_CONFIG_MAX_WIDTH || image.height > EGL_CONFIG_MAX_HEIGHT) {
-                  /* Maybe EGL_BAD_ALLOC might be more appropriate? */
-                  thread->error = EGL_BAD_NATIVE_WINDOW;
+                  thread->error = EGL_BAD_ALLOC;
                   result = EGL_NO_SURFACE;
                } else if (!egl_config_match_pixmap_info((int)(size_t)config - 1, &image) ||
                   !platform_match_pixmap_api_support(pixmap, egl_config_get_api_support((int)(size_t)config - 1))
