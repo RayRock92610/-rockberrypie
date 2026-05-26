@@ -1,5 +1,13 @@
 #!/data/data/com.termux/files/usr/bin/bash
+# Kessel Memory Configuration
+export KESSEL_ENV="sandbox"
+export KESSEL_MEMORY_DIR="/app/.kessel_memory"
+export LOG_ROTATION_INTERVAL="30m"
+export READ_ONLY_MODE="true"
+export APP_DEBUG="true"
+
 echo "🛰️ Starting Kessel-Flow Core..."
+python3 "$(dirname "$0")/verify_kessel_context.py" || exit 1
 
 # 1. Trigger Handshake
 if [ -f "./bin/kf_node_handshake.sh" ]; then
