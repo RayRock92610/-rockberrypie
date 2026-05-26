@@ -158,6 +158,7 @@ extern void glxx_set_error_api(uint32_t api, GLenum error);
 void glintAttribPointer (uint32_t api, uint32_t indx, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const GLvoid *ptr);
 void glintAttrib (uint32_t api, uint32_t indx, float x, float y, float z, float w);
 void glintColor(float red, float green, float blue, float alpha);
+bool is_aligned(GLenum type, size_t value);
 void glintAttribEnable(uint32_t api, uint32_t indx, bool enabled);
 void *glintAttribGetPointer(uint32_t api, uint32_t indx);
 
