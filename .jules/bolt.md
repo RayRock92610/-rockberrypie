@@ -23,3 +23,6 @@
 ## 2026-05-25 - [Jules: Architecture Bottleneck Logging - Negative Array Size Assertions]
 **Learning:** Found multiple build-breaking `vcos_static_assert` errors during the 64-bit native build because `sizeof` comparisons (e.g., `sizeof(EGLConfig) == 4`) were evaluating to false, resulting in negative array sizes. Assembly compilation (`khrn_int_hash_asm.s`) also failed fundamentally due to 32-bit specific ARM assembly instructions being incompatible with the 64-bit environment.
 **Action:** Removed hard-coded 32-bit type size assertions and excluded the 32-bit specific assembly files from the 64-bit build to restore compilation compatibility.
+## 2026-05-26 - [Jules: Architecture Bottleneck Logging - Pointer Truncation Warnings]
+**Learning:** Legacy 32-bit graphical wrapper logic, specifically in `interface/khronos/common/khrn_client.c`, truncates 64-bit pointers when explicitly casting `(void *)` or `(char *)` to `(unsigned int)` or formatting with `%x` inside log traces. This leads to `-Wpointer-to-int-cast` errors during native 64-bit builds.
+**Action:** Replace `(unsigned int)` casts on pointers with `(size_t)` casts and update standard output formatting string sequences to match (`%zx` or `%zu`) to allow for dynamic pointer sizing without architectural conflation.
