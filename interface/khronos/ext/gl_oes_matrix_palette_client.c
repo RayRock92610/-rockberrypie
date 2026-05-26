@@ -79,27 +79,7 @@ static GLboolean is_matrix_index_type(GLenum type) {
 }
 
 static GLboolean is_matrix_palette_size(GLint size) {
-   /* TODO: Should size 0 be allowed or not? */
    return size > 0 && size <= GL11_CONFIG_MAX_VERTEX_UNITS_OES;
-}
-
-/* TODO: This is copied from glxx_client.c. Find a better method */
-static GLboolean is_aligned( GLenum type, size_t value)
-{
-   switch (type) {
-   case GL_BYTE:
-   case GL_UNSIGNED_BYTE:
-      return GL_TRUE;
-   case GL_SHORT:
-   case GL_UNSIGNED_SHORT:
-      return (value & 1) == 0;
-   case GL_FIXED:
-   case GL_FLOAT:
-      return (value & 3) == 0;
-   default:
-      UNREACHABLE();
-      return GL_FALSE;
-   }
 }
 
 GL_API void GL_APIENTRY glMatrixIndexPointerOES(GLint size, GLenum type, GLsizei stride, const GLvoid *pointer)

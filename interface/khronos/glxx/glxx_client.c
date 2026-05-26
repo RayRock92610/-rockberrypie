@@ -646,7 +646,7 @@ static bool is_color_type(GLenum type)
           type == GL_FLOAT;
 }
 
-static bool is_aligned( GLenum type, size_t value)
+bool is_aligned( GLenum type, size_t value)
 {
    switch (type) {
    case GL_BYTE:
