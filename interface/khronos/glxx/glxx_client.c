@@ -1180,7 +1180,6 @@ static void draw_arrays_or_elements(CLIENT_THREAD_STATE_T *thread, GLXX_CLIENT_S
       {
          cache_info.send_any = 1;
 
-         /* TODO: what should we do if people give us null pointers? */
          if (state->attrib[i].pointer == NULL) {
             glxx_set_error(state, GL_INVALID_OPERATION);
             return;
