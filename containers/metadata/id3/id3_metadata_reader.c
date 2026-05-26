@@ -211,9 +211,15 @@ static VC_CONTAINER_STATUS_T id3_read_id3v2_frame( VC_CONTAINER_T *p_ctx,
          break;
       case 1: /* UTF-16 with BOM */
          if(frame_size < 2) return VC_CONTAINER_ERROR_CORRUPTED;
-         SKIP_U16(p_ctx, "ID3v2 text encoding BOM"); /* FIXME: Check BOM, 0xFFFE vs 0xFEFFF */
-         frame_size -= 2;
-         charset = "UTF16-LE";
+         {
+            uint8_t bom0 = READ_U8(p_ctx, "ID3v2 text encoding BOM (byte 1)");
+            uint8_t bom1 = READ_U8(p_ctx, "ID3v2 text encoding BOM (byte 2)");
+            frame_size -= 2;
+            if (bom0 == 0xFE && bom1 == 0xFF)
+               charset = "UTF16-BE";
+            else
+               charset = "UTF16-LE";
+         }
          break;
       case 2: /* UTF-16BE */
          charset = "UTF16-BE";
