@@ -125,8 +125,8 @@ static uint32_t hash(const void *data, int len, int sig)
 {
    int hash;
 
-//   if (len > 256)     // TODO: turn this on later
-//      len = 256;
+   if (len > 256)
+      len = 256;
 
    if (!((size_t)data & 3) && !(len & 3))
       hash = khrn_hashword((uint32_t *)data, len >> 2, 0);
