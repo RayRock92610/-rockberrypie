@@ -999,21 +999,20 @@ int raspicamcontrol_get_all_parameters(MMAL_COMPONENT_T *camera, RASPICAM_CAMERA
    if (!camera || !params)
       return 1;
 
-   /* TODO : Write these get functions
-      params->sharpness = raspicamcontrol_get_sharpness(camera);
-      params->contrast = raspicamcontrol_get_contrast(camera);
-      params->brightness = raspicamcontrol_get_brightness(camera);
-      params->saturation = raspicamcontrol_get_saturation(camera);
-      params->ISO = raspicamcontrol_get_ISO(camera);
-      params->videoStabilisation = raspicamcontrol_get_video_stabilisation(camera);
-      params->exposureCompensation = raspicamcontrol_get_exposure_compensation(camera);
-      params->exposureMode = raspicamcontrol_get_exposure_mode(camera);
-      params->flickerAvoidMode = raspicamcontrol_get_flicker_avoid_mode(camera);
-      params->awbMode = raspicamcontrol_get_awb_mode(camera);
-      params->imageEffect = raspicamcontrol_get_image_effect(camera);
-      params->colourEffects = raspicamcontrol_get_colour_effect(camera);
-      params->thumbnailConfig = raspicamcontrol_get_thumbnail_config(camera);
-   */
+   params->sharpness = raspicamcontrol_get_sharpness(camera);
+   params->contrast = raspicamcontrol_get_contrast(camera);
+   params->brightness = raspicamcontrol_get_brightness(camera);
+   params->saturation = raspicamcontrol_get_saturation(camera);
+   params->ISO = raspicamcontrol_get_ISO(camera);
+   params->videoStabilisation = raspicamcontrol_get_video_stabilisation(camera);
+   params->exposureCompensation = raspicamcontrol_get_exposure_compensation(camera);
+   params->exposureMode = raspicamcontrol_get_exposure_mode(camera);
+   params->flickerAvoidMode = raspicamcontrol_get_flicker_avoid_mode(camera);
+   params->awbMode = raspicamcontrol_get_awb_mode(camera);
+   params->imageEffect = raspicamcontrol_get_imageFX(camera);
+   params->colourEffects = raspicamcontrol_get_colourFX(camera);
+   // params->thumbnailConfig = raspicamcontrol_get_thumbnail_parameters(camera);
+   params->exposureMeterMode = raspicamcontrol_get_metering_mode(camera);
    return 0;
 }
 
@@ -1843,4 +1842,139 @@ void default_camera_control_callback(MMAL_PORT_T *port, MMAL_BUFFER_HEADER_T *bu
    }
 
    mmal_buffer_header_release(buffer);
+}
+
+int raspicamcontrol_get_saturation(MMAL_COMPONENT_T *camera)
+{
+   MMAL_RATIONAL_T value = {0, 100};
+   if (!camera)
+      return 0;
+   mmal_port_parameter_get_rational(camera->control, MMAL_PARAMETER_SATURATION, &value);
+   return value.num;
+}
+
+int raspicamcontrol_get_sharpness(MMAL_COMPONENT_T *camera)
+{
+   MMAL_RATIONAL_T value = {0, 100};
+   if (!camera)
+      return 0;
+   mmal_port_parameter_get_rational(camera->control, MMAL_PARAMETER_SHARPNESS, &value);
+   return value.num;
+}
+
+int raspicamcontrol_get_contrast(MMAL_COMPONENT_T *camera)
+{
+   MMAL_RATIONAL_T value = {0, 100};
+   if (!camera)
+      return 0;
+   mmal_port_parameter_get_rational(camera->control, MMAL_PARAMETER_CONTRAST, &value);
+   return value.num;
+}
+
+int raspicamcontrol_get_brightness(MMAL_COMPONENT_T *camera)
+{
+   MMAL_RATIONAL_T value = {50, 100};
+   if (!camera)
+      return 50;
+   mmal_port_parameter_get_rational(camera->control, MMAL_PARAMETER_BRIGHTNESS, &value);
+   return value.num;
+}
+
+int raspicamcontrol_get_ISO(MMAL_COMPONENT_T *camera)
+{
+   uint32_t value = 0;
+   if (!camera)
+      return 0;
+   mmal_port_parameter_get_uint32(camera->control, MMAL_PARAMETER_ISO, &value);
+   return value;
+}
+
+int raspicamcontrol_get_video_stabilisation(MMAL_COMPONENT_T *camera)
+{
+   MMAL_BOOL_T value = MMAL_FALSE;
+   if (!camera)
+      return 0;
+   mmal_port_parameter_get_boolean(camera->control, MMAL_PARAMETER_VIDEO_STABILISATION, &value);
+   return value;
+}
+
+int raspicamcontrol_get_exposure_compensation(MMAL_COMPONENT_T *camera)
+{
+   int32_t value = 0;
+   if (!camera)
+      return 0;
+   mmal_port_parameter_get_int32(camera->control, MMAL_PARAMETER_EXPOSURE_COMP, &value);
+   return value;
+}
+
+MMAL_PARAM_EXPOSUREMODE_T raspicamcontrol_get_exposure_mode(MMAL_COMPONENT_T *camera)
+{
+   MMAL_PARAMETER_EXPOSUREMODE_T exp_mode = {{MMAL_PARAMETER_EXPOSURE_MODE,sizeof(exp_mode)}, MMAL_PARAM_EXPOSUREMODE_AUTO};
+   if (!camera)
+      return MMAL_PARAM_EXPOSUREMODE_AUTO;
+   mmal_port_parameter_get(camera->control, &exp_mode.hdr);
+   return exp_mode.value;
+}
+
+MMAL_PARAM_FLICKERAVOID_T raspicamcontrol_get_flicker_avoid_mode(MMAL_COMPONENT_T *camera)
+{
+   MMAL_PARAMETER_FLICKERAVOID_T fl_mode = {{MMAL_PARAMETER_FLICKER_AVOID,sizeof(fl_mode)}, MMAL_PARAM_FLICKERAVOID_OFF};
+   if (!camera)
+      return MMAL_PARAM_FLICKERAVOID_OFF;
+   mmal_port_parameter_get(camera->control, &fl_mode.hdr);
+   return fl_mode.value;
+}
+
+MMAL_PARAM_AWBMODE_T raspicamcontrol_get_awb_mode(MMAL_COMPONENT_T *camera)
+{
+   MMAL_PARAMETER_AWBMODE_T param = {{MMAL_PARAMETER_AWB_MODE,sizeof(param)}, MMAL_PARAM_AWBMODE_AUTO};
+   if (!camera)
+      return MMAL_PARAM_AWBMODE_AUTO;
+   mmal_port_parameter_get(camera->control, &param.hdr);
+   return param.value;
+}
+
+MMAL_PARAM_IMAGEFX_T raspicamcontrol_get_imageFX(MMAL_COMPONENT_T *camera)
+{
+   MMAL_PARAMETER_IMAGEFX_T imgFX = {{MMAL_PARAMETER_IMAGE_EFFECT,sizeof(imgFX)}, MMAL_PARAM_IMAGEFX_NONE};
+   if (!camera)
+      return MMAL_PARAM_IMAGEFX_NONE;
+   mmal_port_parameter_get(camera->control, &imgFX.hdr);
+   return imgFX.value;
+}
+
+MMAL_PARAM_COLOURFX_T raspicamcontrol_get_colourFX(MMAL_COMPONENT_T *camera)
+{
+   MMAL_PARAMETER_COLOURFX_T colfx = {{MMAL_PARAMETER_COLOUR_EFFECT,sizeof(colfx)}, 0, 0, 0};
+   MMAL_PARAM_COLOURFX_T ret = {0, 0, 0};
+   if (!camera)
+      return ret;
+   mmal_port_parameter_get(camera->control, &colfx.hdr);
+   ret.enable = colfx.enable;
+   ret.u = colfx.u;
+   ret.v = colfx.v;
+   return ret;
+}
+
+MMAL_PARAM_THUMBNAIL_CONFIG_T raspicamcontrol_get_thumbnail_parameters(MMAL_COMPONENT_T *camera)
+{
+   MMAL_PARAMETER_THUMBNAIL_CONFIG_T thumb = {{MMAL_PARAMETER_THUMBNAIL_CONFIGURATION,sizeof(thumb)}, 0, 0, 0, 0};
+   MMAL_PARAM_THUMBNAIL_CONFIG_T ret = {0, 0, 0, 0};
+   if (!camera)
+      return ret;
+   mmal_port_parameter_get(camera->control, &thumb.hdr);
+   ret.enable = thumb.enable;
+   ret.width = thumb.width;
+   ret.height = thumb.height;
+   ret.quality = thumb.quality;
+   return ret;
+}
+
+MMAL_PARAM_EXPOSUREMETERINGMODE_T raspicamcontrol_get_metering_mode(MMAL_COMPONENT_T *camera)
+{
+   MMAL_PARAMETER_EXPOSUREMETERINGMODE_T meter_mode = {{MMAL_PARAMETER_EXP_METERING_MODE,sizeof(meter_mode)}, MMAL_PARAM_EXPOSUREMETERINGMODE_AVERAGE};
+   if (!camera)
+      return MMAL_PARAM_EXPOSUREMETERINGMODE_AVERAGE;
+   mmal_port_parameter_get(camera->control, &meter_mode.hdr);
+   return meter_mode.value;
 }
