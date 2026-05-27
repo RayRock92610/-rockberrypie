@@ -268,7 +268,7 @@ static VC_CONTAINER_STATUS_T avi_write_stream_header_chunk(VC_CONTAINER_T *p_ctx
    WRITE_U32(p_ctx, 56, "Chunk Size");
 
    if (!track->is_enabled)
-      flags = 0; /* AVISF_DISABLED; FIXME: write_media should set this correctly! */
+      flags = AVISF_DISABLED;
    else
       flags = 0;
 
