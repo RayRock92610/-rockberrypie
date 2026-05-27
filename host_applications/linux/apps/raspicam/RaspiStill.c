@@ -528,7 +528,8 @@ static int parse_cmdline(int argc, const char **argv, RASPISTILL_STATE *state)
          {
             if (sscanf(argv[i + 1], "%u", &state->demoInterval) == 1)
             {
-               // TODO : What limits do we need for timeout?
+               if (state->demoInterval == 0)
+                  state->demoInterval = 250; // ms
                state->demoMode = 1;
                i++;
             }
