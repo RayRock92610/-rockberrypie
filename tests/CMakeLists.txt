@@ -13,7 +13,7 @@ target_include_directories(test_ilclient PRIVATE
     ${CMAKE_SOURCE_DIR}/interface/vmcs_host
     ${CMAKE_SOURCE_DIR}/host_applications/linux/libs/bcm_host/include
 )
-target_link_libraries(test_ilclient ilclient vcos bcm_host)
+target_link_libraries(test_ilclient -Wl,--wrap=vcos_malloc ilclient vcos bcm_host)
 
 # Add a mock object or source file that provides the missing OMX/ILCS symbols
 # that libilclient.a needs (from ilcore.c and others)
