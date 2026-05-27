@@ -112,6 +112,8 @@ const int MAX_BITRATE_MJPEG = 25000000; // 25Mbits/s
 const int MAX_BITRATE_LEVEL4 = 25000000; // 25Mbits/s
 const int MAX_BITRATE_LEVEL42 = 62500000; // 62.5Mbits/s
 
+#define MAX_FRAMERATE 250 // Max framerate allowed
+
 /// Interval at which we check for an failure abort during capture
 const int ABORT_INTERVAL = 100; // ms
 
@@ -655,7 +657,11 @@ static int parse_cmdline(int argc, const char **argv, RASPIVID_STATE *state)
       {
          if (sscanf(argv[i + 1], "%u", &state->framerate) == 1)
          {
-            // TODO : What limits do we need for fps 1 - 30 - 120??
+            if (state->framerate > MAX_FRAMERATE)
+            {
+               fprintf(stderr, "Framerate too high: Reducing to %d fps\n", MAX_FRAMERATE);
+               state->framerate = MAX_FRAMERATE;
+            }
             i++;
          }
          else
