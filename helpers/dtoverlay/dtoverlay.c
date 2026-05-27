@@ -1857,7 +1857,8 @@ int dtoverlay_foreach_override_target(DTBLOB_T *dtb, const char *override_name,
       int override_type;
       int node_off = 0;
 
-      strcpy(target_value, override_value);
+      strncpy(target_value, override_value, sizeof(target_value) - 1);
+      target_value[sizeof(target_value) - 1] = '\0';
       override_type = dtoverlay_extract_override(override_name,
                                                  target_value, sizeof(target_value),
                                                  &target_phandle,
