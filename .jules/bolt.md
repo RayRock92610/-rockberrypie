@@ -1,3 +1,3 @@
-## 2026-05-27 - [Add channel-order support in RTP]
-**Learning:** For adding SDP parameter parsing in RTP (like channel-order), parsing logic can map standard RFC parameters into Broadcom specific audio struct properties without needing a dedicated function pointer. Using generic string parsing routines (e.g. `rtp_get_parameter_string`) makes it flexible.
-**Action:** When adding parameter parsers, always add a generic fetching function instead of casting integers.
+## 2025-01-26 - [Code Health Improvement: Refactoring Monolithic Setup Logic]
+**Learning:** In the VideoCore host applications (specifically the OpenMAX IL testing harnesses), `video_decode_test` routinely combined component initialization, EGL tunneling, clock adjustments, and decoding execution loops into massive 300+ line blocks. Modularizing `setup_components`, `setup_clock`, and `setup_video_decode_port` significantly drops cyclomatic complexity, allowing independent validation and easier downstream reusability of Broadcom VCHI components.
+**Action:** When working on similar C files involving OpenMAX and EGL rendering, extract the tunnel setup and component boilerplate into distinct initialization logic.

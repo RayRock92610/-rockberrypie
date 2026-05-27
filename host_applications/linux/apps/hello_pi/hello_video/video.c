@@ -34,10 +34,96 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "bcm_host.h"
 #include "ilclient.h"
 
-static int video_decode_test(char *filename)
+static int setup_components(ILCLIENT_T *client, COMPONENT_T **video_decode, COMPONENT_T **video_scheduler, COMPONENT_T **video_render, COMPONENT_T **clock, COMPONENT_T **list)
+{
+   int status = 0;
+
+   // create video_decode
+   if(ilclient_create_component(client, video_decode, "video_decode", ILCLIENT_DISABLE_ALL_PORTS | ILCLIENT_ENABLE_INPUT_BUFFERS) != 0)
+      status = -14;
+   list[0] = *video_decode;
+
+   // create video_render
+   if(status == 0 && ilclient_create_component(client, video_render, "video_render", ILCLIENT_DISABLE_ALL_PORTS) != 0)
+      status = -14;
+   list[1] = *video_render;
+
+   // create clock
+   if(status == 0 && ilclient_create_component(client, clock, "clock", ILCLIENT_DISABLE_ALL_PORTS) != 0)
+      status = -14;
+   list[2] = *clock;
+
+   // create video_scheduler
+   if(status == 0 && ilclient_create_component(client, video_scheduler, "video_scheduler", ILCLIENT_DISABLE_ALL_PORTS) != 0)
+      status = -14;
+   list[3] = *video_scheduler;
+
+   return status;
+}
+
+static int setup_clock(COMPONENT_T *clock)
+{
+   OMX_TIME_CONFIG_CLOCKSTATETYPE cstate;
+   memset(&cstate, 0, sizeof(cstate));
+   cstate.nSize = sizeof(cstate);
+   cstate.nVersion.nVersion = OMX_VERSION;
+   cstate.eState = OMX_TIME_ClockStateWaitingForStartTime;
+   cstate.nWaitMask = 1;
+   if(clock != NULL && OMX_SetParameter(ILC_GET_HANDLE(clock), OMX_IndexConfigTimeClockState, &cstate) != OMX_ErrorNone)
+      return -13;
+   return 0;
+}
+
+static int setup_video_decode_port(COMPONENT_T *video_decode)
 {
    OMX_VIDEO_PARAM_PORTFORMATTYPE format;
-   OMX_TIME_CONFIG_CLOCKSTATETYPE cstate;
+   memset(&format, 0, sizeof(OMX_VIDEO_PARAM_PORTFORMATTYPE));
+   format.nSize = sizeof(OMX_VIDEO_PARAM_PORTFORMATTYPE);
+   format.nVersion.nVersion = OMX_VERSION;
+   format.nPortIndex = 130;
+   format.eCompressionFormat = OMX_VIDEO_CodingAVC;
+
+   if(OMX_SetParameter(ILC_GET_HANDLE(video_decode), OMX_IndexParamVideoPortFormat, &format) == OMX_ErrorNone &&
+      ilclient_enable_port_buffers(video_decode, 130, NULL, NULL, NULL) == 0)
+      return 0;
+   return -1;
+}
+
+static int handle_port_settings_changed(COMPONENT_T *video_scheduler, COMPONENT_T *video_render, TUNNEL_T *tunnel)
+{
+   if(ilclient_setup_tunnel(tunnel, 0, 0) != 0)
+      return -7;
+
+   ilclient_change_component_state(video_scheduler, OMX_StateExecuting);
+
+   // now setup tunnel to video_render
+   if(ilclient_setup_tunnel(tunnel+1, 0, 1000) != 0)
+      return -12;
+
+   ilclient_change_component_state(video_render, OMX_StateExecuting);
+   return 0;
+}
+
+static void cleanup_components(ILCLIENT_T *client, COMPONENT_T *video_decode, COMPONENT_T **list, TUNNEL_T *tunnel)
+{
+   ilclient_disable_tunnel(tunnel);
+   ilclient_disable_tunnel(tunnel+1);
+   ilclient_disable_tunnel(tunnel+2);
+   ilclient_disable_port_buffers(video_decode, 130, NULL, NULL, NULL);
+   ilclient_teardown_tunnels(tunnel);
+
+   ilclient_state_transition(list, OMX_StateIdle);
+   ilclient_state_transition(list, OMX_StateLoaded);
+
+   ilclient_cleanup_components(list);
+
+   OMX_Deinit();
+
+   ilclient_destroy(client);
+}
+
+static int video_decode_test(char *filename)
+{
    COMPONENT_T *video_decode = NULL, *video_scheduler = NULL, *video_render = NULL, *clock = NULL;
    COMPONENT_T *list[5];
    TUNNEL_T tunnel[4];
@@ -65,56 +151,27 @@ static int video_decode_test(char *filename)
       return -4;
    }
 
-   // create video_decode
-   if(ilclient_create_component(client, &video_decode, "video_decode", ILCLIENT_DISABLE_ALL_PORTS | ILCLIENT_ENABLE_INPUT_BUFFERS) != 0)
-      status = -14;
-   list[0] = video_decode;
+   status = setup_components(client, &video_decode, &video_scheduler, &video_render, &clock, list);
 
-   // create video_render
-   if(status == 0 && ilclient_create_component(client, &video_render, "video_render", ILCLIENT_DISABLE_ALL_PORTS) != 0)
-      status = -14;
-   list[1] = video_render;
+   if (status == 0)
+      status = setup_clock(clock);
 
-   // create clock
-   if(status == 0 && ilclient_create_component(client, &clock, "clock", ILCLIENT_DISABLE_ALL_PORTS) != 0)
-      status = -14;
-   list[2] = clock;
+   if (status == 0) {
+      set_tunnel(tunnel, video_decode, 131, video_scheduler, 10);
+      set_tunnel(tunnel+1, video_scheduler, 11, video_render, 90);
+      set_tunnel(tunnel+2, clock, 80, video_scheduler, 12);
 
-   memset(&cstate, 0, sizeof(cstate));
-   cstate.nSize = sizeof(cstate);
-   cstate.nVersion.nVersion = OMX_VERSION;
-   cstate.eState = OMX_TIME_ClockStateWaitingForStartTime;
-   cstate.nWaitMask = 1;
-   if(clock != NULL && OMX_SetParameter(ILC_GET_HANDLE(clock), OMX_IndexConfigTimeClockState, &cstate) != OMX_ErrorNone)
-      status = -13;
-
-   // create video_scheduler
-   if(status == 0 && ilclient_create_component(client, &video_scheduler, "video_scheduler", ILCLIENT_DISABLE_ALL_PORTS) != 0)
-      status = -14;
-   list[3] = video_scheduler;
-
-   set_tunnel(tunnel, video_decode, 131, video_scheduler, 10);
-   set_tunnel(tunnel+1, video_scheduler, 11, video_render, 90);
-   set_tunnel(tunnel+2, clock, 80, video_scheduler, 12);
-
-   // setup clock tunnel first
-   if(status == 0 && ilclient_setup_tunnel(tunnel+2, 0, 0) != 0)
-      status = -15;
-   else
-      ilclient_change_component_state(clock, OMX_StateExecuting);
+      // setup clock tunnel first
+      if(ilclient_setup_tunnel(tunnel+2, 0, 0) != 0)
+         status = -15;
+      else
+         ilclient_change_component_state(clock, OMX_StateExecuting);
+   }
 
    if(status == 0)
       ilclient_change_component_state(video_decode, OMX_StateIdle);
 
-   memset(&format, 0, sizeof(OMX_VIDEO_PARAM_PORTFORMATTYPE));
-   format.nSize = sizeof(OMX_VIDEO_PARAM_PORTFORMATTYPE);
-   format.nVersion.nVersion = OMX_VERSION;
-   format.nPortIndex = 130;
-   format.eCompressionFormat = OMX_VIDEO_CodingAVC;
-
-   if(status == 0 &&
-      OMX_SetParameter(ILC_GET_HANDLE(video_decode), OMX_IndexParamVideoPortFormat, &format) == OMX_ErrorNone &&
-      ilclient_enable_port_buffers(video_decode, 130, NULL, NULL, NULL) == 0)
+   if(status == 0 && setup_video_decode_port(video_decode) == 0)
    {
       OMX_BUFFERHEADERTYPE *buf;
       int port_settings_changed = 0;
@@ -136,22 +193,9 @@ static int video_decode_test(char *filename)
          {
             port_settings_changed = 1;
 
-            if(ilclient_setup_tunnel(tunnel, 0, 0) != 0)
-            {
-               status = -7;
+            status = handle_port_settings_changed(video_scheduler, video_render, tunnel);
+            if(status != 0)
                break;
-            }
-
-            ilclient_change_component_state(video_scheduler, OMX_StateExecuting);
-
-            // now setup tunnel to video_render
-            if(ilclient_setup_tunnel(tunnel+1, 0, 1000) != 0)
-            {
-               status = -12;
-               break;
-            }
-
-            ilclient_change_component_state(video_render, OMX_StateExecuting);
          }
          if(!data_len)
             break;
@@ -192,20 +236,8 @@ static int video_decode_test(char *filename)
 
    fclose(in);
 
-   ilclient_disable_tunnel(tunnel);
-   ilclient_disable_tunnel(tunnel+1);
-   ilclient_disable_tunnel(tunnel+2);
-   ilclient_disable_port_buffers(video_decode, 130, NULL, NULL, NULL);
-   ilclient_teardown_tunnels(tunnel);
+   cleanup_components(client, video_decode, list, tunnel);
 
-   ilclient_state_transition(list, OMX_StateIdle);
-   ilclient_state_transition(list, OMX_StateLoaded);
-
-   ilclient_cleanup_components(list);
-
-   OMX_Deinit();
-
-   ilclient_destroy(client);
    return status;
 }
 
@@ -218,5 +250,3 @@ int main (int argc, char **argv)
    bcm_host_init();
    return video_decode_test(argv[1]);
 }
-
-
