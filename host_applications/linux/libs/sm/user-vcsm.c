@@ -1061,7 +1061,7 @@ unsigned int vcsm_vc_addr_from_hdl( unsigned int handle )
                       __func__, handle);
          return 0;
       }
-      return elem->dma_addr;
+      return (unsigned int)elem->dma_addr;
    }
    else
    {
