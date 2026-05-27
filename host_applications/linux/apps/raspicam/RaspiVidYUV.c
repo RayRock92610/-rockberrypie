@@ -100,6 +100,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /// Interval at which we check for an failure abort during capture
 const int ABORT_INTERVAL = 100; // ms
 
+#define MAX_FRAMERATE 250 // Max framerate allowed
+
 
 /// Capture/Pause switch method
 enum
@@ -422,7 +424,11 @@ static int parse_cmdline(int argc, const char **argv, RASPIVIDYUV_STATE *state)
       {
          if (sscanf(argv[i + 1], "%u", &state->framerate) == 1)
          {
-            // TODO : What limits do we need for fps 1 - 30 - 120??
+            if (state->framerate > MAX_FRAMERATE)
+            {
+               fprintf(stderr, "Framerate too high: Reducing to %d fps\n", MAX_FRAMERATE);
+               state->framerate = MAX_FRAMERATE;
+            }
             i++;
          }
          else
