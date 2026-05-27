@@ -513,8 +513,24 @@ static VC_CONTAINER_STATUS_T mp4_read_box_trak( VC_CONTAINER_T *p_ctx, int64_t s
    track->priv->module->sample_table[MP4_SAMPLE_TABLE_CTTS].entry_size = 8;
 
    status = mp4_read_boxes( p_ctx, size, MP4_BOX_TYPE_TRAK);
+   /* Sanity check track */
+   if(status == VC_CONTAINER_SUCCESS)
+   {
+      if(!track->priv->module->sample_table[MP4_SAMPLE_TABLE_STSZ].entries &&
+         !track->priv->module->sample_size) status = VC_CONTAINER_ERROR_CORRUPTED;
+      if(!track->priv->module->sample_table[MP4_SAMPLE_TABLE_STTS].entries) status = VC_CONTAINER_ERROR_CORRUPTED;
+      if(!track->priv->module->sample_table[MP4_SAMPLE_TABLE_STSC].entries) status = VC_CONTAINER_ERROR_CORRUPTED;
+      if(!track->priv->module->sample_table[MP4_SAMPLE_TABLE_STCO].entries &&
+         !track->priv->module->sample_table[MP4_SAMPLE_TABLE_CO64].entries) status = VC_CONTAINER_ERROR_CORRUPTED;
+   }
 
-   /* TODO: Sanity check track */
+   if(status != VC_CONTAINER_SUCCESS)
+   {
+      vc_container_free_track(p_ctx, track);
+      p_ctx->tracks[p_ctx->tracks_num] = NULL;
+      if(status == VC_CONTAINER_ERROR_CORRUPTED) status = VC_CONTAINER_SUCCESS;
+      return status;
+   }
 
    track->is_enabled = true;
    track->format->flags |= VC_CONTAINER_ES_FORMAT_FLAG_FRAMED;
