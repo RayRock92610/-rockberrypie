@@ -30,3 +30,6 @@
 ## 2024-05-26 - Bolt: Enable Hash Optimization Limit
 **Learning:** Limiting the input length to 256 for the hashing function bounds execution time for exceedingly large payloads without impacting the accuracy for cache indexing significantly.
 **Action:** When implementing hash algorithms for caching, consider capping the evaluated length to maintain consistent performance, assuming collisions are handled appropriately later.
+## 2024-05-18 - Added tests for ilclient_init
+**Learning:** Testing opaque structures in C often requires direct inclusion of the source file to access the internal fields and `#define` macros (like `NUM_EVENTS`). Overriding memory allocators (like `vcos_malloc`) via linker wrapping (`-Wl,--wrap`) is powerful but can be dangerous if the library isn't dynamically linked or the wrapped function isn't actually used locally. A safer, simpler approach for isolated C tests is macro replacement (`#define vcos_malloc mock_vcos_malloc`) combined with direct inclusion of the C source.
+**Action:** When unit testing internal state in C, prefer macro-based dependency injection combined with direct source file inclusion rather than attempting complex linker configurations, to ensure robust, self-contained tests without risking global build breaks.
