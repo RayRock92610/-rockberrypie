@@ -455,7 +455,41 @@ static VC_CONTAINER_STATUS_T l16_parameter_handler(VC_CONTAINER_T *p_ctx,
    track->priv->module->timestamp_clock = audio->sample_rate;
    track->priv->module->payload_handler = l16_payload_handler;
 
-   /* TODO: add support for "channel-order" to set channel mapping */
+   const char *channel_order = NULL;
+   if (rtp_get_parameter_string(params, "channel-order", &channel_order))
+   {
+      if (strncasecmp(channel_order, "DV.", 3) == 0)
+      {
+         const char *order = channel_order + 3;
+         uint32_t c = 0;
+         while (*order != '\0' && c < audio->channels && c < VC_CONTAINER_AUDIO_CHANNELS_MAX)
+         {
+            if (strncasecmp(order, "Lmix", 4) == 0 || strncasecmp(order, "Rmix", 4) == 0) { order += 4; continue; }
+            if (order[0] == 'L' || order[0] == 'l') {
+               if (order[1] == 's' || order[1] == 'S') { audio->channel_mapping[c++] = VC_CONTAINER_AUDIO_CHANNEL_BACK_LEFT; order += 2; continue; }
+               if (order[1] == 'c' || order[1] == 'C') { audio->channel_mapping[c++] = VC_CONTAINER_AUDIO_CHANNEL_SIDE_LEFT; order += 2; continue; }
+               audio->channel_mapping[c++] = VC_CONTAINER_AUDIO_CHANNEL_LEFT; order++; continue;
+            }
+            if (order[0] == 'R' || order[0] == 'r') {
+               if (order[1] == 's' || order[1] == 'S') { audio->channel_mapping[c++] = VC_CONTAINER_AUDIO_CHANNEL_BACK_RIGHT; order += 2; continue; }
+               if (order[1] == 'c' || order[1] == 'C') { audio->channel_mapping[c++] = VC_CONTAINER_AUDIO_CHANNEL_SIDE_RIGHT; order += 2; continue; }
+               audio->channel_mapping[c++] = VC_CONTAINER_AUDIO_CHANNEL_RIGHT; order++; continue;
+            }
+            if (order[0] == 'C' || order[0] == 'c') {
+               audio->channel_mapping[c++] = VC_CONTAINER_AUDIO_CHANNEL_CENTER; order++; continue;
+            }
+            if (order[0] == 'W' || order[0] == 'w') {
+               if (order[1] == 'o' || order[1] == 'O') { audio->channel_mapping[c++] = VC_CONTAINER_AUDIO_CHANNEL_LOW_FREQUENCY; order += 2; continue; }
+            }
+            if (order[0] == 'S' || order[0] == 's') {
+               audio->channel_mapping[c++] = VC_CONTAINER_AUDIO_CHANNEL_BACK_CENTER; order++; continue;
+            }
+            order++;
+         }
+         if (c > 0)
+            audio->flags |= VC_CONTAINER_AUDIO_FORMAT_FLAG_CHANNEL_MAPPING;
+      }
+   }
 
    return VC_CONTAINER_SUCCESS;
 }
@@ -874,6 +908,30 @@ bool rtp_get_parameter_x32(const VC_CONTAINERS_LIST_T *param_list,
 
       *value = strtoul(param.value, &end, 16);
       return (end != param.value) && (*end == '\0');
+   }
+
+   return false;
+}
+
+/**************************************************************************//**
+ * Gets the value of a parameter as a string.
+ *
+ * @param param_list The URI parameter list.
+ * @param name       The name of the parameter.
+ * @param value      Pointer to the variable to receive the value.
+ * @return  True if the parameter value was read correctly, false otherwise.
+ */
+bool rtp_get_parameter_string(const VC_CONTAINERS_LIST_T *param_list,
+      const char *name,
+      const char **value)
+{
+   PARAMETER_T param;
+
+   param.name = name;
+   if (vc_containers_list_find_entry(param_list, &param) && param.value)
+   {
+      *value = param.value;
+      return true;
    }
 
    return false;
