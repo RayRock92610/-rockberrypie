@@ -108,4 +108,12 @@ bool rtp_get_parameter_u32(const VC_CONTAINERS_LIST_T *param_list, const char *n
  * \return True if successful, false if the parameter was not found or didn't convert. */
 bool rtp_get_parameter_x32(const VC_CONTAINERS_LIST_T *param_list, const char *name, uint32_t *value);
 
+/** Get a parameter's value as a string.
+ *
+ * \param param_list The list of parameter name/value pairs.
+ * \param name The paramter's name.
+ * \param value Where to put the string pointer.
+ * \return True if successful, false if the parameter was not found. */
+bool rtp_get_parameter_string(const VC_CONTAINERS_LIST_T *param_list, const char *name, const char **value);
+
 #endif /* _RTP_PRIV_H_ */
