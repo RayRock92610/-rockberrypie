@@ -1,3 +1,6 @@
 ## 2024-05-19 - Code Health Improvement: Added Getters to RaspiCamControl
 **Learning:** Legacy C libraries often lack explicit get/set pairs for all properties, especially opaque structures managed via property dictionaries or function endpoints. In this specific layer (MMAL camera configuration), parameters are retrieved generically by port ID (`mmal_port_parameter_get*`), which causes friction for higher-level consumers needing direct property access on structured states like `RASPICAM_CAMERA_PARAMETERS`. Implementing explicit getters encapsulating these MMAL generic parameter retrievals simplifies the client interface significantly.
 **Action:** When working with similar driver interfaces built on message queues or dynamic parameter lists, abstract generic gets/sets into struct-specific getters/setters systematically to avoid fragmented manual struct population in higher-level application logic.
+## 2024-05-29 - Avoid strlen() in Loops
+**Learning:** Calling `strlen()` inside loops (especially tight or frequently called loops like those processing URIs or network schemes) introduces redundant O(N) overhead per iteration.
+**Action:** When working with static arrays of strings or structures containing strings, pre-calculate and store the string lengths in the structure initialization. This allows O(1) length lookups during loop execution.
