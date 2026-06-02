@@ -4,3 +4,6 @@
 ## 2024-05-29 - Avoid strlen() in Loops
 **Learning:** Calling `strlen()` inside loops (especially tight or frequently called loops like those processing URIs or network schemes) introduces redundant O(N) overhead per iteration.
 **Action:** When working with static arrays of strings or structures containing strings, pre-calculate and store the string lengths in the structure initialization. This allows O(1) length lookups during loop execution.
+## 2024-06-02 - Optimize string concatenation loop in gencmd
+**Learning:** In C, concatenating strings in a loop using `strncat` and `strlen` to find the end of the string results in O(N^2) time complexity. This is an anti-pattern for performance when building large strings from parts.
+**Action:** Maintain an explicit `offset` counter and use functions like `vcos_safe_strcpy` (or `memcpy` with size checks) to append data at the known offset in O(1) time per concatenation.

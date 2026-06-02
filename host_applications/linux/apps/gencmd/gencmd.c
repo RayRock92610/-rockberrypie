@@ -120,15 +120,14 @@ int main_mbox(int argc, char *argv[])
   char command[MAX_STRING] = {};
   char result[MAX_STRING] = {};
 
+  size_t command_offset = 0;
   for (i = 1; i < argc; i++)
   {
-    char *c = command + strlen(command);
-    if (c > command)
+    if (command_offset > 0)
     {
-       strncat(c, " ", command + sizeof command - c);
-       c = command + strlen(command);
+       command_offset = vcos_safe_strcpy(command, " ", sizeof(command), command_offset);
     }
-    strncat(c, argv[i], command + sizeof command - c);
+    command_offset = vcos_safe_strcpy(command, argv[i], sizeof(command), command_offset);
   }
 
   int ret = gencmd(mb, command, result, sizeof result);
@@ -245,7 +244,8 @@ int main( int argc, char **argv )
 
       if ( buffer[0] != '\0' )
       {
-         if ( buffer[ strlen( buffer) - 1] == '\n' )
+         size_t buffer_len = strlen(buffer);
+         if ( buffer_len > 0 && buffer[ buffer_len - 1] == '\n' )
          {
             fputs( buffer, stdout );
          }
