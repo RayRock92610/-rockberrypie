@@ -7,3 +7,6 @@
 ## 2024-06-02 - Optimize string concatenation loop in gencmd
 **Learning:** In C, concatenating strings in a loop using `strncat` and `strlen` to find the end of the string results in O(N^2) time complexity. This is an anti-pattern for performance when building large strings from parts.
 **Action:** Maintain an explicit `offset` counter and use functions like `vcos_safe_strcpy` (or `memcpy` with size checks) to append data at the known offset in O(1) time per concatenation.
+## 2024-06-10 - Avoid fnmatch in Directory Traversals
+**Learning:** Calling `fnmatch.fnmatch()` inside nested loops for directory traversals (like `os.walk`) introduces severe O(N*M) CPU overhead for large codebases.
+**Action:** When filtering files during deep directory traversals using multiple glob patterns, pre-compile the globs into a single regular expression using `re.compile('|'.join([fnmatch.translate(p) for p in patterns]))` and evaluate against it in O(N) time.

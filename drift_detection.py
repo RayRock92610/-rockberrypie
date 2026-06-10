@@ -5,6 +5,7 @@ import fnmatch
 import configparser
 import argparse
 import sys
+import re
 from datetime import datetime
 
 # CONFIGURATION DEFAULTS
@@ -22,21 +23,30 @@ def get_file_hash(filepath):
     except IOError:
         return None
 
-def is_excluded(path, exclusions):
-    name = os.path.basename(path)
-    for pattern in exclusions.get('dirs', []) + exclusions.get('files', []):
-        if fnmatch.fnmatch(path, pattern) or fnmatch.fnmatch(name, pattern):
-            return True
-    return False
+def build_exclusion_regex(exclusions):
+    patterns = exclusions.get('dirs', []) + exclusions.get('files', [])
+    if not patterns: return None
+    # ⚡ Bolt: Compile glob patterns into a single regex.
+    # fnmatch.fnmatch loop is O(N*M), whereas a single regex match is much faster for deep directory walks.
+    regexes = [fnmatch.translate(os.path.normcase(p)) for p in patterns]
+    return re.compile('|'.join(regexes))
+
+def is_excluded(path, exclusion_regex):
+    if not exclusion_regex: return False
+    # Use os.path.normcase to ensure cross-platform behavior parity with fnmatch.fnmatch
+    path_norm = os.path.normcase(path)
+    name_norm = os.path.normcase(os.path.basename(path))
+    return bool(exclusion_regex.match(path_norm) or exclusion_regex.match(name_norm))
 
 def create_baseline(directory, exclusions):
     baseline = {}
+    exclusion_regex = build_exclusion_regex(exclusions)
     for root, dirs, files in os.walk(directory):
         # In-place modification of dirs to skip excluded subtrees
-        dirs[:] = [d for d in dirs if not is_excluded(os.path.join(root, d), exclusions)]
+        dirs[:] = [d for d in dirs if not is_excluded(os.path.join(root, d), exclusion_regex)]
         for f in files:
             full_path = os.path.join(root, f)
-            if is_excluded(full_path, exclusions): continue
+            if is_excluded(full_path, exclusion_regex): continue
 
             rel_path = os.path.relpath(full_path, directory)
             f_hash = get_file_hash(full_path)
@@ -53,11 +63,12 @@ def check_integrity(directory, exclusions):
         baseline = json.load(f)
 
     current_state = {}
+    exclusion_regex = build_exclusion_regex(exclusions)
     for root, dirs, files in os.walk(directory):
-        dirs[:] = [d for d in dirs if not is_excluded(os.path.join(root, d), exclusions)]
+        dirs[:] = [d for d in dirs if not is_excluded(os.path.join(root, d), exclusion_regex)]
         for f in files:
             full_path = os.path.join(root, f)
-            if is_excluded(full_path, exclusions): continue
+            if is_excluded(full_path, exclusion_regex): continue
             rel_path = os.path.relpath(full_path, directory)
             f_hash = get_file_hash(full_path)
             if f_hash: current_state[rel_path] = f_hash
