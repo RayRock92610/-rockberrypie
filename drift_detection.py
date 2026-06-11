@@ -22,21 +22,27 @@ def get_file_hash(filepath):
     except IOError:
         return None
 
-def is_excluded(path, exclusions):
+import re
+
+def create_compiled_exclusions(exclusions):
+    patterns = exclusions.get('dirs', []) + exclusions.get('files', [])
+    if not patterns:
+        return re.compile("(?!)") # matches nothing
+    return re.compile('|'.join([fnmatch.translate(os.path.normcase(p)) for p in patterns]))
+
+def is_excluded(path, regex):
     name = os.path.basename(path)
-    for pattern in exclusions.get('dirs', []) + exclusions.get('files', []):
-        if fnmatch.fnmatch(path, pattern) or fnmatch.fnmatch(name, pattern):
-            return True
-    return False
+    return bool(regex.match(os.path.normcase(path)) or regex.match(os.path.normcase(name)))
 
 def create_baseline(directory, exclusions):
     baseline = {}
+    regex = create_compiled_exclusions(exclusions)
     for root, dirs, files in os.walk(directory):
         # In-place modification of dirs to skip excluded subtrees
-        dirs[:] = [d for d in dirs if not is_excluded(os.path.join(root, d), exclusions)]
+        dirs[:] = [d for d in dirs if not is_excluded(os.path.join(root, d), regex)]
         for f in files:
             full_path = os.path.join(root, f)
-            if is_excluded(full_path, exclusions): continue
+            if is_excluded(full_path, regex): continue
 
             rel_path = os.path.relpath(full_path, directory)
             f_hash = get_file_hash(full_path)
@@ -53,11 +59,12 @@ def check_integrity(directory, exclusions):
         baseline = json.load(f)
 
     current_state = {}
+    regex = create_compiled_exclusions(exclusions)
     for root, dirs, files in os.walk(directory):
-        dirs[:] = [d for d in dirs if not is_excluded(os.path.join(root, d), exclusions)]
+        dirs[:] = [d for d in dirs if not is_excluded(os.path.join(root, d), regex)]
         for f in files:
             full_path = os.path.join(root, f)
-            if is_excluded(full_path, exclusions): continue
+            if is_excluded(full_path, regex): continue
             rel_path = os.path.relpath(full_path, directory)
             f_hash = get_file_hash(full_path)
             if f_hash: current_state[rel_path] = f_hash
