@@ -22,12 +22,27 @@ def get_file_hash(filepath):
     except IOError:
         return None
 
+import re
+# ⚡ Bolt: Cache compiled regex patterns keyed by the exclusion tuple to
+# avoid repetitive compilation and achieve O(1) matching time after initialization.
+_CACHE = {}
+
 def is_excluded(path, exclusions):
+    patterns = tuple(exclusions.get('dirs', []) + exclusions.get('files', []))
+    if not patterns:
+        return False
+
+    if patterns not in _CACHE:
+        # ⚡ Bolt: Pre-compile multiple glob patterns into a single regular expression.
+        # This prevents the O(N*M) overhead of iteratively calling fnmatch.fnmatch()
+        # inside deep os.walk directory traversals.
+        regex_str = '|'.join([fnmatch.translate(os.path.normcase(p)) for p in patterns])
+        _CACHE[patterns] = re.compile(regex_str)
+
+    regex = _CACHE[patterns]
     name = os.path.basename(path)
-    for pattern in exclusions.get('dirs', []) + exclusions.get('files', []):
-        if fnmatch.fnmatch(path, pattern) or fnmatch.fnmatch(name, pattern):
-            return True
-    return False
+
+    return bool(regex.match(os.path.normcase(path)) or regex.match(os.path.normcase(name)))
 
 def create_baseline(directory, exclusions):
     baseline = {}
