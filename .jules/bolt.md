@@ -13,3 +13,7 @@
 ## 2026-06-14 - Redundant Variable Initialization in Inner Python Loops
 **Learning:** In tight inner loops, specifically those repeatedly invoking a function (like O(N) traversals), re-evaluating expressions (e.g. `list_a + list_b` followed by casting to a `tuple`) at the start of each iteration incurs huge overhead in Python.
 **Action:** When a loop involves calling a filtering/matching function with static rules, evaluate those static rules outside the loop and pass the finalized configuration object (e.g., a pre-computed `tuple`) downward. Here it resulted in a ~3.8x speedup.
+## 2024-06-14 - Test vcos_generic_blockpool_alloc
+**Learning:** Adding unit tests for VCOS components requires checking `CMakeLists.txt` for `VCOS_EXCLUDE_TESTS` blocks and modifying them to ensure test directories are processed. When allocating and testing VCOS blockpools, `vcos_blockpool_create_on_heap` handles the setup perfectly. Ensure to call `vcos_init()` before testing VCOS library functions.
+
+**Action:** When adding tests for VCOS abstractions, ensure you do not use hallucinated underlying properties (e.g., `num_free_blocks`). Instead, test via the public API (like verifying allocations return `NULL` when exhausted). Ensure the new test executable is properly linked and wrapped via `add_test` in `CMakeLists.txt`.
