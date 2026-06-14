@@ -54,7 +54,7 @@ include_directories (${VIDEOCORE_ROOT} ${VCOS_HEADERS_BUILD_DIR})
 
 add_subdirectory (${RTOS})
 
-set(VCOS_EXCLUDE_TESTS TRUE)
+#set(VCOS_EXCLUDE_TESTS TRUE)
 if (NOT DEFINED VCOS_EXCLUDE_TESTS)
 add_testapp_subdirectory (test)
 endif (NOT DEFINED VCOS_EXCLUDE_TESTS)
