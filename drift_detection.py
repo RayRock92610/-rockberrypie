@@ -27,7 +27,7 @@ import re
 # avoid repetitive compilation and achieve O(1) matching time after initialization.
 _CACHE = {}
 
-def is_excluded(path, exclusions):
+def is_excluded(path, name, exclusions):
     # ⚡ Bolt: Check if exclusions is already a tuple to avoid repeated concatenation and conversion
     patterns = exclusions if isinstance(exclusions, tuple) else tuple(exclusions.get('dirs', []) + exclusions.get('files', []))
     if not patterns:
@@ -41,7 +41,7 @@ def is_excluded(path, exclusions):
         _CACHE[patterns] = re.compile(regex_str)
 
     regex = _CACHE[patterns]
-    name = os.path.basename(path)
+
 
     return bool(regex.match(os.path.normcase(path)) or regex.match(os.path.normcase(name)))
 
@@ -50,10 +50,10 @@ def create_baseline(directory, exclusions):
     exclusions_tuple = tuple(exclusions.get('dirs', []) + exclusions.get('files', []))
     for root, dirs, files in os.walk(directory):
         # In-place modification of dirs to skip excluded subtrees
-        dirs[:] = [d for d in dirs if not is_excluded(os.path.join(root, d), exclusions_tuple)]
+        dirs[:] = [d for d in dirs if not is_excluded(os.path.join(root, d), d, exclusions_tuple)]
         for f in files:
             full_path = os.path.join(root, f)
-            if is_excluded(full_path, exclusions_tuple): continue
+            if is_excluded(full_path, f, exclusions_tuple): continue
 
             rel_path = os.path.relpath(full_path, directory)
             f_hash = get_file_hash(full_path)
@@ -73,10 +73,10 @@ def check_integrity(directory, exclusions):
     exclusions_tuple = tuple(exclusions.get('dirs', []) + exclusions.get('files', []))
     for root, dirs, files in os.walk(directory):
         # In-place modification of dirs to skip excluded subtrees
-        dirs[:] = [d for d in dirs if not is_excluded(os.path.join(root, d), exclusions_tuple)]
+        dirs[:] = [d for d in dirs if not is_excluded(os.path.join(root, d), d, exclusions_tuple)]
         for f in files:
             full_path = os.path.join(root, f)
-            if is_excluded(full_path, exclusions_tuple): continue
+            if is_excluded(full_path, f, exclusions_tuple): continue
             rel_path = os.path.relpath(full_path, directory)
 
             # We don't need to hash if it's a new file, it will be added to new files list
