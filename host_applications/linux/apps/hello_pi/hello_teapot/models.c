@@ -273,7 +273,7 @@ static int load_wavefront_obj(const char *modelname, WAVEFRONT_MODEL_T *model, s
                m->material_index[m->num_materials] = (pf-qf)/3;
                m->num_materials++;
             }
-         } else { printf(s); vc_assert(0); }
+         } else { printf("%s", s); vc_assert(0); }
          break;
       case 'g': vc_assert(strncmp(s, "g ", sizeof "g "-1)==0); break;
       case 's': vc_assert(strncmp(s, "s ", sizeof "s "-1)==0); break;
@@ -323,7 +323,7 @@ static int load_wavefront_obj(const char *modelname, WAVEFRONT_MODEL_T *model, s
                *pf++ = pp[3*i+0]; *pf++ = pp[3*i+1]; *pf++ = pp[3*i+2];
                *pf++ = pp[3*(i+1)+0]; *pf++ = pp[3*(i+1)+1]; *pf++ = pp[3*(i+1)+2];
             }
-         } else { printf(s); vc_assert(0); }
+         } else { printf("%s", s); vc_assert(0); }
          break;
       default: 
          printf("%02x %02x %s", s[0], s[1], s); vc_assert(0); break;
@@ -412,14 +412,18 @@ MODEL_T load_wavefront(const char *modelname, const char *texturename)
       #endif
       s = load_wavefront_obj(modelname, model, m);
       #ifdef DUMP_OBJ_DAT
-      strcpy(modelname_obj, modelname);
-      strcat(modelname_obj, ".dat");
-      size = sizeof *m + 
-         sizeof(float)*(3*m->numv+2*m->numt+3*m->numn) +  // 3 vertices + 2 textures + 3 normals
-         sizeof(unsigned short)*3*m->numf;                //each face has 9 vertices
-      fp = host_file_open(modelname_obj, "w");
-      fwrite(m, 1, size, fp);
-      fclose(fp);
+      if (modelname_len + 5 <= sizeof modelname_obj) {
+         strcpy(modelname_obj, modelname);
+         strcat(modelname_obj, ".dat");
+         size = sizeof *m +
+            sizeof(float)*(3*m->numv+2*m->numt+3*m->numn) +  // 3 vertices + 2 textures + 3 normals
+            sizeof(unsigned short)*3*m->numf;                //each face has 9 vertices
+         fp = host_file_open(modelname_obj, "w");
+         if (fp) {
+            fwrite(m, 1, size, fp);
+            fclose(fp);
+         }
+      }
       #endif
    } else if (strncmp(modelname + modelname_len - 4, ".dat", 4) == 0) {
       s = load_wavefront_dat(modelname, model, m);
