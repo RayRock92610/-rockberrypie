@@ -487,19 +487,31 @@ const void *fdt_getprop(const void *fdt, int nodeoffset,
 
 uint32_t fdt_get_phandle(const void *fdt, int nodeoffset)
 {
-	const fdt32_t *php;
-	int len;
+	int offset;
 
-	/* FIXME: This is a bit sub-optimal, since we potentially scan
-	 * over all the properties twice. */
-	php = fdt_getprop(fdt, nodeoffset, "phandle", &len);
-	if (!php || (len != sizeof(*php))) {
-		php = fdt_getprop(fdt, nodeoffset, "linux,phandle", &len);
-		if (!php || (len != sizeof(*php)))
-			return 0;
+	for (offset = fdt_first_property_offset(fdt, nodeoffset);
+	     (offset >= 0);
+	     (offset = fdt_next_property_offset(fdt, offset))) {
+		const struct fdt_property *prop;
+		int len;
+
+		if (!(prop = fdt_get_property_by_offset_(fdt, offset, &len)))
+			break;
+
+		if (fdt_string_eq_(fdt, fdt32_ld(&prop->nameoff), "phandle", 7) ||
+		    fdt_string_eq_(fdt, fdt32_ld(&prop->nameoff), "linux,phandle", 13)) {
+			if (len == sizeof(fdt32_t)) {
+				/* Handle realignment */
+				if (fdt_version(fdt) < 0x10 &&
+				    (offset + sizeof(*prop)) % 8 &&
+				    fdt32_ld(&prop->len) >= 8)
+					return fdt32_ld((const fdt32_t *)((const char *)prop->data + 4));
+				return fdt32_ld((const fdt32_t *)prop->data);
+			}
+		}
 	}
 
-	return fdt32_ld(php);
+	return 0;
 }
 
 const char *fdt_get_alias_namelen(const void *fdt,
