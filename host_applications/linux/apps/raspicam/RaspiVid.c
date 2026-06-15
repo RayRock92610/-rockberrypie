@@ -656,6 +656,10 @@ static int parse_cmdline(int argc, const char **argv, RASPIVID_STATE *state)
          if (sscanf(argv[i + 1], "%u", &state->framerate) == 1)
          {
             // TODO : What limits do we need for fps 1 - 30 - 120??
+            if (state->framerate < 1)
+               state->framerate = 1;
+            else if (state->framerate > 120)
+               state->framerate = 120;
             i++;
          }
          else
