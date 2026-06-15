@@ -307,7 +307,6 @@ EGLAPI EGLImageKHR EGLAPIENTRY eglCreateImageKHR (EGLDisplay dpy, EGLContext ctx
             } else if (target == EGL_IMAGE_BRCM_VCSM && egl_init_vcsm()) {
                   struct egl_image_brcm_vcsm_info *info = (struct egl_image_brcm_vcsm_info *) buffer;
                   buf_error = true;
-                  vcos_log_info("%s: EGL_IMAGE_BRCM_VCSM", __FUNCTION__); // FIXME
 
 #define IS_POT(X) ((X) && (((X) & (~(X) + 1)) == (X)))
 #define VALID_RSO_DIM(X) (IS_POT(X) && (X) >= 64 && (X) <= 2048)
