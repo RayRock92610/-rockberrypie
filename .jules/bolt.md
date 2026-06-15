@@ -17,3 +17,6 @@
 **Learning:** Adding unit tests for VCOS components requires checking `CMakeLists.txt` for `VCOS_EXCLUDE_TESTS` blocks and modifying them to ensure test directories are processed. When allocating and testing VCOS blockpools, `vcos_blockpool_create_on_heap` handles the setup perfectly. Ensure to call `vcos_init()` before testing VCOS library functions.
 
 **Action:** When adding tests for VCOS abstractions, ensure you do not use hallucinated underlying properties (e.g., `num_free_blocks`). Instead, test via the public API (like verifying allocations return `NULL` when exhausted). Ensure the new test executable is properly linked and wrapped via `add_test` in `CMakeLists.txt`.
+## 2024-05-24 - Optimize drift detection file hashing
+**Learning:** Checking against existing sets/dicts before executing expensive I/O operations (like file hashing) drastically reduces runtime in verification scripts. In drift detection, new files inherently differ from the baseline, meaning their hash is not required to flag them as "new".
+**Action:** When comparing file states against a baseline, verify existence in the baseline dictionary before calculating hashes to prevent unnecessary disk reads for newly added files.
