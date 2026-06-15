@@ -24,3 +24,7 @@
 ## 2024-05-18 - [Fix ISO range bounds]
 **Learning:** Modern camera components use hardware/driver specific bounds; when encountering ambiguous `TODO` boundaries in configuration, it is beneficial to look closely at man pages (`raspicam.7`) or associated documentation, which frequently explicitly sets out the valid domain intervals intended by the original authors (e.g., ISO ranges of 100-800) instead of relying heavily on default magic numbers alone.
 **Action:** When adding clamps for user parameters, review existing `.7` and `.1` pages within the directory prior to relying entirely on external hardware specs to ensure fidelity to the explicit project documentation.
+
+## 2024-05-24 - [Remove redundant os.path.basename in traversals]
+**Learning:** During deep directory traversals using `os.walk`, calling `os.path.basename(path)` inside filtering functions is redundant and introduces O(N) string manipulation overhead, because `os.walk` already provides the basename directly in the `dirs` and `files` lists.
+**Action:** Modify filtering function signatures (like `is_excluded`) to accept the pre-computed `name` directly from the `os.walk` loop iterators, eliminating the need to re-extract it from the full path.
