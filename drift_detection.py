@@ -78,15 +78,21 @@ def check_integrity(directory, exclusions):
             full_path = os.path.join(root, f)
             if is_excluded(full_path, exclusions_tuple): continue
             rel_path = os.path.relpath(full_path, directory)
-            f_hash = get_file_hash(full_path)
-            if f_hash: current_state[rel_path] = f_hash
+
+            # We don't need to hash if it's a new file, it will be added to new files list
+            if rel_path in baseline:
+                f_hash = get_file_hash(full_path)
+                if f_hash:
+                    current_state[rel_path] = f_hash
+            else:
+                current_state[rel_path] = None # Or just track the key
 
     b_set, c_set = set(baseline.keys()), set(current_state.keys())
 
     return {
         "new": list(c_set - b_set),
         "deleted": list(b_set - c_set),
-        "modified": [f for f in b_set & c_set if baseline[f] != current_state[f]]
+        "modified": [f for f in b_set & c_set if baseline[f] != current_state.get(f)]
     }, None
 
 if __name__ == '__main__':
