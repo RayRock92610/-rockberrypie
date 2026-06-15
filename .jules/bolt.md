@@ -20,3 +20,7 @@
 ## 2024-05-24 - Optimize drift detection file hashing
 **Learning:** Checking against existing sets/dicts before executing expensive I/O operations (like file hashing) drastically reduces runtime in verification scripts. In drift detection, new files inherently differ from the baseline, meaning their hash is not required to flag them as "new".
 **Action:** When comparing file states against a baseline, verify existence in the baseline dictionary before calculating hashes to prevent unnecessary disk reads for newly added files.
+
+## 2024-05-18 - [Fix ISO range bounds]
+**Learning:** Modern camera components use hardware/driver specific bounds; when encountering ambiguous `TODO` boundaries in configuration, it is beneficial to look closely at man pages (`raspicam.7`) or associated documentation, which frequently explicitly sets out the valid domain intervals intended by the original authors (e.g., ISO ranges of 100-800) instead of relying heavily on default magic numbers alone.
+**Action:** When adding clamps for user parameters, review existing `.7` and `.1` pages within the directory prior to relying entirely on external hardware specs to ensure fidelity to the explicit project documentation.

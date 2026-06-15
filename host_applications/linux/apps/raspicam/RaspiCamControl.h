@@ -140,7 +140,7 @@ typedef struct raspicam_camera_parameters_s
    int contrast;              /// -100 to 100
    int brightness;            ///  0 to 100
    int saturation;            ///  -100 to 100
-   int ISO;                   ///  TODO : what range?
+   int ISO;                   ///  0 (auto), or 100 to 800
    int videoStabilisation;    /// 0 or 1 (false or true)
    int exposureCompensation;  /// -10 to +10 ?
    MMAL_PARAM_EXPOSUREMODE_T exposureMode;
