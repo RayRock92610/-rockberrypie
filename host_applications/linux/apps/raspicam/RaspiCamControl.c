@@ -1389,11 +1389,6 @@ int raspicamcontrol_set_imageFX(MMAL_COMPONENT_T *camera, MMAL_PARAM_IMAGEFX_T i
    return mmal_status_to_int(mmal_port_parameter_set(camera->control, &imgFX.hdr));
 }
 
-/* TODO :what to do with the image effects parameters?
-   MMAL_PARAMETER_IMAGEFX_PARAMETERS_T imfx_param = {{MMAL_PARAMETER_IMAGE_EFFECT_PARAMETERS,sizeof(imfx_param)},
-                              imageFX, 0, {0}};
-mmal_port_parameter_set(camera->control, &imfx_param.hdr);
-                             */
 
 /**
  * Set the colour effect  for images (Set UV component)
