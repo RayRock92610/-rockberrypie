@@ -85,9 +85,9 @@ extern "C" {
 #define KHDISPATCH_WORKSPACE_BUFFERS (KHDISPATCH_WORKSPACE_READAHEAD_BUFFERS + 1)
 #if defined(RPC_DIRECT) || defined(ANDROID)
 #include <limits.h>
-#define KHDISPATCH_WORKSPACE_SIZE (0x200000 / KHDISPATCH_WORKSPACE_BUFFERS)
+#define KHDISPATCH_WORKSPACE_SIZE ((0x200000 / KHDISPATCH_WORKSPACE_BUFFERS) & ~15)
 #else
-#define KHDISPATCH_WORKSPACE_SIZE ((1024 * 1024) / KHDISPATCH_WORKSPACE_BUFFERS) /* should be a multiple of 16, todo: how big does this need to be? (vg needs 8kB) */
+#define KHDISPATCH_WORKSPACE_SIZE (((1024 * 1024) / KHDISPATCH_WORKSPACE_BUFFERS) & ~15) /* should be a multiple of 16, todo: how big does this need to be? (vg needs 8kB) */
 #endif
 
 #define KHDISPATCH_CTRL_THRESHOLD 2032
