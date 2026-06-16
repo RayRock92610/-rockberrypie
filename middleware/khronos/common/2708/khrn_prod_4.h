@@ -57,7 +57,6 @@ constants that come from the hw
 #else
    #define KHRN_HW_SYSTEM_CACHE_LINE_SIZE 32
 #endif
-#define KHRN_HW_TLB_ALIGN 16 /* todo: is this right? */
 #define KHRN_HW_LOG2_BRCM1_WIDTH 6 /* non-ms */
 #define KHRN_HW_LOG2_BRCM1_HEIGHT 6 /* non-ms */
 #define KHRN_HW_BRCM1_WIDTH (1 << KHRN_HW_LOG2_BRCM1_WIDTH)
