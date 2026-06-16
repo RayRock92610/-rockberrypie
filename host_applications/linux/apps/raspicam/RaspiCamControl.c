@@ -1011,7 +1011,7 @@ int raspicamcontrol_get_all_parameters(MMAL_COMPONENT_T *camera, RASPICAM_CAMERA
    params->awbMode = raspicamcontrol_get_awb_mode(camera);
    params->imageEffect = raspicamcontrol_get_imageFX(camera);
    params->colourEffects = raspicamcontrol_get_colourFX(camera);
-   // params->thumbnailConfig = raspicamcontrol_get_thumbnail_parameters(camera);
+   params->thumbnailConfig = raspicamcontrol_get_thumbnail_parameters(camera);
    params->exposureMeterMode = raspicamcontrol_get_metering_mode(camera);
    return 0;
 }
@@ -1040,7 +1040,7 @@ int raspicamcontrol_set_all_parameters(MMAL_COMPONENT_T *camera, const RASPICAM_
    result += raspicamcontrol_set_awb_gains(camera, params->awb_gains_r, params->awb_gains_b);
    result += raspicamcontrol_set_imageFX(camera, params->imageEffect);
    result += raspicamcontrol_set_colourFX(camera, &params->colourEffects);
-   //result += raspicamcontrol_set_thumbnail_parameters(camera, &params->thumbnailConfig);  TODO Not working for some reason
+   result += raspicamcontrol_set_thumbnail_parameters(camera, &params->thumbnailConfig);
    result += raspicamcontrol_set_rotation(camera, params->rotation);
    result += raspicamcontrol_set_flips(camera, params->hflip, params->vflip);
    result += raspicamcontrol_set_ROI(camera, params->roi);
@@ -1410,6 +1410,29 @@ int raspicamcontrol_set_colourFX(MMAL_COMPONENT_T *camera, const MMAL_PARAM_COLO
    return mmal_status_to_int(mmal_port_parameter_set(camera->control, &colfx.hdr));
 
 }
+
+
+/**
+ * Set the thumbnail parameters
+ * @param camera Pointer to camera component
+ * @param thumbnailConfig Pointer to thumbnail config structure
+ * @return 0 if successful, non-zero if any parameters out of range
+ */
+int raspicamcontrol_set_thumbnail_parameters(MMAL_COMPONENT_T *camera, const MMAL_PARAM_THUMBNAIL_CONFIG_T *thumbnailConfig)
+{
+   MMAL_PARAMETER_THUMBNAIL_CONFIG_T param_thumb = {{MMAL_PARAMETER_THUMBNAIL_CONFIGURATION, sizeof(MMAL_PARAMETER_THUMBNAIL_CONFIG_T)}, 0, 0, 0, 0};
+
+   if (!camera)
+      return 1;
+
+   param_thumb.enable = thumbnailConfig->enable;
+   param_thumb.width = thumbnailConfig->width;
+   param_thumb.height = thumbnailConfig->height;
+   param_thumb.quality = thumbnailConfig->quality;
+
+   return mmal_status_to_int(mmal_port_parameter_set(camera->control, &param_thumb.hdr));
+}
+
 
 
 /**
