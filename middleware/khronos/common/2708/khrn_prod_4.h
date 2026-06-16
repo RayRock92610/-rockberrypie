@@ -367,7 +367,6 @@ hw fifo
 extern bool khrn_hw_init(void);
 extern void khrn_hw_term(void);
 
-#define KHRN_HW_SPECIAL_0            ((MEM_HANDLE_T)0) /* used for extra thrsw removing hack. todo: no need for this hack on b0 */
 #define KHRN_HW_SPECIAL_BIN_MEM      ((MEM_HANDLE_T)1)
 #define KHRN_HW_SPECIAL_BIN_MEM_END  ((MEM_HANDLE_T)2)
 #define KHRN_HW_SPECIAL_BIN_MEM_SIZE ((MEM_HANDLE_T)3)
@@ -436,7 +435,6 @@ typedef enum {
 extern void *khrn_hw_queue(
    uint8_t *bin_begin, uint8_t *bin_end, KHRN_HW_CC_FLAG_T bin_cc,
    uint8_t *render_begin, uint8_t *render_end, KHRN_HW_CC_FLAG_T render_cc, uint32_t render_n,
-   uint32_t special_0, /* used for extra thrsw removing hack. todo: no need for this hack on b0 */
    uint32_t bin_mem_size_min, /* KHRN_HW_SPECIAL_BIN_MEM_SIZE will be >= this */
    uint32_t actual_user_vpm, uint32_t max_user_vpm,
    KHRN_HW_TYPE_T type,
