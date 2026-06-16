@@ -123,6 +123,8 @@ int main_mbox(int argc, char *argv[])
   size_t command_offset = 0;
   for (i = 1; i < argc; i++)
   {
+    if (command_offset >= sizeof(command) - 1)
+       break;
     if (command_offset > 0)
     {
        command_offset = vcos_safe_strcpy(command, " ", sizeof(command), command_offset);
@@ -215,8 +217,11 @@ int main( int argc, char **argv )
 
       for (; i <= argc-1; i++)
       {
+         if (buffer_offset >= sizeof(buffer) - 1)
+            break;
          buffer_offset = vcos_safe_strcpy( buffer, argv[i], sizeof(buffer), buffer_offset );
-         buffer_offset = vcos_safe_strcpy( buffer, " ", sizeof(buffer), buffer_offset );
+         if (buffer_offset < sizeof(buffer) - 1)
+            buffer_offset = vcos_safe_strcpy( buffer, " ", sizeof(buffer), buffer_offset );
       }
 
       if( show_time )
