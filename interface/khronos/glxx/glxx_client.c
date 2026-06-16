@@ -5024,8 +5024,10 @@ GL_APICALL void GL_APIENTRY glShaderSource(GLuint shader, GLsizei count, const c
       GLint *cached_len = (count <= 32) ? cached_len_buf : khrn_platform_malloc(count * sizeof(GLint), "glShaderSource lengths");
 
       for (i = 0; i < count; i++) {
-         if (!length || length[i] < 0) {
-            cached_len[i] = string[i] ? (GLint)strlen(string[i]) + 1 : 1;
+         if (!string[i]) {
+            cached_len[i] = 0;
+         } else if (!length || length[i] < 0) {
+            cached_len[i] = (GLint)strlen(string[i]) + 1;
             total += rpc_pad_bulk(cached_len[i]);
          } else {
             cached_len[i] = length[i];
@@ -5078,10 +5080,9 @@ GL_APICALL void GL_APIENTRY glShaderSource(GLuint shader, GLsizei count, const c
          } else
             len = cached_len[i];
 
-         /* TODO: we currently treat null strings as empty strings
-          * But we shouldn't need to deal with them (VND-116)
-          */
-         rpc_send_bulk(thread, string[i] ? string[i] : "", (uint32_t)len);
+         if (len > 0) {
+            rpc_send_bulk(thread, string[i], (uint32_t)len);
+         }
       }
       rpc_end(thread);
       if (cached_len != cached_len_buf) {
@@ -5097,8 +5098,10 @@ GL_APICALL void GL_APIENTRY glShaderSource(GLuint shader, GLsizei count, const c
       GLint *cached_len = (count <= 32) ? cached_len_buf : khrn_platform_malloc(count * sizeof(GLint), "glShaderSource lengths");
 
       for (i = 0; i < count; i++) {
-         if (!length || length[i] < 0) {
-            cached_len[i] = string[i] ? (GLint)strlen(string[i]) + 1 : 1;
+         if (!string[i]) {
+            cached_len[i] = 0;
+         } else if (!length || length[i] < 0) {
+            cached_len[i] = (GLint)strlen(string[i]) + 1;
             total += rpc_pad_bulk(cached_len[i]);
          } else {
             cached_len[i] = length[i];
@@ -5129,10 +5132,9 @@ GL_APICALL void GL_APIENTRY glShaderSource(GLuint shader, GLsizei count, const c
          } else
             len = cached_len[i];
 
-         /* TODO: we currently treat null strings as empty strings
-          * But we shouldn't need to deal with them (VND-116)
-          */
-         rpc_send_bulk(thread, string[i] ? string[i] : "", (uint32_t)len);
+         if (len > 0) {
+            rpc_send_bulk(thread, string[i], (uint32_t)len);
+         }
       }
       if (cached_len != cached_len_buf) {
          khrn_platform_free(cached_len);
