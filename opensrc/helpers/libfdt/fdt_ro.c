@@ -655,16 +655,50 @@ int fdt_node_offset_by_prop_value(const void *fdt, int startoffset,
 	 * find what we want, we scan over them again making our way
 	 * to the next node.  Still it's the easiest to implement
 	 * approach; performance can come later. */
-	for (offset = fdt_next_node(fdt, startoffset, NULL);
-	     offset >= 0;
-	     offset = fdt_next_node(fdt, offset, NULL)) {
-		val = fdt_getprop(fdt, offset, propname, &len);
-		if (val && (len == proplen)
-		    && (memcmp(val, propval, len) == 0))
+	int nextoffset;
+	int err;
+	int depth = 0;
+	uint32_t tag;
+	int current_node_offset = -1;
+
+	if (startoffset >= 0) {
+		err = fdt_check_node_offset_(fdt, startoffset);
+		if (err < 0)
+			return err;
+		offset = fdt_next_node(fdt, startoffset, NULL);
+		if (offset < 0)
 			return offset;
+	} else {
+		offset = 0;
 	}
 
-	return offset; /* error from fdt_next_node() */
+	while ((tag = fdt_next_tag(fdt, offset, &nextoffset)) != FDT_END) {
+		if (nextoffset < 0)
+			return nextoffset;
+
+		if (tag == FDT_BEGIN_NODE) {
+			current_node_offset = offset;
+			depth++;
+		} else if (tag == FDT_END_NODE) {
+			depth--;
+			if (depth == 0)
+				break;
+		} else if (tag == FDT_PROP) {
+			const struct fdt_property *prop;
+
+			prop = fdt_get_property_by_offset_(fdt, offset, &len);
+			if (!prop)
+				return -FDT_ERR_INTERNAL;
+
+			if (fdt_string_eq_(fdt, fdt32_ld(&prop->nameoff), propname, strlen(propname))) {
+				if (len == proplen && memcmp(prop->data, propval, len) == 0)
+					return current_node_offset;
+			}
+		}
+		offset = nextoffset;
+	}
+
+	return -FDT_ERR_NOTFOUND;
 }
 
 int fdt_node_offset_by_phandle(const void *fdt, uint32_t phandle)
@@ -682,14 +716,54 @@ int fdt_node_offset_by_phandle(const void *fdt, uint32_t phandle)
 	 * we want, we scan over them again making our way to the next
 	 * node.  Still it's the easiest to implement approach;
 	 * performance can come later. */
-	for (offset = fdt_next_node(fdt, -1, NULL);
-	     offset >= 0;
-	     offset = fdt_next_node(fdt, offset, NULL)) {
-		if (fdt_get_phandle(fdt, offset) == phandle)
-			return offset;
+	int nextoffset;
+	int depth = 0;
+	uint32_t tag;
+	int current_node_offset = -1;
+
+	offset = 0;
+
+	while ((tag = fdt_next_tag(fdt, offset, &nextoffset)) != FDT_END) {
+		if (nextoffset < 0)
+			return nextoffset;
+
+		if (tag == FDT_BEGIN_NODE) {
+			current_node_offset = offset;
+			depth++;
+		} else if (tag == FDT_END_NODE) {
+			depth--;
+			if (depth == 0)
+				break;
+		} else if (tag == FDT_PROP) {
+			const struct fdt_property *prop;
+			int len;
+
+			prop = fdt_get_property_by_offset_(fdt, offset, &len);
+			if (!prop)
+				return -FDT_ERR_INTERNAL;
+
+			if (fdt_string_eq_(fdt, fdt32_ld(&prop->nameoff), "phandle", 7) ||
+			    fdt_string_eq_(fdt, fdt32_ld(&prop->nameoff), "linux,phandle", 13)) {
+				if (len == sizeof(fdt32_t)) {
+					uint32_t node_phandle;
+
+					/* Handle realignment */
+					if (fdt_version(fdt) < 0x10 &&
+					    (offset + sizeof(*prop)) % 8 &&
+					    fdt32_ld(&prop->len) >= 8)
+						node_phandle = fdt32_ld((const fdt32_t *)((const char *)prop->data + 4));
+					else
+						node_phandle = fdt32_ld((const fdt32_t *)prop->data);
+
+					if (node_phandle == phandle)
+						return current_node_offset;
+				}
+			}
+		}
+		offset = nextoffset;
 	}
 
-	return offset; /* error from fdt_next_node() */
+	return -FDT_ERR_NOTFOUND;
 }
 
 int fdt_stringlist_contains(const char *strlist, int listlen, const char *str)
@@ -836,17 +910,50 @@ int fdt_node_offset_by_compatible(const void *fdt, int startoffset,
 	 * that didn't find what we want, we scan over them again
 	 * making our way to the next node.  Still it's the easiest to
 	 * implement approach; performance can come later. */
-	for (offset = fdt_next_node(fdt, startoffset, NULL);
-	     offset >= 0;
-	     offset = fdt_next_node(fdt, offset, NULL)) {
-		err = fdt_node_check_compatible(fdt, offset, compatible);
-		if ((err < 0) && (err != -FDT_ERR_NOTFOUND))
+	int nextoffset;
+	int depth = 0;
+	uint32_t tag;
+	int current_node_offset = -1;
+
+	if (startoffset >= 0) {
+		err = fdt_check_node_offset_(fdt, startoffset);
+		if (err < 0)
 			return err;
-		else if (err == 0)
+		offset = fdt_next_node(fdt, startoffset, NULL);
+		if (offset < 0)
 			return offset;
+	} else {
+		offset = 0;
 	}
 
-	return offset; /* error from fdt_next_node() */
+	while ((tag = fdt_next_tag(fdt, offset, &nextoffset)) != FDT_END) {
+		if (nextoffset < 0)
+			return nextoffset;
+
+		if (tag == FDT_BEGIN_NODE) {
+			current_node_offset = offset;
+			depth++;
+		} else if (tag == FDT_END_NODE) {
+			depth--;
+			if (depth == 0)
+				break;
+		} else if (tag == FDT_PROP) {
+			const struct fdt_property *prop;
+			int len;
+
+			prop = fdt_get_property_by_offset_(fdt, offset, &len);
+			if (!prop)
+				return -FDT_ERR_INTERNAL;
+
+			if (fdt_string_eq_(fdt, fdt32_ld(&prop->nameoff), "compatible", 10)) {
+				if (fdt_stringlist_contains(prop->data, len, compatible))
+					return current_node_offset;
+			}
+		}
+		offset = nextoffset;
+	}
+
+	return -FDT_ERR_NOTFOUND;
 }
 
 int fdt_check_full(const void *fdt, size_t bufsize)
