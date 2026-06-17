@@ -5,3 +5,7 @@
 ## 2026-06-17 - Optimize FDT node lookups to single-pass O(N)
 **Learning:** Flattened Device Tree operations using `fdt_next_node()` combined with property accessors like `fdt_getprop()` resulted in inefficient O(N^2) scaling because `fdt_next_node()` scans properties to reach the next node, and `fdt_getprop()` re-scans properties locally.
 **Action:** When implementing custom parsing loops in FDT or similar serial formats, use low-level tag access (`fdt_next_tag`) to read streams in a strict single-pass O(N) traversal.
+
+## 2026-06-17 - Optimize string length calculations in vcos_safe_str*
+**Learning:** The implementation of `vcos_safe_strcpy` and `vcos_safe_strncpy` historically evaluated `strlen(src)` or iterated the remainder string character by character (open-coded strnlen) *after* a partial copy loop was executed. This causes a full O(N) evaluation over the entire source string, even if the destination buffer was already populated by iterating over it.
+**Action:** When a string copy operation simultaneously iterates over the string, reuse the final state of the pointer to resume `strlen()` checks. For `vcos_safe_strcpy`, if the string was not truncated, we can evaluate `offset += (p - src) + strlen(p)` avoiding a full re-evaluation. For `vcos_safe_strncpy`, we can subtract the iterated characters from `srclen` and shift `src` pointer, achieving O(1) in the ideal path where `*p` hit the end.

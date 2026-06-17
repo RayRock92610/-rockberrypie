@@ -85,8 +85,12 @@ size_t vcos_safe_strcpy(char *dst, const char *src, size_t dstlen, size_t offset
       for (; *p!='\0' && dst != endp; dst++, p++)
          *dst = *p;
       *dst = '\0';
+      offset += (p - src) + strlen(p);
    }
-   offset += strlen(src);
+   else
+   {
+      offset += strlen(src);
+   }
 
    return offset;
 }
@@ -110,12 +114,17 @@ size_t vcos_safe_strncpy(char *dst, const char *src, size_t srclen, size_t dstle
       for (; p != srcend && *p!='\0' && dst != endp; dst++, p++)
          *dst = *p;
       *dst = '\0';
+
+      offset += (p - src);
+      srclen -= (p - src);
+      src = p;
    }
 
    // Open-code strnlen
    while (*src && srclen)
    {
        offset++;
+       src++;
        srclen--;
    }
 
