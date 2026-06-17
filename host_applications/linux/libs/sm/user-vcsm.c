@@ -280,7 +280,7 @@ int vcsm_init_ex( int want_export, int fd )
 
       vcsm_handle = dup(fd);
 
-      if (fstat(vcsm_handle, &stat_fd) == 0)
+      if (fstat(vcsm_handle, &stat_fd) == 0 && S_ISCHR(stat_fd.st_mode))
       {
          if (stat(VCSM_CMA_DEVICE_NAME, &stat_dev) == 0 && stat_fd.st_rdev == stat_dev.st_rdev)
          {
@@ -293,13 +293,15 @@ int vcsm_init_ex( int want_export, int fd )
          else
          {
             // Fallback if device doesn't match either known device
+            vcos_log_error("[%s]: provided fd does not match known vcsm devices", __func__);
             if (want_export)
                using_vc_sm_cma = 1;
          }
       }
       else
       {
-         // Fallback if fstat fails
+         // Fallback if fstat fails or not a character device
+         vcos_log_error("[%s]: fstat failed or fd is not a character device", __func__);
          if (want_export)
             using_vc_sm_cma = 1;
       }
