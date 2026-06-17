@@ -5126,9 +5126,8 @@ GL_APICALL void GL_APIENTRY glShaderSource(GLuint shader, GLsizei count, const c
          GLint len;
 
          if (!length || length[i] < 0) {
+            rpc_send_bulk(thread, &cached_len[i], sizeof(GLint));
             len = cached_len[i];
-
-            rpc_send_bulk(thread, &len, sizeof(GLint)); /* todo: this now violates the semantics of rpc_send_bulk. todo: check for other violations in GL */
          } else
             len = cached_len[i];
 
@@ -5136,11 +5135,11 @@ GL_APICALL void GL_APIENTRY glShaderSource(GLuint shader, GLsizei count, const c
             rpc_send_bulk(thread, string[i], (uint32_t)len);
          }
       }
+      rpc_end(thread);
+
       if (cached_len != cached_len_buf) {
          khrn_platform_free(cached_len);
       }
-
-      rpc_end(thread);
 #endif
 #endif
    }
