@@ -79,8 +79,7 @@ static GLboolean is_matrix_index_type(GLenum type) {
 }
 
 static GLboolean is_matrix_palette_size(GLint size) {
-   /* TODO: Should size 0 be allowed or not? */
-   return size > 0 && size <= GL11_CONFIG_MAX_VERTEX_UNITS_OES;
+   return size >= 1 && size <= GL11_CONFIG_MAX_VERTEX_UNITS_OES;
 }
 
 /* TODO: This is copied from glxx_client.c. Find a better method */
