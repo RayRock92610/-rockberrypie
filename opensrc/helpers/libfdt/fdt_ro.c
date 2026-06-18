@@ -645,16 +645,10 @@ int fdt_node_offset_by_prop_value(const void *fdt, int startoffset,
 				  const void *propval, int proplen)
 {
 	int offset;
-	const void *val;
 	int len;
 
 	FDT_RO_PROBE(fdt);
 
-	/* FIXME: The algorithm here is pretty horrible: we scan each
-	 * property of a node in fdt_getprop(), then if that didn't
-	 * find what we want, we scan over them again making our way
-	 * to the next node.  Still it's the easiest to implement
-	 * approach; performance can come later. */
 	int nextoffset;
 	int err;
 	int depth = 0;
@@ -710,12 +704,6 @@ int fdt_node_offset_by_phandle(const void *fdt, uint32_t phandle)
 
 	FDT_RO_PROBE(fdt);
 
-	/* FIXME: The algorithm here is pretty horrible: we
-	 * potentially scan each property of a node in
-	 * fdt_get_phandle(), then if that didn't find what
-	 * we want, we scan over them again making our way to the next
-	 * node.  Still it's the easiest to implement approach;
-	 * performance can come later. */
 	int nextoffset;
 	int depth = 0;
 	uint32_t tag;
@@ -905,11 +893,6 @@ int fdt_node_offset_by_compatible(const void *fdt, int startoffset,
 
 	FDT_RO_PROBE(fdt);
 
-	/* FIXME: The algorithm here is pretty horrible: we scan each
-	 * property of a node in fdt_node_check_compatible(), then if
-	 * that didn't find what we want, we scan over them again
-	 * making our way to the next node.  Still it's the easiest to
-	 * implement approach; performance can come later. */
 	int nextoffset;
 	int depth = 0;
 	uint32_t tag;
