@@ -101,9 +101,9 @@ EGLAPI EGLBoolean EGLAPIENTRY eglLockSurfaceKHR (EGLDisplay dpy, EGLSurface surf
                thread->error = EGL_BAD_ACCESS;
                result = EGL_FALSE;
             } else if (preserve_pixels) {
-               /* TODO: we don't need to support this. What error should we return? */
-               thread->error = EGL_BAD_ATTRIBUTE;
-               return EGL_FALSE;
+               /* We don't support EGL_MAP_PRESERVE_PIXELS_KHR. Returning EGL_BAD_MATCH to indicate unsupported configuration. */
+               thread->error = EGL_BAD_MATCH;
+               result = EGL_FALSE;
             } else {
                /* Don't allocate the buffer here. This happens during "mapping", in eglQuerySurface. */
                surface->mapped_buffer = 0;
