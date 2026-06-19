@@ -489,6 +489,12 @@ uint32_t fdt_get_phandle(const void *fdt, int nodeoffset)
 {
 	int offset;
 
+	/*
+	 * Note: Using fdt_first_property_offset to iterate through the properties
+	 * allows us to scan properties efficiently in a single pass instead of
+	 * utilizing fdt_getprop for "phandle" and then again for "linux,phandle".
+	 * This optimization resolves the FIXME regarding sub-optimal double-scanning.
+	 */
 	for (offset = fdt_first_property_offset(fdt, nodeoffset);
 	     (offset >= 0);
 	     (offset = fdt_next_property_offset(fdt, offset))) {
