@@ -174,7 +174,7 @@ EGLAPI EGLImageKHR EGLAPIENTRY eglCreateImageKHR (EGLDisplay dpy, EGLContext ctx
 #else
                if ((buf[0] == 0) || (buf[1] != (uint32_t)(-1))) { /* only allow regular server-side pixmaps */
 #endif
-                  /* This is a client-side pixmap! TODO: implement these properly */
+                  /* This is a client-side pixmap! */
                   KHRN_IMAGE_WRAP_T image;
                   if (platform_get_pixmap_info((EGLNativePixmapType)buffer, &image))
                   {
@@ -183,14 +183,18 @@ EGLAPI EGLImageKHR EGLAPIENTRY eglCreateImageKHR (EGLDisplay dpy, EGLContext ctx
                      {
                         //image.aux refers to a server side EGL surface 
                         //that already contains the data we're interested in
-                        buf[0] = (uint32_t)image.aux;
+                        buf[0] = (uint32_t)(uintptr_t)image.aux;
                         target = EGL_IMAGE_FROM_SURFACE_BRCM;
                         khrn_platform_release_pixmap_info((EGLNativePixmapType)buffer, &image);                        
                      }
 //                                         
                      else
                      {
-                        buf[0] = image.width | image.height << 16;
+                        buf[0] = (uint32_t)(uintptr_t)image.storage;
+                        buffer_format = image.format;
+                        buffer_width = image.width;
+                        buffer_height = image.height;
+                        buffer_stride = image.stride;
                         target = EGL_NATIVE_PIXMAP_CLIENT_SIDE_BRCM;
                         khrn_platform_release_pixmap_info((EGLNativePixmapType)buffer, &image);
                      }
@@ -205,7 +209,7 @@ EGLAPI EGLImageKHR EGLAPIENTRY eglCreateImageKHR (EGLDisplay dpy, EGLContext ctx
             } else if (target == EGL_IMAGE_WRAP_BRCM) {
                KHRN_IMAGE_WRAP_T *wrap_buffer = (KHRN_IMAGE_WRAP_T *)buffer;
 
-               buf[0] = (uint32_t)wrap_buffer->storage;
+               buf[0] = (uint32_t)(uintptr_t)wrap_buffer->storage;
                buffer_format = wrap_buffer->format;
                buffer_width = wrap_buffer->width;
                buffer_height = wrap_buffer->height;
@@ -215,7 +219,7 @@ EGLAPI EGLImageKHR EGLAPIENTRY eglCreateImageKHR (EGLDisplay dpy, EGLContext ctx
             } else if (target == EGL_IMAGE_WRAP_BRCM_BCG) {
                EGL_IMAGE_WRAP_BRCM_BCG_IMAGE_T *wrap_buffer = (EGL_IMAGE_WRAP_BRCM_BCG_IMAGE_T *)buffer;
 
-               buf[0] = (uint32_t)wrap_buffer->storage;
+               buf[0] = (uint32_t)(uintptr_t)wrap_buffer->storage;
                buffer_width = wrap_buffer->width;
                buffer_height = wrap_buffer->height;
                buffer_stride = wrap_buffer->stride;
@@ -338,25 +342,25 @@ EGLAPI EGLImageKHR EGLAPIENTRY eglCreateImageKHR (EGLDisplay dpy, EGLContext ctx
                       vcos_log_error("VCSM buffer dimension but be POT between 64 and 2048\n");
                   }
             } else if (target == EGL_IMAGE_BRCM_MULTIMEDIA) {
-                  buf[0] = (uint32_t)buffer;
+                  buf[0] = (uint32_t)(uintptr_t)buffer;
                   vcos_log_trace("%s: converting buffer handle %u to EGL_IMAGE_BRCM_MULTIMEDIA",
                         __FUNCTION__, buf[0]);
             } else if (target == EGL_IMAGE_BRCM_MULTIMEDIA_Y) {
-                  buf[0] = (uint32_t)buffer;
+                  buf[0] = (uint32_t)(uintptr_t)buffer;
                   vcos_log_trace("%s: converting buffer handle %u to EGL_IMAGE_BRCM_MULTIMEDIA_Y",
                         __FUNCTION__, buf[0]);
             } else if (target == EGL_IMAGE_BRCM_MULTIMEDIA_U) {
-                  buf[0] = (uint32_t)buffer;
+                  buf[0] = (uint32_t)(uintptr_t)buffer;
                   vcos_log_trace("%s: converting buffer handle %u to EGL_IMAGE_BRCM_MULTIMEDIA_U",
                         __FUNCTION__, buf[0]);
             } else if (target == EGL_IMAGE_BRCM_MULTIMEDIA_V) {
-                  buf[0] = (uint32_t)buffer;
+                  buf[0] = (uint32_t)(uintptr_t)buffer;
                   vcos_log_trace("%s: converting buffer handle %u to EGL_IMAGE_BRCM_MULTIMEDIA_V",
                         __FUNCTION__, buf[0]);
 #endif
             } else {
                vcos_log_trace("%s:target type %x buffer %p handled on server", __FUNCTION__, target, buffer);
-               buf[0] = (uint32_t)buffer;
+               buf[0] = (uint32_t)(uintptr_t)buffer;
             }
             if (buf_error) {
                thread->error = EGL_BAD_PARAMETER;
