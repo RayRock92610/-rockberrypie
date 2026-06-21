@@ -1482,9 +1482,14 @@ void *vcsm_lock_cache( unsigned int handle,
 
    if (using_vc_sm_cma)
    {
-      //FIXME: IMPLEMENT THIS
-      vcos_log_error("[%s]: IMPLEMENT ME", __func__);
-      return NULL;
+      /* The CMA implementation doesn't currently support changing cache
+      ** behaviour on the fly, so we just fall back to normal lock
+      */
+      if (cache_result != NULL)
+      {
+         *cache_result = cache_update;
+      }
+      return vcsm_lock(handle);
    }
    else
    {
