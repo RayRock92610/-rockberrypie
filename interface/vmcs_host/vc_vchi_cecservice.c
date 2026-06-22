@@ -103,7 +103,7 @@ static char* cecservice_command_strings[] = {
    "end_of_list"
 };
 
-static const uint32_t max_command_strings = sizeof(cecservice_command_strings)/sizeof(char *);
+
 
 //Notification strings - must match vc_cec.h VC_CEC_NOTIFY_T
 static char* cecservice_notify_strings[] = {
@@ -135,7 +135,7 @@ static char* cecservice_devicetype_strings[] = {
    "8", "9", "10", "11", "12", "13", "14", "invalid"
 };
 
-static const uint32_t max_devicetype_strings = sizeof(cecservice_devicetype_strings)/sizeof(char *);
+
 
 /******************************************************************************
 Static functions.
@@ -356,10 +356,10 @@ VCHPRE_ void VCHPOST_ vc_cec_register_callback(CECSERVICE_CALLBACK_T callback, v
    if(lock_obtain() == 0){
       cecservice_client.notify_fn   = callback;
       cecservice_client.notify_data = callback_data;
-      vc_cec_log_info("CEC service registered callback 0x%x", (uint32_t) callback);
+      vc_cec_log_info("CEC service registered callback 0x%x", (uint32_t)(uintptr_t)callback);
       lock_release();
    } else {
-      vc_cec_log_error("CEC service registered callback 0x%x failed", (uint32_t) callback);
+      vc_cec_log_error("CEC service registered callback 0x%x failed", (uint32_t)(uintptr_t)callback);
    }
 }
 

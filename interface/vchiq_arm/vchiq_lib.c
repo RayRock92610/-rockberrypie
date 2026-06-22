@@ -335,7 +335,7 @@ vchiq_close_service(VCHIQ_SERVICE_HANDLE_T handle)
    VCHIQ_SERVICE_T *service = find_service_by_handle(handle);
    int ret;
 
-   vcos_log_trace( "%s called service handle = 0x%08x", __func__, (uint32_t)handle );
+   vcos_log_trace( "%s called service handle = 0x%08x", __func__, (uint32_t)(uintptr_t)handle );
 
    if (!service)
       return VCHIQ_ERROR;
@@ -357,7 +357,7 @@ vchiq_remove_service(VCHIQ_SERVICE_HANDLE_T handle)
    VCHIQ_SERVICE_T *service = find_service_by_handle(handle);
    int ret;
 
-   vcos_log_trace( "%s called service handle = 0x%08x", __func__, (uint32_t)handle );
+   vcos_log_trace( "%s called service handle = 0x%08x", __func__, (uint32_t)(uintptr_t)handle );
 
    if (!service)
       return VCHIQ_ERROR;
@@ -381,7 +381,7 @@ vchiq_queue_message(VCHIQ_SERVICE_HANDLE_T handle,
    VCHIQ_QUEUE_MESSAGE_T args;
    int ret;
 
-   vcos_log_trace( "%s called service handle = 0x%08x", __func__, (uint32_t)handle );
+   vcos_log_trace( "%s called service handle = 0x%08x", __func__, (uint32_t)(uintptr_t)handle );
 
    if (!service)
       return VCHIQ_ERROR;
@@ -398,7 +398,7 @@ void
 vchiq_release_message(VCHIQ_SERVICE_HANDLE_T handle,
    VCHIQ_HEADER_T *header)
 {
-   vcos_log_trace( "%s handle=%08x, header=%x", __func__, (uint32_t)handle, (uint32_t)header );
+   vcos_log_trace( "%s handle=%08x, header=%x", __func__, (uint32_t)(uintptr_t)handle, (uint32_t)(uintptr_t)header );
 
    free_msgbuf(header);
 }
@@ -413,7 +413,7 @@ vchiq_queue_bulk_transmit(VCHIQ_SERVICE_HANDLE_T handle,
    VCHIQ_QUEUE_BULK_TRANSFER_T args;
    int ret;
 
-   vcos_log_trace( "%s called service handle = 0x%08x", __func__, (uint32_t)handle );
+   vcos_log_trace( "%s called service handle = 0x%08x", __func__, (uint32_t)(uintptr_t)handle );
 
    if (!service)
       return VCHIQ_ERROR;
@@ -438,7 +438,7 @@ vchiq_queue_bulk_receive(VCHIQ_SERVICE_HANDLE_T handle,
    VCHIQ_QUEUE_BULK_TRANSFER_T args;
    int ret;
 
-   vcos_log_trace( "%s called service handle = 0x%08x", __func__, (uint32_t)handle );
+   vcos_log_trace( "%s called service handle = 0x%08x", __func__, (uint32_t)(uintptr_t)handle );
 
    if (!service)
       return VCHIQ_ERROR;
@@ -462,7 +462,7 @@ vchiq_queue_bulk_transmit_handle(VCHIQ_SERVICE_HANDLE_T handle,
 {
    vcos_assert(memhandle == VCHI_MEM_HANDLE_INVALID);
 
-   vcos_log_trace( "%s called service handle = 0x%08x", __func__, (uint32_t)handle );
+   vcos_log_trace( "%s called service handle = 0x%08x", __func__, (uint32_t)(uintptr_t)handle );
 
    return vchiq_queue_bulk_transmit(handle, offset, size, userdata);
 }
@@ -476,7 +476,7 @@ vchiq_queue_bulk_receive_handle(VCHIQ_SERVICE_HANDLE_T handle,
 {
    vcos_assert(memhandle == VCHI_MEM_HANDLE_INVALID);
 
-   vcos_log_trace( "%s called service handle = 0x%08x", __func__, (uint32_t)handle );
+   vcos_log_trace( "%s called service handle = 0x%08x", __func__, (uint32_t)(uintptr_t)handle );
 
    return vchiq_queue_bulk_receive(handle, offset, size, userdata);
 }
@@ -492,7 +492,7 @@ vchiq_bulk_transmit(VCHIQ_SERVICE_HANDLE_T handle,
    VCHIQ_QUEUE_BULK_TRANSFER_T args;
    int ret;
 
-   vcos_log_trace( "%s called service handle = 0x%08x", __func__, (uint32_t)handle );
+   vcos_log_trace( "%s called service handle = 0x%08x", __func__, (uint32_t)(uintptr_t)handle );
 
    if (!service)
       return VCHIQ_ERROR;
@@ -545,7 +545,7 @@ vchiq_bulk_receive_handle(VCHIQ_SERVICE_HANDLE_T handle,
 
    vcos_assert(memhandle == VCHI_MEM_HANDLE_INVALID);
 
-   vcos_log_trace( "%s called service handle = 0x%08x", __func__, (uint32_t)handle );
+   vcos_log_trace( "%s called service handle = 0x%08x", __func__, (uint32_t)(uintptr_t)handle );
 
    if (!service)
       return VCHIQ_ERROR;
@@ -606,7 +606,7 @@ vchiq_get_config(VCHIQ_INSTANCE_T instance,
    return (ret >= 0) ? VCHIQ_SUCCESS : VCHIQ_ERROR;
 }
 
-int32_t
+VCHIQ_STATUS_T
 vchiq_use_service( const VCHIQ_SERVICE_HANDLE_T handle )
 {
    VCHIQ_SERVICE_T *service = find_service_by_handle(handle);
@@ -619,7 +619,7 @@ vchiq_use_service( const VCHIQ_SERVICE_HANDLE_T handle )
    return ret;
 }
 
-int32_t
+VCHIQ_STATUS_T
 vchiq_release_service( const VCHIQ_SERVICE_HANDLE_T handle )
 {
    VCHIQ_SERVICE_T *service = find_service_by_handle(handle);
@@ -1396,7 +1396,7 @@ VCHIQ_STATUS_T vchiq_dump_phys_mem( VCHIQ_SERVICE_HANDLE_T handle,
                              void *ptr,
                              size_t num_bytes )
 {
-   VCHIQ_SERVICE_T *service = (VCHIQ_SERVICE_T *)handle;
+   VCHIQ_SERVICE_T *service = (VCHIQ_SERVICE_T *)(uintptr_t)handle;
    VCHIQ_DUMP_MEM_T  dump_mem;
    int ret;
 
@@ -1549,8 +1549,8 @@ completion_thread(void *arg)
          if (service->base.callback)
          {
             vcos_log_trace( "callback(%x, %x, %x(%x,%x), %x)",
-               completion->reason, (uint32_t)completion->header,
-               (uint32_t)&service->base, (uint32_t)service->lib_handle, (uint32_t)service->base.userdata, (uint32_t)completion->bulk_userdata );
+               completion->reason, (uint32_t)(uintptr_t)completion->header,
+               (uint32_t)(uintptr_t)&service->base, (uint32_t)(uintptr_t)service->lib_handle, (uint32_t)(uintptr_t)service->base.userdata, (uint32_t)(uintptr_t)completion->bulk_userdata );
             service->base.callback(completion->reason, completion->header,
                service->lib_handle, completion->bulk_userdata);
          }
