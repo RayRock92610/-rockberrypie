@@ -1189,7 +1189,7 @@ static void draw_arrays_or_elements(CLIENT_THREAD_STATE_T *thread, GLXX_CLIENT_S
 
    if(type==0)
    {
-      first = (int)indices;
+      first = (int)(uintptr_t)indices;
       indices_offset = first;
       indices_buffer = 0;
       send_indices = 0;
@@ -1212,7 +1212,7 @@ static void draw_arrays_or_elements(CLIENT_THREAD_STATE_T *thread, GLXX_CLIENT_S
       else
       {
          indices_key = 0;
-         indices_offset = (uint32_t)indices;
+         indices_offset = (uint32_t)(uintptr_t)indices;
 
          if (cache_info.send_any)
             max = RPC_INT_RES(RPC_CALL3_RES(
