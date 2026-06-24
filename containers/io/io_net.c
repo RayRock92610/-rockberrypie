@@ -136,7 +136,7 @@ static FILE *io_net_open_capture_file(const char *host_str,
       return NULL;
 
    /* Create the file */
-   sprintf(filename, format, host_str, port_str, is_udp ? 'u' : 't');
+   snprintf(filename, sizeof(filename), format, host_str, port_str, is_udp ? 'u' : 't');
    stream = fopen(filename, "wb");
    if (!stream)
       return NULL;
