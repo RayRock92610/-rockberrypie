@@ -5315,8 +5315,14 @@ void glxx_client_BindFramebuffer(GLenum target, GLuint framebuffer)
                 RPC_ENUM(target),
                 RPC_UINT(framebuffer));
 
-      //TODO: this may be set incorrectly if there's an error
-      state->default_framebuffer = (framebuffer == 0);
+      switch (target) {
+      case GL_FRAMEBUFFER:
+         state->default_framebuffer = (framebuffer == 0);
+         break;
+      default:
+         // do nothing, server will signal error
+         break;
+      }
    }
 }
 
