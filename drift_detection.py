@@ -2,7 +2,6 @@ import os
 import json
 import hashlib
 import fnmatch
-import configparser
 import argparse
 import sys
 from datetime import datetime
