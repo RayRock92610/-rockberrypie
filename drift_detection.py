@@ -9,14 +9,20 @@ from datetime import datetime
 # CONFIGURATION DEFAULTS
 BASELINE_FILE = os.environ.get("K_BASELINE", "baseline.json")
 CONFIG_FILE = "config.ini"
-BUFFER_SIZE = 65536
+BUFFER_SIZE = 1048576
 
 def get_file_hash(filepath):
     sha256_hash = hashlib.sha256()
     try:
+        size = os.path.getsize(filepath)
         with open(filepath, "rb") as f:
-            while data := f.read(BUFFER_SIZE):
-                sha256_hash.update(data)
+            # ⚡ Bolt: Read small files entirely into memory to eliminate the loop overhead
+            # associated with chunked reading.
+            if size <= BUFFER_SIZE:
+                sha256_hash.update(f.read())
+            else:
+                while data := f.read(BUFFER_SIZE):
+                    sha256_hash.update(data)
         return sha256_hash.hexdigest()
     except IOError:
         return None
@@ -50,11 +56,16 @@ def create_baseline(directory, exclusions):
     for root, dirs, files in os.walk(directory):
         # In-place modification of dirs to skip excluded subtrees
         dirs[:] = [d for d in dirs if not is_excluded(os.path.join(root, d), d, exclusions_tuple)]
+
+        # ⚡ Bolt: Calculate relative path once per directory instead of per file
+        # to avoid significant path manipulation overhead.
+        root_rel = os.path.relpath(root, directory) if root != directory else ""
+
         for f in files:
             full_path = os.path.join(root, f)
             if is_excluded(full_path, f, exclusions_tuple): continue
 
-            rel_path = os.path.relpath(full_path, directory)
+            rel_path = os.path.join(root_rel, f) if root_rel else f
             f_hash = get_file_hash(full_path)
             if f_hash: baseline[rel_path] = f_hash
 
@@ -73,10 +84,14 @@ def check_integrity(directory, exclusions):
     for root, dirs, files in os.walk(directory):
         # In-place modification of dirs to skip excluded subtrees
         dirs[:] = [d for d in dirs if not is_excluded(os.path.join(root, d), d, exclusions_tuple)]
+
+        # ⚡ Bolt: Calculate relative path once per directory instead of per file
+        root_rel = os.path.relpath(root, directory) if root != directory else ""
+
         for f in files:
             full_path = os.path.join(root, f)
             if is_excluded(full_path, f, exclusions_tuple): continue
-            rel_path = os.path.relpath(full_path, directory)
+            rel_path = os.path.join(root_rel, f) if root_rel else f
 
             # We don't need to hash if it's a new file, it will be added to new files list
             if rel_path in baseline:
