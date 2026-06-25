@@ -2835,6 +2835,33 @@ GL_APICALL int GL_APIENTRY glGetUniformLocation (GLuint program, const char *nam
    CURRENT VERTEX ATTRIB 0,0,0,1 GetVertexAttributes
 */
 
+
+static bool get_vertex_attrib_param(GLXX_CLIENT_STATE_T *state, GLuint index, GLenum pname, GLint *param)
+{
+   switch (pname) {
+   case GL_VERTEX_ATTRIB_ARRAY_ENABLED:
+      *param = state->attrib[index].enabled ? GL_TRUE : GL_FALSE;
+      return true;
+   case GL_VERTEX_ATTRIB_ARRAY_SIZE:
+      *param = (GLint) state->attrib[index].size;
+      return true;
+   case GL_VERTEX_ATTRIB_ARRAY_STRIDE:
+      *param = (GLint) state->attrib[index].stride;
+      return true;
+   case GL_VERTEX_ATTRIB_ARRAY_TYPE:
+      *param = (GLint) state->attrib[index].type;
+      return true;
+   case GL_VERTEX_ATTRIB_ARRAY_NORMALIZED:
+      *param = state->attrib[index].normalized ? GL_TRUE : GL_FALSE;
+      return true;
+   case GL_VERTEX_ATTRIB_ARRAY_BUFFER_BINDING:
+      *param = (GLint) state->attrib[index].buffer;
+      return true;
+   default:
+      return false;
+   }
+}
+
 GL_APICALL void GL_APIENTRY glGetVertexAttribfv (GLuint index, GLenum pname, GLfloat *params)
 {
    CLIENT_THREAD_STATE_T *thread = CLIENT_GET_THREAD_STATE();
@@ -2852,31 +2879,15 @@ GL_APICALL void GL_APIENTRY glGetVertexAttribfv (GLuint index, GLenum pname, GLf
             params[3] = state->attrib[index].value[3];
             break;
 
-         //TODO: is this the best way to handle conversions? We duplicate
-         //the entire switch statement.
-         case GL_VERTEX_ATTRIB_ARRAY_ENABLED:
-            params[0] = state->attrib[index].enabled ? 1.0f : 0.0f;
-            break;
-         case GL_VERTEX_ATTRIB_ARRAY_SIZE:
-            params[0] = (GLfloat)state->attrib[index].size;
-            break;
-         case GL_VERTEX_ATTRIB_ARRAY_STRIDE:
-            params[0] = (GLfloat)state->attrib[index].stride;
-            break;
-         case GL_VERTEX_ATTRIB_ARRAY_TYPE:
-            params[0] = (GLfloat)state->attrib[index].type;
-            break;
-         case GL_VERTEX_ATTRIB_ARRAY_NORMALIZED:
-            params[0] = state->attrib[index].normalized ? 1.0f : 0.0f;
-            break;
-         case GL_VERTEX_ATTRIB_ARRAY_BUFFER_BINDING:
-            params[0] = (GLfloat)state->attrib[index].buffer;
-            break;
-
-
-
          default:
-            set_error(state, GL_INVALID_ENUM);
+            {
+               GLint param;
+               if (get_vertex_attrib_param(state, index, pname, &param)) {
+                  params[0] = (GLfloat)param;
+               } else {
+                  set_error(state, GL_INVALID_ENUM);
+               }
+            }
             break;
          }
       else
@@ -2894,28 +2905,7 @@ GL_APICALL void GL_APIENTRY glGetVertexAttribiv (GLuint index, GLenum pname, GLi
 
       if (index < GL20_CONFIG_MAX_VERTEX_ATTRIBS)
          switch (pname) {
-         case GL_VERTEX_ATTRIB_ARRAY_ENABLED:
-            params[0] = (GLint) state->attrib[index].enabled ? GL_TRUE : GL_FALSE;
-            break;
-         case GL_VERTEX_ATTRIB_ARRAY_SIZE:
-            params[0] = (GLint) state->attrib[index].size;
-            break;
-         case GL_VERTEX_ATTRIB_ARRAY_STRIDE:
-            params[0] = (GLint) state->attrib[index].stride;
-            break;
-         case GL_VERTEX_ATTRIB_ARRAY_TYPE:
-            params[0] = (GLint) state->attrib[index].type;
-            break;
-         case GL_VERTEX_ATTRIB_ARRAY_NORMALIZED:
-            params[0] = (GLint) state->attrib[index].normalized ? GL_TRUE : GL_FALSE;
-            break;
-         case GL_VERTEX_ATTRIB_ARRAY_BUFFER_BINDING:
-            params[0] = (GLint) state->attrib[index].buffer;
-            break;
 
-
-         //TODO: is this the best way to handle conversions? We duplicate
-         //the entire switch statement.
          case GL_CURRENT_VERTEX_ATTRIB:
             params[0] = (GLint)state->attrib[index].value[0];
             params[1] = (GLint)state->attrib[index].value[1];
@@ -2924,7 +2914,14 @@ GL_APICALL void GL_APIENTRY glGetVertexAttribiv (GLuint index, GLenum pname, GLi
             break;
 
          default:
-            set_error(state, GL_INVALID_ENUM);
+            {
+               GLint param;
+               if (get_vertex_attrib_param(state, index, pname, &param)) {
+                  params[0] = param;
+               } else {
+                  set_error(state, GL_INVALID_ENUM);
+               }
+            }
             break;
          }
       else
