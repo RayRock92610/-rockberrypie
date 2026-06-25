@@ -4,7 +4,6 @@ import hashlib
 import fnmatch
 import argparse
 import sys
-from datetime import datetime
 
 # CONFIGURATION DEFAULTS
 BASELINE_FILE = os.environ.get("K_BASELINE", "baseline.json")
