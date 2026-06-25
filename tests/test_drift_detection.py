@@ -4,6 +4,7 @@ import sys
 import tempfile
 import shutil
 import json
+import hashlib
 from unittest.mock import patch, mock_open
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -44,6 +45,35 @@ class TestDriftDetection(unittest.TestCase):
         mock_file.side_effect = IOError("Mocked IO Error")
         result = drift_detection.get_file_hash("some_dummy_file.txt")
         self.assertIsNone(result)
+
+
+
+    def test_get_file_hash_success_small(self):
+        # Test file smaller than BUFFER_SIZE
+        test_file = os.path.join(self.temp_dir, "hash_test_small.txt")
+        content = b"Small test content"
+        with open(test_file, "wb") as f:
+            f.write(content)
+
+        expected_hash = hashlib.sha256(content).hexdigest()
+        result = drift_detection.get_file_hash(test_file)
+        self.assertEqual(result, expected_hash)
+
+    def test_get_file_hash_success_large(self):
+        # Test file larger than BUFFER_SIZE by temporarily reducing BUFFER_SIZE
+        test_file = os.path.join(self.temp_dir, "hash_test_large.txt")
+        content = b"Large test content"
+        with open(test_file, "wb") as f:
+            f.write(content)
+
+        original_buffer_size = drift_detection.BUFFER_SIZE
+        drift_detection.BUFFER_SIZE = 4
+        try:
+            expected_hash = hashlib.sha256(content).hexdigest()
+            result = drift_detection.get_file_hash(test_file)
+            self.assertEqual(result, expected_hash)
+        finally:
+            drift_detection.BUFFER_SIZE = original_buffer_size
 
     def test_create_baseline(self):
         count = drift_detection.create_baseline(self.temp_dir, self.exclusions)
