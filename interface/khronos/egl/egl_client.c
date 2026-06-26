@@ -2288,11 +2288,13 @@ EGLAPI EGLBoolean EGLAPIENTRY eglSwapBuffers(EGLDisplay dpy, EGLSurface surf)
                         surface->width, surface->base_width, surface->height,
                         surface->base_height);
 
-               /* TODO: raise EGL_BAD_ALLOC if we try to enlarge window and then run out of memory
+               if (!(surface->width <= surface->base_width && surface->height <= surface->base_height ||
+                     surface->width <= surface->base_height && surface->height <= surface->base_width)) {
+                  thread->error = EGL_BAD_ALLOC;
+                  CLIENT_UNLOCK();
+                  return EGL_FALSE;
+               }
 
-                  if (surface->width <= surface->base_width && surface->height <= surface->base_height ||
-                  surface->width <= surface->base_height && surface->height <= surface->base_width)
-                  */
                // We don't call flush_current_api() here because it's only relevant
                // for pixmap surfaces (eglIntSwapBuffers takes care of flushing on
                // the server side).
