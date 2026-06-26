@@ -598,7 +598,9 @@ WFC_API_CALL void WFC_APIENTRY
                {
                   // Another thread is competing for access to the context, so
                   // wait a little and try again.
+                  WFC_UNLOCK();
                   vcos_sleep(1);
+                  WFC_LOCK();
                }
             }
             while (status == VCOS_EAGAIN);
@@ -1695,7 +1697,9 @@ WFC_API_CALL void WFC_APIENTRY
          {
             // Another thread is competing for access to the context, so
             // wait a little and try again.
+            WFC_UNLOCK();
             vcos_sleep(1);
+            WFC_LOCK();
          }
       }
       while (status == VCOS_EAGAIN);
@@ -1787,7 +1791,9 @@ WFC_API_CALL void WFC_APIENTRY
                {
                   // Another thread is competing for access to the context, so
                   // wait a little and try again.
+                  WFC_UNLOCK();
                   vcos_sleep(1);
+                  WFC_LOCK();
                }
             }
             while (status == VCOS_EAGAIN);
