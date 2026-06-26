@@ -88,6 +88,17 @@ class TestDriftDetection(unittest.TestCase):
         self.assertNotIn(os.path.join("excluded_dir", "file4.txt"), data)
         self.assertNotIn("baseline.json", data)
 
+
+    def test_create_baseline_empty_dir(self):
+        empty_dir = os.path.join(self.temp_dir, "empty_dir")
+        os.makedirs(empty_dir)
+        count = drift_detection.create_baseline(empty_dir, self.exclusions)
+        self.assertEqual(count, 0)
+        self.assertTrue(os.path.exists(drift_detection.BASELINE_FILE))
+        with open(drift_detection.BASELINE_FILE, "r") as f:
+            data = json.load(f)
+        self.assertEqual(data, {})
+
     def test_check_integrity_no_drift(self):
         drift_detection.create_baseline(self.temp_dir, self.exclusions)
         result, err = drift_detection.check_integrity(self.temp_dir, self.exclusions)
