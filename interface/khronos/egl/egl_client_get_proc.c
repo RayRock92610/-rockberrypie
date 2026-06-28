@@ -68,193 +68,137 @@ extern "C" {
 /* Mangle eglGetProcAddress */
 #include "interface/khronos/common/khrn_client_mangle.h"
 
-EGLAPI void EGLAPIENTRY (* eglGetProcAddress(const char *procname))(void)
-{
 /* Don't mangle the rest */
 #include "interface/khronos/common/khrn_client_unmangle.h"
 #include "interface/khronos/include/EGL/eglext.h"
 
-   /* TODO: any other functions we need to return here?    */
-   if(!procname) return (void(*)(void)) NULL;
-
+static const struct {
+   const char *name;
+   void (*proc)(void);
+} ext_procs[] = {
 #if EGL_KHR_image
-   if (!strcmp(procname, "eglCreateImageKHR"))
-      return (void(*)(void))eglCreateImageKHR;
-   if (!strcmp(procname, "eglDestroyImageKHR"))
-      return (void(*)(void))eglDestroyImageKHR;
+   { "eglCreateImageKHR", (void (*)(void)) eglCreateImageKHR },
+   { "eglDestroyImageKHR", (void (*)(void)) eglDestroyImageKHR },
 #endif
 #ifdef GL_EXT_discard_framebuffer
-   if (!strcmp(procname, "glDiscardFramebufferEXT"))
-      return (void(*)(void))glDiscardFramebufferEXT;
+   { "glDiscardFramebufferEXT", (void (*)(void)) glDiscardFramebufferEXT },
 #endif
 #ifdef GL_EXT_debug_marker
-   if (!strcmp(procname, "glInsertEventMarkerEXT"))
-      return (void(*)(void))glInsertEventMarkerEXT;
-   if (!strcmp(procname, "glPushGroupMarkerEXT"))
-      return (void(*)(void))glPushGroupMarkerEXT;
-   if (!strcmp(procname, "glPopGroupMarkerEXT"))
-      return (void(*)(void))glPopGroupMarkerEXT;
+   { "glInsertEventMarkerEXT", (void (*)(void)) glInsertEventMarkerEXT },
+   { "glPushGroupMarkerEXT", (void (*)(void)) glPushGroupMarkerEXT },
+   { "glPopGroupMarkerEXT", (void (*)(void)) glPopGroupMarkerEXT },
 #endif
 #if GL_OES_point_size_array
-   if (!strcmp(procname, "glPointSizePointerOES"))
-      return (void(*)(void))glPointSizePointerOES;
+   { "glPointSizePointerOES", (void (*)(void)) glPointSizePointerOES },
 #endif
 #if GL_OES_EGL_image
-   if (!strcmp(procname, "glEGLImageTargetTexture2DOES"))
-      return (void(*)(void))glEGLImageTargetTexture2DOES;
-   if (!strcmp(procname, "glEGLImageTargetRenderbufferStorageOES"))
-      return (void(*)(void))glEGLImageTargetRenderbufferStorageOES;
+   { "glEGLImageTargetTexture2DOES", (void (*)(void)) glEGLImageTargetTexture2DOES },
+   { "glEGLImageTargetRenderbufferStorageOES", (void (*)(void)) glEGLImageTargetRenderbufferStorageOES },
 #endif
 #if GL_OES_matrix_palette
-   if (!strcmp(procname, "glCurrentPaletteMatrixOES"))
-      return (void(*)(void))glCurrentPaletteMatrixOES;
-   if (!strcmp(procname, "glLoadPaletteFromModelViewMatrixOES"))
-      return (void(*)(void))glLoadPaletteFromModelViewMatrixOES;
-   if (!strcmp(procname, "glMatrixIndexPointerOES"))
-      return (void(*)(void))glMatrixIndexPointerOES;
-   if (!strcmp(procname, "glWeightPointerOES"))
-      return (void(*)(void))glWeightPointerOES;
+   { "glCurrentPaletteMatrixOES", (void (*)(void)) glCurrentPaletteMatrixOES },
+   { "glLoadPaletteFromModelViewMatrixOES", (void (*)(void)) glLoadPaletteFromModelViewMatrixOES },
+   { "glMatrixIndexPointerOES", (void (*)(void)) glMatrixIndexPointerOES },
+   { "glWeightPointerOES", (void (*)(void)) glWeightPointerOES },
 #endif
 #ifndef NO_OPENVG
 #if VG_KHR_EGL_image
-   if (!strcmp(procname, "vgCreateEGLImageTargetKHR"))
-      return (void(*)(void))vgCreateEGLImageTargetKHR;
+   { "vgCreateEGLImageTargetKHR", (void (*)(void)) vgCreateEGLImageTargetKHR },
 #endif
 #endif /* NO_OPENVG */
 #if EGL_KHR_lock_surface
-   if (!strcmp(procname, "eglLockSurfaceKHR"))
-      return (void(*)(void))eglLockSurfaceKHR;
-   if (!strcmp(procname, "eglUnlockSurfaceKHR"))
-      return (void(*)(void))eglUnlockSurfaceKHR;
+   { "eglLockSurfaceKHR", (void (*)(void)) eglLockSurfaceKHR },
+   { "eglUnlockSurfaceKHR", (void (*)(void)) eglUnlockSurfaceKHR },
 #endif
 #if EGL_KHR_sync
-   if (!strcmp(procname, "eglCreateSyncKHR"))
-      return (void(*)(void))eglCreateSyncKHR;
-   if (!strcmp(procname, "eglDestroySyncKHR"))
-      return (void(*)(void))eglDestroySyncKHR;
-   if (!strcmp(procname, "eglClientWaitSyncKHR"))
-      return (void(*)(void))eglClientWaitSyncKHR;
-   if (!strcmp(procname, "eglSignalSyncKHR"))
-      return (void(*)(void))eglSignalSyncKHR;
-   if (!strcmp(procname, "eglGetSyncAttribKHR"))
-      return (void(*)(void))eglGetSyncAttribKHR;
+   { "eglCreateSyncKHR", (void (*)(void)) eglCreateSyncKHR },
+   { "eglDestroySyncKHR", (void (*)(void)) eglDestroySyncKHR },
+   { "eglClientWaitSyncKHR", (void (*)(void)) eglClientWaitSyncKHR },
+   { "eglSignalSyncKHR", (void (*)(void)) eglSignalSyncKHR },
+   { "eglGetSyncAttribKHR", (void (*)(void)) eglGetSyncAttribKHR },
 #endif
 #if EGL_BRCM_perf_monitor
-   if (!strcmp(procname, "eglInitPerfMonitorBRCM"))
-      return (void(*)(void))eglInitPerfMonitorBRCM;
-   if (!strcmp(procname, "eglTermPerfMonitorBRCM"))
-      return (void(*)(void))eglTermPerfMonitorBRCM;
+   { "eglInitPerfMonitorBRCM", (void (*)(void)) eglInitPerfMonitorBRCM },
+   { "eglTermPerfMonitorBRCM", (void (*)(void)) eglTermPerfMonitorBRCM },
 #endif
 #if EGL_BRCM_driver_monitor
-   if (!strcmp(procname, "eglInitDriverMonitorBRCM"))
-      return (void(*)(void))eglInitDriverMonitorBRCM;
-   if (!strcmp(procname, "eglGetDriverMonitorXMLBRCM"))
-      return (void(*)(void))eglGetDriverMonitorXMLBRCM;
-   if (!strcmp(procname, "eglTermDriverMonitorBRCM"))
-      return (void(*)(void))eglTermDriverMonitorBRCM;
+   { "eglInitDriverMonitorBRCM", (void (*)(void)) eglInitDriverMonitorBRCM },
+   { "eglGetDriverMonitorXMLBRCM", (void (*)(void)) eglGetDriverMonitorXMLBRCM },
+   { "eglTermDriverMonitorBRCM", (void (*)(void)) eglTermDriverMonitorBRCM },
 #endif
 #if EGL_BRCM_perf_stats
-   if (!strcmp(procname, "eglPerfStatsResetBRCM"))
-      return (void(*)(void))eglPerfStatsResetBRCM;
-   if (!strcmp(procname, "eglPerfStatsGetBRCM"))
-      return (void(*)(void))eglPerfStatsGetBRCM;
+   { "eglPerfStatsResetBRCM", (void (*)(void)) eglPerfStatsResetBRCM },
+   { "eglPerfStatsGetBRCM", (void (*)(void)) eglPerfStatsGetBRCM },
 #endif
 #if EGL_BRCM_mem_usage
-   if (!strcmp(procname, "eglProcessMemUsageGetBRCM"))
-      return (void(*)(void))eglProcessMemUsageGetBRCM;
+   { "eglProcessMemUsageGetBRCM", (void (*)(void)) eglProcessMemUsageGetBRCM },
 #endif
 #ifdef EXPORT_DESTROY_BY_PID
-   if (!strcmp(procname, "eglDestroyByPidBRCM"))
-      return (void(*)(void))eglDestroyByPidBRCM;
+   { "eglDestroyByPidBRCM", (void (*)(void)) eglDestroyByPidBRCM },
 #endif
 #if GL_OES_draw_texture
-   if (!strcmp(procname, "glDrawTexsOES"))
-      return (void(*)(void))glDrawTexsOES;
-   if (!strcmp(procname, "glDrawTexiOES"))
-      return (void(*)(void))glDrawTexiOES;
-   if (!strcmp(procname, "glDrawTexxOES"))
-      return (void(*)(void))glDrawTexxOES;
-   if (!strcmp(procname, "glDrawTexsvOES"))
-      return (void(*)(void))glDrawTexsvOES;
-   if (!strcmp(procname, "glDrawTexivOES"))
-      return (void(*)(void))glDrawTexivOES;
-   if (!strcmp(procname, "glDrawTexxvOES"))
-      return (void(*)(void))glDrawTexxvOES;
-   if (!strcmp(procname, "glDrawTexfOES"))
-      return (void(*)(void))glDrawTexfOES;
-   if (!strcmp(procname, "glDrawTexfvOES"))
-      return (void(*)(void))glDrawTexfvOES;
+   { "glDrawTexsOES", (void (*)(void)) glDrawTexsOES },
+   { "glDrawTexiOES", (void (*)(void)) glDrawTexiOES },
+   { "glDrawTexxOES", (void (*)(void)) glDrawTexxOES },
+   { "glDrawTexsvOES", (void (*)(void)) glDrawTexsvOES },
+   { "glDrawTexivOES", (void (*)(void)) glDrawTexivOES },
+   { "glDrawTexxvOES", (void (*)(void)) glDrawTexxvOES },
+   { "glDrawTexfOES", (void (*)(void)) glDrawTexfOES },
+   { "glDrawTexfvOES", (void (*)(void)) glDrawTexfvOES },
 #endif
-
 #if GL_OES_query_matrix
-   if (!strcmp(procname, "glQueryMatrixxOES"))
-      return (void(*)(void))glQueryMatrixxOES;
+   { "glQueryMatrixxOES", (void (*)(void)) glQueryMatrixxOES },
 #endif
-
 #if GL_OES_framebuffer_object
-   if (!strcmp(procname, "glIsRenderbufferOES"))
-      return (void(*)(void))glIsRenderbufferOES;
-   if (!strcmp(procname, "glBindRenderbufferOES"))
-      return (void(*)(void))glBindRenderbufferOES;
-   if (!strcmp(procname, "glDeleteRenderbuffersOES"))
-      return (void(*)(void))glDeleteRenderbuffersOES;
-   if (!strcmp(procname, "glGenRenderbuffersOES"))
-      return (void(*)(void))glGenRenderbuffersOES;
-   if (!strcmp(procname, "glRenderbufferStorageOES"))
-      return (void(*)(void))glRenderbufferStorageOES;
-   if (!strcmp(procname, "glGetRenderbufferParameterivOES"))
-      return (void(*)(void))glGetRenderbufferParameterivOES;
-   if (!strcmp(procname, "glIsFramebufferOES"))
-      return (void(*)(void))glIsFramebufferOES;
-   if (!strcmp(procname, "glBindFramebufferOES"))
-      return (void(*)(void))glBindFramebufferOES;
-   if (!strcmp(procname, "glDeleteFramebuffersOES"))
-      return (void(*)(void))glDeleteFramebuffersOES;
-   if (!strcmp(procname, "glGenFramebuffersOES"))
-      return (void(*)(void))glGenFramebuffersOES;
-   if (!strcmp(procname, "glCheckFramebufferStatusOES"))
-      return (void(*)(void))glCheckFramebufferStatusOES;
-   if (!strcmp(procname, "glFramebufferRenderbufferOES"))
-      return (void(*)(void))glFramebufferRenderbufferOES;
-   if (!strcmp(procname, "glFramebufferTexture2DOES"))
-      return (void(*)(void))glFramebufferTexture2DOES;
-   if (!strcmp(procname, "glGetFramebufferAttachmentParameterivOES"))
-      return (void(*)(void))glGetFramebufferAttachmentParameterivOES;
-   if (!strcmp(procname, "glGenerateMipmapOES"))
-      return (void(*)(void))glGenerateMipmapOES;
+   { "glIsRenderbufferOES", (void (*)(void)) glIsRenderbufferOES },
+   { "glBindRenderbufferOES", (void (*)(void)) glBindRenderbufferOES },
+   { "glDeleteRenderbuffersOES", (void (*)(void)) glDeleteRenderbuffersOES },
+   { "glGenRenderbuffersOES", (void (*)(void)) glGenRenderbuffersOES },
+   { "glRenderbufferStorageOES", (void (*)(void)) glRenderbufferStorageOES },
+   { "glGetRenderbufferParameterivOES", (void (*)(void)) glGetRenderbufferParameterivOES },
+   { "glIsFramebufferOES", (void (*)(void)) glIsFramebufferOES },
+   { "glBindFramebufferOES", (void (*)(void)) glBindFramebufferOES },
+   { "glDeleteFramebuffersOES", (void (*)(void)) glDeleteFramebuffersOES },
+   { "glGenFramebuffersOES", (void (*)(void)) glGenFramebuffersOES },
+   { "glCheckFramebufferStatusOES", (void (*)(void)) glCheckFramebufferStatusOES },
+   { "glFramebufferRenderbufferOES", (void (*)(void)) glFramebufferRenderbufferOES },
+   { "glFramebufferTexture2DOES", (void (*)(void)) glFramebufferTexture2DOES },
+   { "glGetFramebufferAttachmentParameterivOES", (void (*)(void)) glGetFramebufferAttachmentParameterivOES },
+   { "glGenerateMipmapOES", (void (*)(void)) glGenerateMipmapOES },
 #endif
-
 #if GL_OES_mapbuffer
-   if (!strcmp(procname, "glGetBufferPointervOES"))
-      return (void(*)(void))glGetBufferPointervOES;
-   if (!strcmp(procname, "glMapBufferOES"))
-      return (void(*)(void))glMapBufferOES;
-   if (!strcmp(procname, "glUnmapBufferOES"))
-      return (void(*)(void))glUnmapBufferOES;
+   { "glGetBufferPointervOES", (void (*)(void)) glGetBufferPointervOES },
+   { "glMapBufferOES", (void (*)(void)) glMapBufferOES },
+   { "glUnmapBufferOES", (void (*)(void)) glUnmapBufferOES },
 #endif
-
 #if EGL_proc_state_valid
-   if (!strcmp(procname, "eglProcStateValid"))
-      return (void(*)(void))eglProcStateValid;
+   { "eglProcStateValid", (void (*)(void)) eglProcStateValid },
 #endif
-
 #if EGL_BRCM_flush
-   if (!strcmp(procname, "eglFlushBRCM"))
-      return (void(*)(void))eglFlushBRCM;
+   { "eglFlushBRCM", (void (*)(void)) eglFlushBRCM },
 #endif
-
 #if EGL_BRCM_global_image
-   if (!strcmp(procname, "eglCreateGlobalImageBRCM"))
-      return (void(*)(void))eglCreateGlobalImageBRCM;
-   if (!strcmp(procname, "eglCreateCopyGlobalImageBRCM"))
-      return (void(*)(void))eglCreateCopyGlobalImageBRCM;
-   if (!strcmp(procname, "eglDestroyGlobalImageBRCM"))
-      return (void(*)(void))eglDestroyGlobalImageBRCM;
-   if (!strcmp(procname, "eglQueryGlobalImageBRCM"))
-      return (void(*)(void))eglQueryGlobalImageBRCM;
+   { "eglCreateGlobalImageBRCM", (void (*)(void)) eglCreateGlobalImageBRCM },
+   { "eglCreateCopyGlobalImageBRCM", (void (*)(void)) eglCreateCopyGlobalImageBRCM },
+   { "eglDestroyGlobalImageBRCM", (void (*)(void)) eglDestroyGlobalImageBRCM },
+   { "eglQueryGlobalImageBRCM", (void (*)(void)) eglQueryGlobalImageBRCM },
 #endif
+};
 
-   return (void(*)(void)) NULL;
+EGLAPI void EGLAPIENTRY (* eglGetProcAddress(const char *procname))(void)
+{
+   size_t i;
+   const size_t num_procs = sizeof(ext_procs) / sizeof(ext_procs[0]);
+
+   if (!procname)
+      return NULL;
+
+   for (i = 0; i < num_procs; i++) {
+      if (strcmp(procname, ext_procs[i].name) == 0)
+         return ext_procs[i].proc;
+   }
+
+   return NULL;
 }
 
 #ifdef __cplusplus
