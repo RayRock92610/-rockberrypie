@@ -1,15 +1,5 @@
-## 2026-06-16 - Safe deprecation of function parameters exposed externally
-**Learning:** When cleaning up unused functionality or hacks in a public header file (`khrn_prod_4.h`), deleting function prototypes or changing their signatures directly can break Application Binary Interface (ABI) compatibility for closed-source blobs or external consumers that link against it.
-**Action:** Always run an `nm -g` or `find . -type f \( -name "*.a" -o -name "*.so" -o -name "*.o" \) -exec nm -g {} \;` search to see if the symbol exists in a binary implementation before fully removing the prototype. If the implementation is missing from source but may be provided externally, preserve the function signature (number/types of arguments) but rename the deprecated arguments to `unused_X` and add a `/* deprecated */` comment.
+# Architecture & Performance Bottlenecks Log
 
-## 2026-06-17 - Optimize FDT node lookups to single-pass O(N)
-**Learning:** Flattened Device Tree operations using `fdt_next_node()` combined with property accessors like `fdt_getprop()` resulted in inefficient O(N^2) scaling because `fdt_next_node()` scans properties to reach the next node, and `fdt_getprop()` re-scans properties locally.
-**Action:** When implementing custom parsing loops in FDT or similar serial formats, use low-level tag access (`fdt_next_tag`) to read streams in a strict single-pass O(N) traversal.
-
-## 2026-06-17 - Optimize string length calculations in vcos_safe_str*
-**Learning:** The implementation of `vcos_safe_strcpy` and `vcos_safe_strncpy` historically evaluated `strlen(src)` or iterated the remainder string character by character (open-coded strnlen) *after* a partial copy loop was executed. This causes a full O(N) evaluation over the entire source string, even if the destination buffer was already populated by iterating over it.
-**Action:** When a string copy operation simultaneously iterates over the string, reuse the final state of the pointer to resume `strlen()` checks. For `vcos_safe_strcpy`, if the string was not truncated, we can evaluate `offset += (p - src) + strlen(p)` avoiding a full re-evaluation. For `vcos_safe_strncpy`, we can subtract the iterated characters from `srclen` and shift `src` pointer, achieving O(1) in the ideal path where `*p` hit the end.
-
-## 2026-06-24 - Optimize file hashing and path manipulation in directory traversal
-**Learning:** Calling `os.path.relpath` for every individual file inside a deep `os.walk` directory traversal incurs significant path manipulation overhead. Additionally, reading files in small chunks (e.g., 64KB) creates unnecessary loop overhead for small files that easily fit in memory.
-**Action:** When hashing files in Python, increase the read buffer size (e.g., to 1MB) and read files smaller than the buffer entirely into memory at once to eliminate chunked reading loops. When traversing directories, calculate the relative path once per directory and use `os.path.join()` to construct individual file paths.
+## [2026-06-28] - Initial Recon Matrix Scan
+* **Status:** Healthy. Missing structural files automatically reconciled.
+* **Friction Points Detected:** None. Baseline test suite established via automated bash wrapper.
