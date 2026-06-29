@@ -60,11 +60,16 @@ def create_baseline(directory, exclusions):
         # to avoid significant path manipulation overhead.
         root_rel = os.path.relpath(root, directory) if root != directory else ""
 
+        # ⚡ Bolt: Pre-calculate path prefixes for the inner file loop to avoid
+        # the overhead of repetitive os.path.join calls.
+        root_prefix = root + os.sep if not root.endswith(os.sep) else root
+        root_rel_prefix = root_rel + os.sep if root_rel and not root_rel.endswith(os.sep) else root_rel
+
         for f in files:
-            full_path = os.path.join(root, f)
+            full_path = root_prefix + f
             if is_excluded(full_path, f, exclusions_tuple): continue
 
-            rel_path = os.path.join(root_rel, f) if root_rel else f
+            rel_path = root_rel_prefix + f if root_rel else f
             f_hash = get_file_hash(full_path)
             if f_hash: baseline[rel_path] = f_hash
 
@@ -87,10 +92,15 @@ def check_integrity(directory, exclusions):
         # ⚡ Bolt: Calculate relative path once per directory instead of per file
         root_rel = os.path.relpath(root, directory) if root != directory else ""
 
+        # ⚡ Bolt: Pre-calculate path prefixes for the inner file loop to avoid
+        # the overhead of repetitive os.path.join calls.
+        root_prefix = root + os.sep if not root.endswith(os.sep) else root
+        root_rel_prefix = root_rel + os.sep if root_rel and not root_rel.endswith(os.sep) else root_rel
+
         for f in files:
-            full_path = os.path.join(root, f)
+            full_path = root_prefix + f
             if is_excluded(full_path, f, exclusions_tuple): continue
-            rel_path = os.path.join(root_rel, f) if root_rel else f
+            rel_path = root_rel_prefix + f if root_rel else f
 
             # We don't need to hash if it's a new file, it will be added to new files list
             if rel_path in baseline:
