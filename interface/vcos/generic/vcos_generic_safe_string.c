@@ -120,12 +120,11 @@ size_t vcos_safe_strncpy(char *dst, const char *src, size_t srclen, size_t dstle
       src = p;
    }
 
-   // Open-code strnlen
-   while (*src && srclen)
+   // Optimize open-code strnlen
+   if (srclen > 0)
    {
-       offset++;
-       src++;
-       srclen--;
+      const char *end = (const char *)memchr(src, '\0', srclen);
+      offset += end ? (size_t)(end - src) : srclen;
    }
 
    return offset;
