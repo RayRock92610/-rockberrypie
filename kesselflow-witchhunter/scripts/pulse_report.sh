@@ -11,10 +11,31 @@ if [ ! -f "$LOG_FILE" ]; then
     exit 1
 fi
 
-# Count total hash changes
-CHANGES=$(grep -c "HASH_CHANGED" "$LOG_FILE")
-# Identify the most frequently modified file
-TOP_DRIFT=$(grep "HASH_CHANGED" "$LOG_FILE" | sed 's/.*"path":"\([^"]*\)".*/\1/' | sort | uniq -c | sort -nr | head -n 1)
+# Count total hash changes and identify the most frequently modified file in a single pass
+AWK_OUT=$(awk -F'"path":"' '/HASH_CHANGED/ {
+    c++
+    if (NF > 1) {
+        split($2, a, "\"")
+        p[a[1]]++
+    }
+}
+END {
+    m = 0
+    t = ""
+    for (k in p) {
+        if (p[k] > m) {
+            m = p[k]
+            t = k
+        }
+    }
+    printf "%d\n", c
+    if (m > 0) {
+        printf "%7d %s\n", m, t
+    }
+}' "$LOG_FILE")
+
+CHANGES=$(echo "$AWK_OUT" | head -n 1)
+TOP_DRIFT=$(echo "$AWK_OUT" | tail -n +2)
 
 echo -e "Total Drift Events: ${PEACH}$CHANGES${RESET}"
 echo -e "Primary Drift Target: ${PEACH}$TOP_DRIFT${RESET}"
