@@ -105,7 +105,7 @@ def check_integrity(directory, exclusions):
     return {
         "new": list(c_set - b_set),
         "deleted": list(b_set - c_set),
-        "modified": [f for f in b_set & c_set if baseline[f] != current_state.get(f)]
+        "modified": [f for f in b_set & c_set if baseline[f] != current_state[f]]
     }, None
 
 if __name__ == '__main__':
