@@ -1,8 +1,5 @@
-# Architecture & Performance Bottlenecks Log
+## 2026-07-01 - Linking local OpenMAX IL core
 
-## [2026-06-28] - Initial Recon Matrix Scan
-* **Status:** Healthy. Missing structural files automatically reconciled.
-* **Friction Points Detected:** None. Baseline test suite established via automated bash wrapper.
-## 2026-06-28 - Optimize vcos_safe_strncpy string length open loop
-**Learning:** `vcos_safe_strncpy` used a manual `while (*src && srclen)` loop to calculate the length of the string if it exceeded the available output length in `interface/vcos/generic/vcos_generic_safe_string.c`. This resulted in O(N) checking byte-by-byte instead of using the standard C library's optimized block memory operations.
-**Action:** Replaced the loop with `memchr(src, '\0', srclen)` to utilize architecture-specific vectorized scan operations where available, falling back to efficient byte loops, reducing overhead on long strings in safe string manipulation.
+**Learning:** When linking to local OpenMAX IL core using CMake, do not blindly add the `PRIVATE` keyword when using `target_link_libraries` if the preceding `target_link_libraries` in the same target does not use it. Mixing plain and keyword signatures on the same target will cause CMake errors.
+
+**Action:** Always check how `target_link_libraries` is already used for the target in the CMake file, and follow the existing style (i.e., if it uses plain signature, use plain signature; if it uses `PRIVATE/PUBLIC`, use `PRIVATE/PUBLIC`).

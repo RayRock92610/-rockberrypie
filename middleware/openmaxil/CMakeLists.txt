@@ -47,6 +47,10 @@ else ()
 
    target_link_libraries (openmaxil vcilcs vcos dl)
 
+   if (WANT_LOCAL_OMX)
+      target_link_libraries (openmaxil ilcore)
+   endif ()
+
 endif ()
 
 install (TARGETS openmaxil DESTINATION lib)
