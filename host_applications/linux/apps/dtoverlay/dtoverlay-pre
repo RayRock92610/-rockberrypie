@@ -7,7 +7,7 @@ fi
 CMD="lxpanelctl command volumealsabt stop >/dev/null"
 
 for PID in $(pgrep -x lxpanel); do
-	eval "$(grep -z "DISPLAY=" "/proc/$PID/environ" | tr -d '\0')"
+	export DISPLAY="$(grep -z "^DISPLAY=" "/proc/$PID/environ" 2>/dev/null | tr -d '\0' | cut -d= -f2-)"
 	user="$(ps -p "$PID" -o uname=)"
 	su "$user" -c "$CMD"
 done
