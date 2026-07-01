@@ -145,9 +145,9 @@ static void egl_sync_destroy_iterator
 {
    EGL_SYNC_T *sync_ptr = (EGL_SYNC_T *) sync;
 
-   UNUSED(sync_map);
-   UNUSED(sync_handle);
-   UNUSED(data);
+   vcos_unused(sync_map);
+   vcos_unused(sync_handle);
+   vcos_unused(data);
 
    vcos_assert(sync_ptr != NULL);
 
@@ -294,7 +294,7 @@ EGLAPI EGLint EGLAPIENTRY eglClientWaitSyncKHR(EGLDisplay dpy, EGLSyncKHR sync, 
 {
    CLIENT_THREAD_STATE_T *thread = CLIENT_GET_THREAD_STATE();
 
-   UNUSED(timeout);
+   vcos_unused(timeout);
 
    CLIENT_LOCK();
 
@@ -334,7 +334,7 @@ EGLAPI EGLBoolean EGLAPIENTRY eglSignalSyncKHR(EGLDisplay dpy, EGLSyncKHR sync, 
 {
    CLIENT_THREAD_STATE_T *thread = CLIENT_GET_THREAD_STATE();
 
-   UNUSED(mode);
+   vcos_unused(mode);
 
    CLIENT_LOCK();
 
