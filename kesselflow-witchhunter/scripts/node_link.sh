@@ -19,7 +19,7 @@ NC='\033[0m'
 echo -e "${GREEN}[NODE LINK]${NC} Initializing API Handshake..."
 
 # 1. Check GitHub API Status
-GH_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: token $JULES_KEY" $GITHUB_API)
+GH_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -H @- "$GITHUB_API" <<< "Authorization: token $JULES_KEY")
 
 if [ "$GH_STATUS" -eq 200 ]; then
     echo -e "${GREEN}[SUCCESS]${NC} GitHub Node Link established."
