@@ -4,6 +4,7 @@ import hashlib
 import fnmatch
 import argparse
 import sys
+import concurrent.futures
 
 # CONFIGURATION DEFAULTS
 BASELINE_FILE = os.environ.get("K_BASELINE", "baseline.json")
@@ -52,20 +53,29 @@ def is_excluded(path, name, exclusions):
 def create_baseline(directory, exclusions):
     baseline = {}
     exclusions_tuple = tuple(exclusions.get('dirs', []) + exclusions.get('files', []))
-    for root, dirs, files in os.walk(directory):
-        # In-place modification of dirs to skip excluded subtrees
-        dirs[:] = [d for d in dirs if not is_excluded(os.path.join(root, d), d, exclusions_tuple)]
 
-        # ⚡ Bolt: Calculate relative path once per directory instead of per file
-        # to avoid significant path manipulation overhead.
-        root_rel = os.path.relpath(root, directory) if root != directory else ""
+    # ⚡ Bolt: Use a ThreadPoolExecutor to parallelize the hashing I/O bottleneck
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        future_to_path = {}
+        for root, dirs, files in os.walk(directory):
+            # In-place modification of dirs to skip excluded subtrees
+            dirs[:] = [d for d in dirs if not is_excluded(os.path.join(root, d), d, exclusions_tuple)]
 
-        for f in files:
-            full_path = os.path.join(root, f)
-            if is_excluded(full_path, f, exclusions_tuple): continue
+            # ⚡ Bolt: Calculate relative path once per directory instead of per file
+            # to avoid significant path manipulation overhead.
+            root_rel = os.path.relpath(root, directory) if root != directory else ""
 
-            rel_path = os.path.join(root_rel, f) if root_rel else f
-            f_hash = get_file_hash(full_path)
+            for f in files:
+                full_path = os.path.join(root, f)
+                if is_excluded(full_path, f, exclusions_tuple): continue
+
+                rel_path = os.path.join(root_rel, f) if root_rel else f
+                future = executor.submit(get_file_hash, full_path)
+                future_to_path[future] = rel_path
+
+        for future in concurrent.futures.as_completed(future_to_path):
+            rel_path = future_to_path[future]
+            f_hash = future.result()
             if f_hash: baseline[rel_path] = f_hash
 
     with open(BASELINE_FILE, "w") as f:
@@ -80,25 +90,33 @@ def check_integrity(directory, exclusions):
 
     current_state = {}
     exclusions_tuple = tuple(exclusions.get('dirs', []) + exclusions.get('files', []))
-    for root, dirs, files in os.walk(directory):
-        # In-place modification of dirs to skip excluded subtrees
-        dirs[:] = [d for d in dirs if not is_excluded(os.path.join(root, d), d, exclusions_tuple)]
 
-        # ⚡ Bolt: Calculate relative path once per directory instead of per file
-        root_rel = os.path.relpath(root, directory) if root != directory else ""
+    # ⚡ Bolt: Use a ThreadPoolExecutor to parallelize the hashing I/O bottleneck
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        future_to_path = {}
+        for root, dirs, files in os.walk(directory):
+            # In-place modification of dirs to skip excluded subtrees
+            dirs[:] = [d for d in dirs if not is_excluded(os.path.join(root, d), d, exclusions_tuple)]
 
-        for f in files:
-            full_path = os.path.join(root, f)
-            if is_excluded(full_path, f, exclusions_tuple): continue
-            rel_path = os.path.join(root_rel, f) if root_rel else f
+            # ⚡ Bolt: Calculate relative path once per directory instead of per file
+            root_rel = os.path.relpath(root, directory) if root != directory else ""
 
-            # We don't need to hash if it's a new file, it will be added to new files list
-            if rel_path in baseline:
-                f_hash = get_file_hash(full_path)
-                if f_hash:
-                    current_state[rel_path] = f_hash
-            else:
-                current_state[rel_path] = None # Or just track the key
+            for f in files:
+                full_path = os.path.join(root, f)
+                if is_excluded(full_path, f, exclusions_tuple): continue
+                rel_path = os.path.join(root_rel, f) if root_rel else f
+
+                # We don't need to hash if it's a new file, it will be added to new files list
+                if rel_path in baseline:
+                    future = executor.submit(get_file_hash, full_path)
+                    future_to_path[future] = rel_path
+                else:
+                    current_state[rel_path] = None # Or just track the key
+
+        for future in concurrent.futures.as_completed(future_to_path):
+            rel_path = future_to_path[future]
+            f_hash = future.result()
+            if f_hash: current_state[rel_path] = f_hash
 
     b_set, c_set = set(baseline.keys()), set(current_state.keys())
 
