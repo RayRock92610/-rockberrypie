@@ -118,12 +118,12 @@ def check_integrity(directory, exclusions):
             f_hash = future.result()
             if f_hash: current_state[rel_path] = f_hash
 
-    b_set, c_set = set(baseline.keys()), set(current_state.keys())
+    b_keys, c_keys = baseline.keys(), current_state.keys()
 
     return {
-        "new": list(c_set - b_set),
-        "deleted": list(b_set - c_set),
-        "modified": [f for f in b_set & c_set if baseline[f] != current_state.get(f)]
+        "new": list(c_keys - b_keys),
+        "deleted": list(b_keys - c_keys),
+        "modified": [f for f in b_keys & c_keys if baseline[f] != current_state.get(f)]
     }, None
 
 if __name__ == '__main__':
