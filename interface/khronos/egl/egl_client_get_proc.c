@@ -224,6 +224,39 @@ EGLAPI void EGLAPIENTRY (* eglGetProcAddress(const char *procname))(void)
       return (void(*)(void))glGenerateMipmapOES;
 #endif
 
+#if GL_OES_get_program_binary
+   if (!strcmp(procname, "glGetProgramBinaryOES"))
+      return (void(*)(void))glGetProgramBinaryOES;
+   if (!strcmp(procname, "glProgramBinaryOES"))
+      return (void(*)(void))glProgramBinaryOES;
+#endif
+
+#if GL_OES_texture_3D
+   if (!strcmp(procname, "glTexImage3DOES"))
+      return (void(*)(void))glTexImage3DOES;
+   if (!strcmp(procname, "glTexSubImage3DOES"))
+      return (void(*)(void))glTexSubImage3DOES;
+   if (!strcmp(procname, "glCopyTexSubImage3DOES"))
+      return (void(*)(void))glCopyTexSubImage3DOES;
+   if (!strcmp(procname, "glCompressedTexImage3DOES"))
+      return (void(*)(void))glCompressedTexImage3DOES;
+   if (!strcmp(procname, "glCompressedTexSubImage3DOES"))
+      return (void(*)(void))glCompressedTexSubImage3DOES;
+   if (!strcmp(procname, "glFramebufferTexture3DOES"))
+      return (void(*)(void))glFramebufferTexture3DOES;
+#endif
+
+#if GL_OES_vertex_array_object
+   if (!strcmp(procname, "glBindVertexArrayOES"))
+      return (void(*)(void))glBindVertexArrayOES;
+   if (!strcmp(procname, "glDeleteVertexArraysOES"))
+      return (void(*)(void))glDeleteVertexArraysOES;
+   if (!strcmp(procname, "glGenVertexArraysOES"))
+      return (void(*)(void))glGenVertexArraysOES;
+   if (!strcmp(procname, "glIsVertexArrayOES"))
+      return (void(*)(void))glIsVertexArrayOES;
+#endif
+
 #if GL_OES_mapbuffer
    if (!strcmp(procname, "glGetBufferPointervOES"))
       return (void(*)(void))glGetBufferPointervOES;
