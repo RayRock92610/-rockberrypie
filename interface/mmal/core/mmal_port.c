@@ -91,11 +91,16 @@ typedef struct MMAL_PORT_PRIVATE_CORE_T
    MMAL_BUFFER_HEADER_T* queue_first;
    /** Queue for buffers received from the client when in paused state */
    MMAL_BUFFER_HEADER_T** queue_last;
-
    /** Per-port statistics collected directly by the MMAL core */
    MMAL_CORE_PORT_STATISTICS_T stats;
 
+   /** Array of payload allocations to track and free them on destruction */
+   uint8_t **allocs;
+   uint32_t allocs_num;
+   uint32_t allocs_size;
+
    char *name; /**< Port name */
+
    unsigned int name_size; /** Size of the memory area reserved for the name string */
 } MMAL_PORT_PRIVATE_CORE_T;
 
@@ -240,6 +245,19 @@ void mmal_port_free(MMAL_PORT_T *port)
    vcos_mutex_delete(&port->priv->core->transit_lock);
    vcos_mutex_delete(&port->priv->core->send_lock);
    vcos_mutex_delete(&port->priv->core->lock);
+
+   if (port->priv->core->allocs)
+   {
+      uint8_t **allocs = port->priv->core->allocs;
+      unsigned int allocs_num = port->priv->core->allocs_num;
+      port->priv->core->allocs = NULL;
+      port->priv->core->allocs_num = 0;
+      port->priv->core->allocs_size = 0;
+      for (unsigned int i = 0; i < allocs_num; i++)
+         mmal_port_payload_free(port, allocs[i]);
+      vcos_free(allocs);
+   }
+
    vcos_free(port);
 }
 
@@ -1095,7 +1113,25 @@ uint8_t *mmal_port_payload_alloc(MMAL_PORT_T *port, uint32_t payload_size)
    if (!payload_size)
       return NULL;
 
-   /* TODO: keep track of the allocs so we can free them when the component is destroyed */
+   LOCK_PORT(port);
+
+   if (port->priv->core->allocs_num == port->priv->core->allocs_size)
+   {
+      uint32_t allocs_size = port->priv->core->allocs_size ? port->priv->core->allocs_size * 2 : 16;
+      uint8_t **allocs = vcos_calloc(allocs_size, sizeof(uint8_t *), "mmal port allocs");
+      if (!allocs)
+      {
+         UNLOCK_PORT(port);
+         return NULL;
+      }
+      if (port->priv->core->allocs)
+      {
+         memcpy(allocs, port->priv->core->allocs, port->priv->core->allocs_num * sizeof(uint8_t *));
+         vcos_free(port->priv->core->allocs);
+      }
+      port->priv->core->allocs = allocs;
+      port->priv->core->allocs_size = allocs_size;
+   }
 
    if (!port->priv->pf_payload_alloc)
    {
@@ -1105,14 +1141,17 @@ uint8_t *mmal_port_payload_alloc(MMAL_PORT_T *port, uint32_t payload_size)
 #else
       mem = vcos_malloc(payload_size, "mmal payload");
 #endif
-      goto end;
+   }
+   else
+   {
+      mem = port->priv->pf_payload_alloc(port, payload_size);
    }
 
-   LOCK_PORT(port);
-   mem = port->priv->pf_payload_alloc(port, payload_size);
+   if (mem)
+      port->priv->core->allocs[port->priv->core->allocs_num++] = mem;
+
    UNLOCK_PORT(port);
 
- end:
    /* Acquire the port if the allocation was successful.
     * This will ensure that the component is not destroyed until the payload has been freed. */
    if (mem)
@@ -1123,11 +1162,26 @@ uint8_t *mmal_port_payload_alloc(MMAL_PORT_T *port, uint32_t payload_size)
 /** Free a payload buffer */
 void mmal_port_payload_free(MMAL_PORT_T *port, uint8_t *payload)
 {
+
    if (!port || !port->priv)
       return;
 
    LOG_TRACE("%s(%i:%i) port %p, payload %p", port->component->name,
              (int)port->type, (int)port->index, port, payload);
+
+   LOCK_PORT(port);
+
+   /* Remove from tracked allocations */
+   for (unsigned int i = 0; i < port->priv->core->allocs_num; i++)
+   {
+      if (port->priv->core->allocs[i] == payload)
+      {
+         port->priv->core->allocs_num--;
+         if (i != port->priv->core->allocs_num)
+            port->priv->core->allocs[i] = port->priv->core->allocs[port->priv->core->allocs_num];
+         break;
+      }
+   }
 
    if (!port->priv->pf_payload_alloc)
    {
@@ -1137,12 +1191,12 @@ void mmal_port_payload_free(MMAL_PORT_T *port, uint8_t *payload)
 #else
       vcos_free(payload);
 #endif
-      mmal_port_release(port);
-      return;
+   }
+   else
+   {
+      port->priv->pf_payload_free(port, payload);
    }
 
-   LOCK_PORT(port);
-   port->priv->pf_payload_free(port, payload);
    UNLOCK_PORT(port);
    mmal_port_release(port);
 }
