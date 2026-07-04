@@ -235,7 +235,13 @@ static MMAL_STATUS_T copy_input_port_format_commit(MMAL_PORT_T *in)
    }
 
    event = mmal_event_format_changed_get(buffer);
-   mmal_format_copy(event->format, in->format); /* FIXME: can full copy be done ? */
+   status = mmal_format_full_copy(event->format, in->format);
+   if (status != MMAL_SUCCESS)
+   {
+      LOG_ERROR("format full copy failed on port %s %p (%i)", out->name, out, status);
+      mmal_buffer_header_release(buffer);
+      return status;
+   }
 
    /* Pass on the buffer requirements */
    event->buffer_num_min = out->buffer_num_min;
