@@ -9,9 +9,9 @@ target_link_libraries(containers_check_frame_int -Wl,--no-whole-archive containe
 install(TARGETS containers_check_frame_int DESTINATION bin)
 
 # Generate autotest application
-#add_executable(containers_autotest autotest.cpp crc_32.c)
-#target_link_libraries(containers_autotest -Wl,--no-whole-archive containers})
-#install(TARGETS containers_autotest DESTINATION bin)
+add_executable(containers_autotest autotest.cpp crc_32.c)
+target_link_libraries(containers_autotest -Wl,--no-whole-archive containers)
+install(TARGETS containers_autotest DESTINATION bin)
 
 # Helper code to provide non-blocking console input
 if (WIN32)

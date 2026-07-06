@@ -31,6 +31,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <map>
 #include <set>
 #include <vector>
+#include <limits>
+#include <cassert>
 #include <list>
 #include <algorithm>
 #include <iomanip>
@@ -972,7 +974,8 @@ private:
                   // The first packet we found for a stream has no PTS.
                   // That's odd, because we wouldn't be able to play it. However,
                   // if the stream doesn't permit forcing it may be inevitable.
-                  if ((unfound_streams.find(stream) != unfound_streams.end())
+                  std::set<STREAM_T>::iterator unfound_it = unfound_streams.find(stream);
+                  if ((unfound_it != unfound_streams.end())
                      && ((p_ctx->capabilities & VC_CONTAINER_CAPS_FORCE_TRACK) != 0))
                   {
                      error_logger << "Packet in stream " << stream
@@ -1012,7 +1015,8 @@ private:
                }
 
                // If this is the first packet we found for this stream
-               if (unfound_streams.find(stream) != unfound_streams.end())
+               std::set<STREAM_T>::iterator unfound_it = unfound_streams.find(stream);
+               if (unfound_it != unfound_streams.end())
                {
                   // Store the packet we found. Note we key it by the PTS we used for the seek,
                   // not its own PTS. This should mean next time we seek to that PTS we'll get this packet.
@@ -1022,7 +1026,7 @@ private:
                   check_seek_tolerance(packet, actual_pts);
 
                   // Now we've found a packet from this stream we're done with it, so note we don't care about it any more.
-                  unfound_streams.erase(stream);
+                  unfound_streams.erase(unfound_it);
                }
             }  // repeat until we've had a packet for every track
 
