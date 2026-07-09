@@ -82,29 +82,12 @@ static GLboolean is_matrix_palette_size(GLint size) {
    return size > 0 && size <= GL11_CONFIG_MAX_VERTEX_UNITS_OES;
 }
 
-/* TODO: This is copied from glxx_client.c. Find a better method */
-static GLboolean is_aligned( GLenum type, size_t value)
-{
-   switch (type) {
-   case GL_BYTE:
-   case GL_UNSIGNED_BYTE:
-      return GL_TRUE;
-   case GL_SHORT:
-   case GL_UNSIGNED_SHORT:
-      return (value & 1) == 0;
-   case GL_FIXED:
-   case GL_FLOAT:
-      return (value & 3) == 0;
-   default:
-      UNREACHABLE();
-      return GL_FALSE;
-   }
-}
+
 
 GL_API void GL_APIENTRY glMatrixIndexPointerOES(GLint size, GLenum type, GLsizei stride, const GLvoid *pointer)
 {
    if (is_matrix_index_type(type)) {
-      if (is_matrix_palette_size(size) && is_aligned(type, (size_t)pointer) && is_aligned(type, (size_t)stride) && stride >= 0) {
+      if (is_matrix_palette_size(size) && glxx_is_aligned(type, (size_t)pointer) && glxx_is_aligned(type, (size_t)stride) && stride >= 0) {
          glintAttribPointer(GLXX_API_11, GL11_IX_MATRIX_INDEX, size, type, GL_FALSE, stride, pointer);
       } else
          glxx_set_error_api(GLXX_API_11, GL_INVALID_VALUE);
@@ -120,7 +103,7 @@ static GLboolean is_matrix_weight_type(GLenum type) {
 GL_API void GL_APIENTRY glWeightPointerOES(GLint size, GLenum type, GLsizei stride, const GLvoid *pointer)
 {
    if (is_matrix_weight_type(type)) {
-      if (is_matrix_palette_size(size) && is_aligned(type, (size_t)pointer) && is_aligned(type, (size_t)stride) && stride >= 0) {
+      if (is_matrix_palette_size(size) && glxx_is_aligned(type, (size_t)pointer) && glxx_is_aligned(type, (size_t)stride) && stride >= 0) {
          glintAttribPointer(GLXX_API_11, GL11_IX_MATRIX_WEIGHT, size, type, GL_FALSE, stride, pointer);
       } else
          glxx_set_error_api(GLXX_API_11, GL_INVALID_VALUE);

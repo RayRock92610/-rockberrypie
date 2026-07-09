@@ -646,28 +646,12 @@ static bool is_color_type(GLenum type)
           type == GL_FLOAT;
 }
 
-static bool is_aligned( GLenum type, size_t value)
-{
-   switch (type) {
-   case GL_BYTE:
-   case GL_UNSIGNED_BYTE:
-      return GL_TRUE;
-   case GL_SHORT:
-   case GL_UNSIGNED_SHORT:
-      return (value & 1) == 0;
-   case GL_FIXED:
-   case GL_FLOAT:
-      return (value & 3) == 0;
-   default:
-      UNREACHABLE();
-      return GL_FALSE;
-   }
-}
+
 
 GL_API void GL_APIENTRY glColorPointer (GLint size, GLenum type, GLsizei stride, const GLvoid *pointer)
 {
    if (is_color_type(type)) {
-      if (is_color_size(size) && is_aligned(type, (size_t)pointer) && is_aligned(type, (size_t)stride) && stride >= 0) {
+      if (is_color_size(size) && glxx_is_aligned(type, (size_t)pointer) && glxx_is_aligned(type, (size_t)stride) && stride >= 0) {
          glintAttribPointer(GLXX_API_11, GL11_IX_COLOR, size, type, GL_TRUE, stride, pointer);
       } else
          glxx_set_error_api(GLXX_API_11, GL_INVALID_VALUE);
@@ -1353,7 +1337,7 @@ GL_API void GL_APIENTRY glDrawElements (GLenum mode, GLsizei count, GLenum type,
          set_error(state, GL_INVALID_ENUM);
          return;
       }
-      if (!is_aligned(type, (size_t)indices)) {
+      if (!glxx_is_aligned(type, (size_t)indices)) {
          set_error(state, GL_INVALID_VALUE);
          return;
       }
@@ -3437,7 +3421,7 @@ static bool is_normal_type(GLenum type)
 GL_API void GL_APIENTRY glNormalPointer (GLenum type, GLsizei stride, const GLvoid *pointer)
 {
    if (is_normal_type(type)) {
-      if (is_aligned(type, (size_t)pointer) && is_aligned(type, (size_t)stride) && stride >= 0) {
+      if (glxx_is_aligned(type, (size_t)pointer) && glxx_is_aligned(type, (size_t)stride) && stride >= 0) {
          glintAttribPointer(GLXX_API_11, GL11_IX_NORMAL, 3, type, GL_TRUE, stride, pointer);
       } else
          glxx_set_error_api(GLXX_API_11, GL_INVALID_VALUE);
@@ -3983,7 +3967,7 @@ static bool is_texture_coord_type(GLenum type)
 GL_API void GL_APIENTRY glTexCoordPointer (GLint size, GLenum type, GLsizei stride, const GLvoid *pointer)
 {
    if (is_texture_coord_type(type)) {
-      if (is_texture_coord_size(size) && is_aligned(type, (size_t)pointer) && is_aligned(type, (size_t)stride) && stride >= 0) {
+      if (is_texture_coord_size(size) && glxx_is_aligned(type, (size_t)pointer) && glxx_is_aligned(type, (size_t)stride) && stride >= 0) {
          glintAttribPointer(GLXX_API_11, GL11_IX_CLIENT_ACTIVE_TEXTURE, size, type, GL_FALSE, stride, pointer);
       } else
          glxx_set_error_api(GLXX_API_11, GL_INVALID_VALUE);
@@ -4856,7 +4840,7 @@ static bool is_vertex_type(GLenum type)
 GL_API void GL_APIENTRY glVertexPointer (GLint size, GLenum type, GLsizei stride, const GLvoid *pointer)
 {
    if (is_vertex_type(type)) {
-      if (is_vertex_size(size) && is_aligned(type, (size_t)pointer) && is_aligned(type, (size_t)stride) && stride >= 0) {
+      if (is_vertex_size(size) && glxx_is_aligned(type, (size_t)pointer) && glxx_is_aligned(type, (size_t)stride) && stride >= 0) {
          glintAttribPointer(GLXX_API_11, GL11_IX_VERTEX, size, type, GL_FALSE, stride, pointer);
       } else
          glxx_set_error_api(GLXX_API_11, GL_INVALID_VALUE);
@@ -4890,7 +4874,7 @@ static bool is_point_size_type(GLenum type)
 GL_API void GL_APIENTRY glPointSizePointerOES (GLenum type, GLsizei stride, const GLvoid *pointer)
 {
    if (is_point_size_type(type)) {
-      if (is_aligned(type, (size_t)pointer) && is_aligned(type, (size_t)stride) && stride >= 0) {
+      if (glxx_is_aligned(type, (size_t)pointer) && glxx_is_aligned(type, (size_t)stride) && stride >= 0) {
          glintAttribPointer(GLXX_API_11, GL11_IX_POINT_SIZE, 1, type, GL_FALSE, stride, pointer);
       } else
          glxx_set_error_api(GLXX_API_11, GL_INVALID_VALUE);

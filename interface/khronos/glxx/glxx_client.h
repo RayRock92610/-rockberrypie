@@ -133,6 +133,25 @@ static INLINE GLXX_CLIENT_STATE_T *glxx_get_client_state(CLIENT_THREAD_STATE_T *
 #define GLXX_API_20 (1<<(OPENGL_ES_20))
 #define GLXX_API_11_OR_20 (GLXX_API_11|GLXX_API_20)
 
+
+static INLINE bool glxx_is_aligned( GLenum type, size_t value)
+{
+   switch (type) {
+   case GL_BYTE:
+   case GL_UNSIGNED_BYTE:
+      return true;
+   case GL_SHORT:
+   case GL_UNSIGNED_SHORT:
+      return (value & 1) == 0;
+   case GL_FIXED:
+   case GL_FLOAT:
+      return (value & 3) == 0;
+   default:
+      UNREACHABLE();
+      return false;
+   }
+}
+
 static INLINE bool glxx_api_ok(uint32_t api, EGL_CONTEXT_TYPE_T type)
 {
    return !!(api & (1<<type));
