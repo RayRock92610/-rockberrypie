@@ -196,13 +196,23 @@ typedef struct vcos_datestr
 #define vcos_min(x,y) ((x) < (y) ? (x) : (y))
 #define vcos_max(x,y) ((x) > (y) ? (x) : (y))
 
-/** Return the count of an array. FIXME: under gcc we could make
- * this report an error for pointers using __builtin_types_compatible().
+/** Return the count of an array.
+ * Reports an error for pointers when compiled with GCC.
  */
+#if defined(__GNUC__) && !defined(__cplusplus)
+#define _vcos_must_be_array(a) \
+  (0 * (int)sizeof(struct { int : -!!__builtin_types_compatible_p(__typeof__(a), __typeof__(&(a)[0])); }))
+#define vcos_countof(x) (sizeof((x)) / sizeof((x)[0]) + _vcos_must_be_array(x))
+#else
 #define vcos_countof(x) (sizeof((x)) / sizeof((x)[0]))
+#endif
 
 /* for backward compatibility */
+#if defined(__GNUC__) && !defined(__cplusplus)
+#define countof(x) (sizeof((x)) / sizeof((x)[0]) + _vcos_must_be_array(x))
+#else
 #define countof(x) (sizeof((x)) / sizeof((x)[0]))
+#endif
 
 #define VCOS_ALIGN_DOWN(p,n) (((ptrdiff_t)(p)) & ~((n)-1))
 #define VCOS_ALIGN_UP(p,n) VCOS_ALIGN_DOWN((ptrdiff_t)(p)+(n)-1,(n))
