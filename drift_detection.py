@@ -33,6 +33,9 @@ import re
 _CACHE = {}
 
 def is_excluded(path, name, exclusions):
+    if isinstance(exclusions, re.Pattern):
+        return bool(exclusions.match(os.path.normcase(path)) or exclusions.match(os.path.normcase(name)))
+
     # ⚡ Bolt: Check if exclusions is already a tuple to avoid repeated concatenation and conversion
     patterns = exclusions if isinstance(exclusions, tuple) else tuple(exclusions.get('dirs', []) + exclusions.get('files', []))
     if not patterns:
@@ -47,19 +50,28 @@ def is_excluded(path, name, exclusions):
 
     regex = _CACHE[patterns]
 
-
     return bool(regex.match(os.path.normcase(path)) or regex.match(os.path.normcase(name)))
+
+def _get_compiled_exclusions(exclusions):
+    patterns = exclusions if isinstance(exclusions, tuple) else tuple(exclusions.get('dirs', []) + exclusions.get('files', []))
+    if not patterns:
+        return None
+    if patterns not in _CACHE:
+        regex_str = '|'.join([fnmatch.translate(os.path.normcase(p)) for p in patterns])
+        _CACHE[patterns] = re.compile(regex_str)
+    return _CACHE[patterns]
 
 def create_baseline(directory, exclusions):
     baseline = {}
-    exclusions_tuple = tuple(exclusions.get('dirs', []) + exclusions.get('files', []))
+    compiled_exclusions = _get_compiled_exclusions(exclusions)
 
     # ⚡ Bolt: Use a ThreadPoolExecutor to parallelize the hashing I/O bottleneck
     with concurrent.futures.ThreadPoolExecutor() as executor:
         future_to_path = {}
         for root, dirs, files in os.walk(directory):
             # In-place modification of dirs to skip excluded subtrees
-            dirs[:] = [d for d in dirs if not is_excluded(os.path.join(root, d), d, exclusions_tuple)]
+            if compiled_exclusions:
+                dirs[:] = [d for d in dirs if not is_excluded(os.path.join(root, d), d, compiled_exclusions)]
 
             # ⚡ Bolt: Calculate relative path once per directory instead of per file
             # to avoid significant path manipulation overhead.
@@ -67,7 +79,7 @@ def create_baseline(directory, exclusions):
 
             for f in files:
                 full_path = os.path.join(root, f)
-                if is_excluded(full_path, f, exclusions_tuple): continue
+                if compiled_exclusions and is_excluded(full_path, f, compiled_exclusions): continue
 
                 rel_path = os.path.join(root_rel, f) if root_rel else f
                 future = executor.submit(get_file_hash, full_path)
@@ -89,21 +101,22 @@ def check_integrity(directory, exclusions):
         baseline = json.load(f)
 
     current_state = {}
-    exclusions_tuple = tuple(exclusions.get('dirs', []) + exclusions.get('files', []))
+    compiled_exclusions = _get_compiled_exclusions(exclusions)
 
     # ⚡ Bolt: Use a ThreadPoolExecutor to parallelize the hashing I/O bottleneck
     with concurrent.futures.ThreadPoolExecutor() as executor:
         future_to_path = {}
         for root, dirs, files in os.walk(directory):
             # In-place modification of dirs to skip excluded subtrees
-            dirs[:] = [d for d in dirs if not is_excluded(os.path.join(root, d), d, exclusions_tuple)]
+            if compiled_exclusions:
+                dirs[:] = [d for d in dirs if not is_excluded(os.path.join(root, d), d, compiled_exclusions)]
 
             # ⚡ Bolt: Calculate relative path once per directory instead of per file
             root_rel = os.path.relpath(root, directory) if root != directory else ""
 
             for f in files:
                 full_path = os.path.join(root, f)
-                if is_excluded(full_path, f, exclusions_tuple): continue
+                if compiled_exclusions and is_excluded(full_path, f, compiled_exclusions): continue
                 rel_path = os.path.join(root_rel, f) if root_rel else f
 
                 # We don't need to hash if it's a new file, it will be added to new files list
