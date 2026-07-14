@@ -3,7 +3,6 @@
 LOG_FILE="events.jsonl"
 
 echo "--- Witch Hunter: Pulse Report ---"
-grep '"event_type":"drift"' $LOG_FILE | while read -r line; do
-    # Logic to identify if drift is Additive or Overwrite
-    echo "Alert: System Drift Detected - $line"
-done
+# Logic to identify if drift is Additive or Overwrite
+# ⚡ Bolt: Replaced grep | while read with a single-pass awk to avoid subshell process spawning overhead
+awk '/"event_type":"drift"/ { print "Alert: System Drift Detected - " $0 }' "$LOG_FILE"
