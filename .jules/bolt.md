@@ -5,3 +5,6 @@
 ## 2026-07-14 - Redundant Cache Lookup in Tight Loop
 **Learning:** Pre-compiling regex before passing it to hot-loop functions eliminates repeated dictionary lookups and type checks per file/directory traversed.
 **Action:** Always hoist configuration parsing or pattern compilation out of hot loops (like os.walk) to achieve better performance.
+## $(date +%Y-%m-%d) - Edge Case Testing for File Reading Permissions
+**Learning:** Checking for IOError when attempting to read a file isn't just about missing files, it also covers permission denied cases. Unittest mock wasn't enough to properly cover the physical file permission behavior, so actual filesystem tests using os.chmod provide higher fidelity.
+**Action:** When testing file I/O operations, use `os.chmod` to construct real unreadable file scenarios instead of purely mocking the open function.
