@@ -48,6 +48,22 @@ class TestDriftDetection(unittest.TestCase):
 
 
 
+    def test_get_file_hash_unreadable_file(self):
+        # Test file with no read permissions
+        test_file = os.path.join(self.temp_dir, "unreadable_file.txt")
+        with open(test_file, "w") as f:
+            f.write("Secret content")
+
+        # Remove read permissions
+        os.chmod(test_file, 0o222)
+
+        try:
+            result = drift_detection.get_file_hash(test_file)
+            self.assertIsNone(result)
+        finally:
+            # Restore permissions so tearDown can delete the temp_dir
+            os.chmod(test_file, 0o666)
+
     def test_get_file_hash_success_small(self):
         # Test file smaller than BUFFER_SIZE
         test_file = os.path.join(self.temp_dir, "hash_test_small.txt")
