@@ -8,3 +8,6 @@
 ## $(date +%Y-%m-%d) - Edge Case Testing for File Reading Permissions
 **Learning:** Checking for IOError when attempting to read a file isn't just about missing files, it also covers permission denied cases. Unittest mock wasn't enough to properly cover the physical file permission behavior, so actual filesystem tests using os.chmod provide higher fidelity.
 **Action:** When testing file I/O operations, use `os.chmod` to construct real unreadable file scenarios instead of purely mocking the open function.
+## 2026-07-15 - Bash Shell Overhead Optimization
+**Learning:** Filtering and acting on lines in a file within bash scripts using `grep ... | while read ...` loops introduces high subshell and execution overhead.
+**Action:** Use single-pass tools like `awk` or `sed` to maximize performance by minimizing process spawning.
