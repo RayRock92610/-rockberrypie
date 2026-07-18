@@ -38,5 +38,15 @@ class TestVerifyKesselContext(unittest.TestCase):
         self.assertEqual(cm.exception.code, 1)
         self.assertIn("[FATAL] Missing Kessel constraints: KESSEL_ENV, KESSEL_MEMORY_DIR, READ_ONLY_MODE", mock_stderr.getvalue())
 
+
+    @patch.dict(os.environ, {"READ_ONLY_MODE": "1"}, clear=True)
+    @patch('sys.stderr', new_callable=StringIO)
+    def test_missing_two_vars(self, mock_stderr):
+        with self.assertRaises(SystemExit) as cm:
+            verify_kessel_context()
+
+        self.assertEqual(cm.exception.code, 1)
+        self.assertIn("[FATAL] Missing Kessel constraints: KESSEL_ENV, KESSEL_MEMORY_DIR", mock_stderr.getvalue())
+
 if __name__ == '__main__':
     unittest.main()

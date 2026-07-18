@@ -12,3 +12,7 @@
 ## 2026-07-18 - Optimize bash while read loop to awk
 **Learning:** When filtering and acting on lines in a file within bash scripts, avoid using `grep ... | while read ...` loops as they introduce high subshell and execution overhead. Use single-pass tools like `awk` or `sed` to maximize performance by minimizing process spawning.
 **Action:** Replace grep | while read with awk for single-pass file processing in bash scripts.
+
+## 2026-07-18 - Missing Error Path Test for verify_kessel_context.py (Missing 2 vars)
+**Learning:** Adding a test for specifically two missing environment variables increases test coverage and explicitly asserts the logic for aggregating the exact variables missing. Utilizing `@patch.dict(os.environ, {...}, clear=True)` effectively handles clearing out unnecessary environment variables to isolate the tested edge case.
+**Action:** When adding missing path error tests that require environment isolation, default to using `@patch.dict` with `clear=True` instead of manually removing keys inside the test.
