@@ -16,3 +16,7 @@
 ## 2026-07-18 - Missing Error Path Test for verify_kessel_context.py (Missing 2 vars)
 **Learning:** Adding a test for specifically two missing environment variables increases test coverage and explicitly asserts the logic for aggregating the exact variables missing. Utilizing `@patch.dict(os.environ, {...}, clear=True)` effectively handles clearing out unnecessary environment variables to isolate the tested edge case.
 **Action:** When adding missing path error tests that require environment isolation, default to using `@patch.dict` with `clear=True` instead of manually removing keys inside the test.
+
+## 2026-07-28 - Replace open-coded strcpy loops with memcpy
+**Learning:** When copying strings in C, replacing character-by-character open-coded loops with `strlen()` followed by `memcpy()` utilizes highly optimized standard library block memory operations, achieving significant performance speedups.
+**Action:** Avoid manual character iteration for string copies when the source length can be determined and use `memcpy()` for the block transfer.
