@@ -75,24 +75,16 @@ size_t vcos_safe_sprintf(char *buf, size_t buflen, size_t offset, const char *fm
   */
 size_t vcos_safe_strcpy(char *dst, const char *src, size_t dstlen, size_t offset)
 {
+   size_t srclen = strlen(src);
    if (offset < dstlen)
    {
-      const char *p = src;
-      char *endp = dst + dstlen -1;
-
-      dst += offset;
-
-      for (; *p!='\0' && dst != endp; dst++, p++)
-         *dst = *p;
-      *dst = '\0';
-      offset += (p - src) + strlen(p);
-   }
-   else
-   {
-      offset += strlen(src);
+      size_t space = dstlen - offset - 1;
+      size_t copylen = srclen < space ? srclen : space;
+      memcpy(dst + offset, src, copylen);
+      dst[offset + copylen] = '\0';
    }
 
-   return offset;
+   return offset + srclen;
 }
 
 /** Copies at most srclen characters from string src to dst at the specified offset.
