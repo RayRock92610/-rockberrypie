@@ -77,15 +77,14 @@ size_t vcos_safe_strcpy(char *dst, const char *src, size_t dstlen, size_t offset
 {
    if (offset < dstlen)
    {
-      const char *p = src;
-      char *endp = dst + dstlen -1;
+      size_t space = dstlen - offset - 1;
+      size_t len = strlen(src);
+      size_t to_copy = (len < space) ? len : space;
 
-      dst += offset;
+      memcpy(dst + offset, src, to_copy);
+      dst[offset + to_copy] = '\0';
 
-      for (; *p!='\0' && dst != endp; dst++, p++)
-         *dst = *p;
-      *dst = '\0';
-      offset += (p - src) + strlen(p);
+      offset += len;
    }
    else
    {
@@ -105,23 +104,17 @@ size_t vcos_safe_strncpy(char *dst, const char *src, size_t srclen, size_t dstle
 {
    if (offset < dstlen)
    {
-      const char *p = src;
-      const char *srcend = src + srclen;
-      char *endp = dst + dstlen -1;
+      size_t space = dstlen - offset - 1;
+      const char *end = (const char *)memchr(src, '\0', srclen);
+      size_t len = end ? (size_t)(end - src) : srclen;
+      size_t to_copy = (len < space) ? len : space;
 
-      dst += offset;
+      memcpy(dst + offset, src, to_copy);
+      dst[offset + to_copy] = '\0';
 
-      for (; p != srcend && *p!='\0' && dst != endp; dst++, p++)
-         *dst = *p;
-      *dst = '\0';
-
-      offset += (p - src);
-      srclen -= (p - src);
-      src = p;
+      offset += len;
    }
-
-   // Optimize open-code strnlen
-   if (srclen > 0)
+   else
    {
       const char *end = (const char *)memchr(src, '\0', srclen);
       offset += end ? (size_t)(end - src) : srclen;
