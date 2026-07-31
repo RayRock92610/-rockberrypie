@@ -14,5 +14,6 @@
 **Action:** Replace grep | while read with awk for single-pass file processing in bash scripts.
 
 ## 2026-07-18 - Missing Error Path Test for verify_kessel_context.py (Missing 2 vars)
-**Learning:** Adding a test for specifically two missing environment variables increases test coverage and explicitly asserts the logic for aggregating the exact variables missing. Utilizing `@patch.dict(os.environ, {...}, clear=True)` effectively handles clearing out unnecessary environment variables to isolate the tested edge case.
-**Action:** When adding missing path error tests that require environment isolation, default to using `@patch.dict` with `clear=True` instead of manually removing keys inside the test.
+## 2026-07-31 - Optimize open-coded C string loops to standard block memory operations
+**Learning:** Replacing open-coded character-by-character loops (e.g. `for(; *p!='\0'; ...)`) with standard library functions like `strlen()`, `memchr()`, and `memcpy()` significantly improves performance by utilizing optimized block memory operations.
+**Action:** When copying or measuring strings in C, prefer highly optimized standard library block operations over manual character loops.
