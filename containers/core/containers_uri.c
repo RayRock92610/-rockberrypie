@@ -284,17 +284,7 @@ static void to_lower_string( char *str )
 /*****************************************************************************/
 static const char *vc_uri_find_delimiter(const char *str, const char *delimiters)
 {
-   const char *ptr = str;
-   char c;
-
-   while ((c = *ptr) != 0)
-   {
-      if (strchr(delimiters, c) != 0)
-         break;
-      ptr++;
-   }
-
-   return ptr;
+   return str + strcspn(str, delimiters);
 }
 
 /*****************************************************************************/

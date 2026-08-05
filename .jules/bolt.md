@@ -19,3 +19,7 @@
 ## 2026-08-01 - Optimize C string copying loops
 **Learning:** When copying strings in C, replacing open-coded character-by-character loops (e.g. `for(; *p!='\0'; ...)`) with standard library functions like `strlen()` and `memcpy()` significantly improves performance by utilizing optimized block memory operations.
 **Action:** Replace open-coded loops for string copying with block memory operations like `memcpy`.
+
+## 2026-08-04 - Optimize character string searches with strcspn
+**Learning:** When searching for the first occurrence of any character from a set of delimiters in a C string, manually looping and calling `strchr` repeatedly introduces significant overhead. Replacing these loops with the standard library function `strcspn` utilizes highly optimized block memory operations for a massive performance gain.
+**Action:** Replace open-coded `strchr` loops with `strcspn` for efficient character set matching.
