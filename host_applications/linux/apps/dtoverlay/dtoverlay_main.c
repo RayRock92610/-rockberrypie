@@ -300,7 +300,7 @@ int main(int argc, const char **argv)
         if (!dry_run)
         {
             root_check();
-            run_cmd("which dtoverlay-pre >/dev/null 2>&1 && dtoverlay-pre");
+            run_cmd("dtoverlay-pre");
         }
         break;
     default:
@@ -335,7 +335,7 @@ int main(int argc, const char **argv)
     case OPT_REMOVE:
     case OPT_REMOVE_FROM:
         if (!dry_run)
-            run_cmd("which dtoverlay-post >/dev/null 2>&1 && dtoverlay-post");
+            run_cmd("dtoverlay-post");
         break;
     default:
         break;
@@ -479,7 +479,7 @@ static int dtoverlay_add(STATE_T *state, const char *overlay,
     {
         /* Convert /proc/device-tree to a .dtb and load it */
         overlay_file = sprintf_dup("%s/%s", work_dir, "base.dtb");
-        if (run_cmd("dtc -I fs -O dtb -o '%s' /proc/device-tree 1>/dev/null 2>&1",
+        if (run_cmd("dtc -I fs -O dtb -o '%s' /proc/device-tree",
                     overlay_file) != 0)
            return error("Failed to read active DTB");
     }

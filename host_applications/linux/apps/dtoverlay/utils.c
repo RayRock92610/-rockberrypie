@@ -32,6 +32,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdarg.h>
 #include <sys/stat.h>
 #include <errno.h>
+#include <sys/wait.h>
+#include <fcntl.h>
+#include <unistd.h>
 
 #include "utils.h"
 
@@ -257,7 +260,6 @@ int run_cmd(const char *fmt, ...)
 {
     va_list ap;
     char *cmd;
-    int ret;
     va_start(ap, fmt);
     cmd = vsprintf_dup(fmt, ap);
     va_end(ap);
@@ -265,11 +267,76 @@ int run_cmd(const char *fmt, ...)
     if (opt_dry_run || opt_verbose)
 	fprintf(stderr, "run_cmd: %s\n", cmd);
 
-    ret = opt_dry_run ? 0 : system(cmd);
+    if (opt_dry_run)
+    {
+        free_string(cmd);
+        return 0;
+    }
 
+    char *args[64];
+    int argc = 0;
+    char *p = cmd;
+
+    while (*p && argc < 63) {
+        while (*p == ' ') p++;
+        if (!*p) break;
+
+        if (*p == '\'') {
+            p++;
+            args[argc++] = p;
+            while (*p && *p != '\'') p++;
+            if (*p) *p++ = '\0';
+        } else {
+            args[argc++] = p;
+            while (*p && *p != ' ') p++;
+            if (*p) *p++ = '\0';
+        }
+    }
+    args[argc] = NULL;
+
+    if (argc == 0) {
+        free_string(cmd);
+        return 0;
+    }
+
+    pid_t pid = fork();
+    if (pid == -1) {
+        free_string(cmd);
+        return -1;
+    }
+
+    if (pid == 0) {
+        /*
+         * Redirect stdout and stderr to /dev/null unless verbose mode is on,
+         * to replicate the silent behavior of the previous `> /dev/null 2>&1` shell redirections.
+         */
+        if (!opt_verbose) {
+            int fd = open("/dev/null", O_WRONLY);
+            if (fd >= 0) {
+                dup2(fd, STDOUT_FILENO);
+                dup2(fd, STDERR_FILENO);
+                if (fd > STDERR_FILENO) {
+                    close(fd);
+                }
+            }
+        }
+
+        execvp(args[0], args);
+        _exit(127);
+    }
+
+    int status;
+    while (waitpid(pid, &status, 0) == -1) {
+        if (errno != EINTR) {
+            free_string(cmd);
+            return -1;
+        }
+    }
     free_string(cmd);
 
-    return ret;
+    if (WIFEXITED(status))
+        return WEXITSTATUS(status);
+    return -1;
 }
 
 
