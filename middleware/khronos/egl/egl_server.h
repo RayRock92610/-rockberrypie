@@ -52,7 +52,7 @@ typedef struct
    KHRN_MAP_T vgcontexts;
    KHRN_PID_MAP_T eglimages;
    VCOS_MUTEX_T eglimages_lock;
-   KHRN_MAP_T wintoeglimage;//TODO window ids should be per process?
+   KHRN_PID_MAP_T wintoeglimage;
    VCOS_MUTEX_T wintoeglimage_mutex;
    
 #if EGL_KHR_sync
