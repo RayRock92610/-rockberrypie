@@ -834,7 +834,7 @@ static void wfc_client_stream_post_sem(void *cb_data)
 
 //==============================================================================
 #ifdef KHRN_FRUIT_DIRECT
-static KHRN_UMEM_HANDLE_T get_ustorage(EGLImageKHR im, KHRN_DEPS_T *deps)
+static KHRN_UMEM_HANDLE_T get_ustorage(EGLImageKHR im)
 {
    KHRN_UMEM_HANDLE_T ret = KHRN_UMEM_HANDLE_INVALID;
    EGL_SERVER_STATE_T *state = EGL_GET_SERVER_STATE();
@@ -852,9 +852,6 @@ static KHRN_UMEM_HANDLE_T get_ustorage(EGLImageKHR im, KHRN_DEPS_T *deps)
    eglimage_ = khrn_mem_lock(eglimage);
    vcos_assert(eglimage_->external.src != KHRN_UMEM_HANDLE_INVALID);
    image = khrn_mem_lock(eglimage_->external.src);
-
-   /* FIXME: We probably don't need this. It doesn't make any sense */
-   khrn_deps_quick_write(deps, &image->interlock);
 
    ret = image->ustorage;
 
@@ -957,7 +954,10 @@ void wfc_stream_release_eglimage_data(WFCNativeStreamType stream,
    KHRN_UMEM_HANDLE_T ustorage;
 
    CLIENT_LOCK();
-   ustorage = get_ustorage(im, &deps);
+
+   khrn_deps_init(&deps);
+
+   ustorage = get_ustorage(im);
    khrn_umem_release(&deps, ustorage);
    CLIENT_UNLOCK();
 }
