@@ -332,6 +332,8 @@ void svp_destroy(SVP_T *svp)
       MMAL_COMPONENT_T **comp;
       const size_t num_components = vcos_countof(components);
 
+      const size_t num_components = vcos_countof(components);
+
       /* Stop thread, disable connection and components */
       svp_stop(svp);
 
