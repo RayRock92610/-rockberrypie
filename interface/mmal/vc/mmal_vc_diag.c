@@ -228,7 +228,8 @@ static int do_stats(int argc, const char **argv)
    {
       unsigned i;
       uint32_t *ptr = (uint32_t*)&stats;
-      for (i=0; i<vcos_countof(stats_fields); i++)
+      const unsigned num_stats = vcos_countof(stats_fields);
+      for (i=0; i<num_stats; i++)
       {
          printf("%-32s: %u\n", stats_fields[i].name, ptr[stats_fields[i].offset/sizeof(uint32_t)]);
       }
