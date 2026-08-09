@@ -1,12 +1,12 @@
 #!/bin/bash
 # KesselFlow SOP Sync - Truth-First Veracity Check
-# Path: $HOME/kesselflow/scripts/sop_sync.sh
+# Path: /app/kesselflow/scripts/sop_sync.sh
 
 set -euo pipefail
 
-BY_PATH="/sdcard/boneyard/KesselFlow/SOPs"
-LOG_PATH="/sdcard/boneyard/logs/sop_delta.log"
-CURRENT="$HOME/kesselflow/current_state.json"
+BY_PATH="/app/boneyard/KesselFlow/SOPs"
+LOG_PATH="/app/boneyard/logs/sop_delta.log"
+CURRENT="/app/kesselflow/current_state.json"
 MASTER="$BY_PATH/master_state.json"
 HISTORY_DIR="$BY_PATH/history"
 TIMESTAMP=$(date +%Y-%m-%d_%H%M)
