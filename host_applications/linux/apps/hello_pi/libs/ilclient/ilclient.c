@@ -1776,8 +1776,9 @@ static struct {
 int ilclient_get_port_index(COMPONENT_T *comp, OMX_DIRTYPE dir, OMX_PORTDOMAINTYPE type, int index)
 {
    uint32_t i;
+   const uint32_t port_types_count = vcos_countof(port_types);
    // for each possible port type...
-   for (i=0; i<sizeof(port_types)/sizeof(port_types[0]); i++)
+   for (i=0; i<port_types_count; i++)
    {
       if ((port_types[i].dom == type) || (type == (OMX_PORTDOMAINTYPE) -1))
       {
