@@ -121,6 +121,7 @@ typedef struct
    FILE *file_handle;                   /// File handle to write buffer data to.
    RASPIVIDYUV_STATE *pstate;           /// pointer to our state in case required in callback
    int abort;                           /// Set to 1 in callback if an error occurs to attempt to abort the capture
+   VCOS_EVENT_T abort_event;            /// Event to wait on in main thread
    FILE *pts_file_handle;               /// File timestamps
    int frame;
    int64_t starttime;
@@ -744,6 +745,7 @@ static void camera_buffer_callback(MMAL_PORT_T *port, MMAL_BUFFER_HEADER_T *buff
          {
             vcos_log_error("Failed to write buffer data (%d from %d)- aborting", bytes_written, bytes_to_write);
             pData->abort = 1;
+            vcos_event_signal(&pData->abort_event);
          }
          if (pData->pts_file_handle)
          {
@@ -1160,8 +1162,10 @@ static int wait_for_next_change(RASPIVIDYUV_STATE *state)
    {
       // We never return from this. Expect a ctrl-c to exit or abort.
       while (!state->callback_data.abort)
-          // Have a sleep so we don't hog the CPU.
-         vcos_sleep(ABORT_INTERVAL);
+      {
+          // Wait for an event instead of sleep
+         vcos_event_wait(&state->callback_data.abort_event);
+      }
 
       return 0;
    }
@@ -1264,6 +1268,12 @@ int main(int argc, const char **argv)
    }
 
    default_status(&state);
+
+   if (vcos_event_create(&state.callback_data.abort_event, "RaspiVidYUV") != VCOS_SUCCESS)
+   {
+      vcos_log_error("%s: Failed to create abort event", __func__);
+      exit(1);
+   }
 
    // Parse the command line and put options in to our status structure
    if (parse_cmdline(argc, argv, &state))
@@ -1467,7 +1477,7 @@ int main(int argc, const char **argv)
                {
                   // timeout = 0 so run forever
                   while(1)
-                     vcos_sleep(ABORT_INTERVAL);
+                     vcos_event_wait(&state.callback_data.abort_event);
                }
             }
          }
@@ -1516,6 +1526,8 @@ error:
 
    if (status != MMAL_SUCCESS)
       raspicamcontrol_check_configuration(128);
+
+   vcos_event_delete(&state.callback_data.abort_event);
 
    return exit_code;
 }
