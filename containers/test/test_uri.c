@@ -783,18 +783,21 @@ int main(int argc, char **argv)
    LOG_INFO(NULL, "Test parameter validation");
    error_count +=  test_parameter_validation(uri);
 
+   const size_t num_parse_uris = ARRAY_SIZE(test_parse_uris);
    LOG_INFO(NULL, "Test parsing URIs:");
    for (ii = 0; ii < num_parse_uris; ii++)
    {
       error_count += test_parsing_uri(uri, test_parse_uris[ii].before, test_parse_uris[ii].after);
    }
 
+   const size_t num_build_uris = ARRAY_SIZE(test_build_uris);
    LOG_INFO(NULL, "Test building URIs:");
    for (ii = 0; ii < num_build_uris; ii++)
    {
       error_count += test_building_uri(uri, &test_build_uris[ii]);
    }
 
+   const size_t num_merge_uris = ARRAY_SIZE(test_merge_uris);
    LOG_INFO(NULL, "Test merging URIs:");
    for (ii = 0; ii < num_merge_uris; ii++)
    {
