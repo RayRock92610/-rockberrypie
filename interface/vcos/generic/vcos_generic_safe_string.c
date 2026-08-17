@@ -80,7 +80,7 @@ size_t vcos_safe_strcpy(char *dst, const char *src, size_t dstlen, size_t offset
    {
       size_t space = dstlen - offset - 1;
       size_t copy_len = (srclen < space) ? srclen : space;
-      memmove(dst + offset, src, copy_len);
+      memcpy(dst + offset, src, copy_len);
       dst[offset + copy_len] = '\0';
    }
    return offset + srclen;
@@ -101,7 +101,7 @@ size_t vcos_safe_strncpy(char *dst, const char *src, size_t srclen, size_t dstle
    {
       size_t space = dstlen - offset - 1;
       size_t copy_len = (actual_srclen < space) ? actual_srclen : space;
-      memmove(dst + offset, src, copy_len);
+      memcpy(dst + offset, src, copy_len);
       dst[offset + copy_len] = '\0';
    }
    return offset + actual_srclen;
