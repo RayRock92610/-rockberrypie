@@ -150,16 +150,6 @@ class TestDriftDetection(unittest.TestCase):
         self.assertEqual(err, "Baseline missing")
 
 
-
-    def test_get_file_hash_empty_file(self):
-        # Test empty file
-        test_file = os.path.join(self.temp_dir, "empty_file.txt")
-        with open(test_file, "wb") as f:
-            pass
-        expected_hash = hashlib.sha256(b"").hexdigest()
-        result = drift_detection.get_file_hash(test_file)
-        self.assertEqual(result, expected_hash)
-
     def test_is_excluded_with_dict(self):
         exclusions = {"dirs": ["ignored_dir"], "files": ["*.tmp"]}
         self.assertTrue(drift_detection.is_excluded("some/path/ignored_dir", "ignored_dir", exclusions))

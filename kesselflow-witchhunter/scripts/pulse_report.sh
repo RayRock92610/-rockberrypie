@@ -12,7 +12,7 @@ if [ ! -f "$LOG_FILE" ]; then
 fi
 
 # Count total hash changes and identify the most frequently modified file in a single pass
-AWK_OUT=$(awk -F'"path"[ \t]*:[ \t]*"' '/HASH_CHANGED/ {
+AWK_OUT=$(awk -F'"path":"' '/HASH_CHANGED/ {
     c++
     if (NF > 1) {
         split($2, a, "\"")

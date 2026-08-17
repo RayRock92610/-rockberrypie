@@ -5,7 +5,7 @@
 ## 2026-07-14 - Redundant Cache Lookup in Tight Loop
 **Learning:** Pre-compiling regex before passing it to hot-loop functions eliminates repeated dictionary lookups and type checks per file/directory traversed.
 **Action:** Always hoist configuration parsing or pattern compilation out of hot loops (like os.walk) to achieve better performance.
-## 2026-08-12 - Edge Case Testing for File Reading Permissions
+## $(date +%Y-%m-%d) - Edge Case Testing for File Reading Permissions
 **Learning:** Checking for IOError when attempting to read a file isn't just about missing files, it also covers permission denied cases. Unittest mock wasn't enough to properly cover the physical file permission behavior, so actual filesystem tests using os.chmod provide higher fidelity.
 **Action:** When testing file I/O operations, use `os.chmod` to construct real unreadable file scenarios instead of purely mocking the open function.
 
@@ -23,6 +23,3 @@
 ## 2026-08-04 - Optimize character string searches with strcspn
 **Learning:** When searching for the first occurrence of any character from a set of delimiters in a C string, manually looping and calling `strchr` repeatedly introduces significant overhead. Replacing these loops with the standard library function `strcspn` utilizes highly optimized block memory operations for a massive performance gain.
 **Action:** Replace open-coded `strchr` loops with `strcspn` for efficient character set matching.
-## 2026-08-12 - Optimize string copy buffers with memmove
-**Learning:** Using `memcpy` when source and destination buffers might overlap in string slicing leads to undefined behavior. Standardizing on `memmove` for overlapping buffer copies prevents this and is a safe default when modifying buffer substrings.
-**Action:** Replace `memcpy` with `memmove` when dealing with potentially overlapping strings or memory bounds.
