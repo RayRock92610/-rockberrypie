@@ -1,3 +1,3 @@
 module github.com/organization/death-star/src/targeting
 
-go 1.21
+go 1.22
