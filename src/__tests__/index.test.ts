@@ -1,4 +1,4 @@
-import { initAgent } from '../index';
+import { initAgent } from '../index.js';
 import { describe, it, expect } from 'vitest';
 
 describe('Core Orchestration Integrity Check', () => {
