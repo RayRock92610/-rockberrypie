@@ -3,6 +3,12 @@
 version = 3
 
 [[package]]
+name = "bytes"
+version = "1.10.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f61dea2b1290bd7150e68c2283e08dd107293a388f619b0c0ed1df486e245c3b"
+
+[[package]]
 name = "energy-allocation"
 version = "0.1.0"
 dependencies = [
@@ -13,24 +19,42 @@ dependencies = [
 
 [[package]]
 name = "proc-macro2"
-version = "1.0.86"
+version = "1.0.93"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "60946a68e5f9d28b0dc1c61d01630730086ba084df722793e822f36f0011c7fa"
 
 [[package]]
 name = "quote"
-version = "1.0.36"
+version = "1.0.38"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0e4d32fd217c22516312151740a6f44101a07010a3d463ef1e9dd0932dd58d84"
 
 [[package]]
 name = "serde"
-version = "1.0.204"
+version = "1.0.217"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0d9e40d1372330ed06e37a50ac19810643032c88f79e4fc13f06fa6f8e4064a8"
 
 [[package]]
 name = "serde_json"
-version = "1.0.120"
+version = "1.0.138"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d434192e7da787e94a6ea7e9670b26a036d0ce41e0b7efb2826d5d41b539a2fb"
 
 [[package]]
 name = "syn"
-version = "2.0.72"
+version = "2.0.98"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "36147f21a4f0283c4f9bc221ee9042b8f886f44a3070c793ff826fa32d18915b"
 
 [[package]]
 name = "tokio"
-version = "1.38.1"
+version = "1.43.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3d611b865d7fe2a58b532912423e20bfd6501740bc43f07be86450ca3fb1628d"
+dependencies = [
+ "bytes",
+ "proc-macro2",
+ "quote",
+ "syn",
+]
