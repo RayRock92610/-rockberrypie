@@ -2,74 +2,6 @@ name: CI & Security Audit
 
 on:
   push:
-    branches: [ master, main ]
-  pull_request:
-    branches: [ master, main ]
-
-jobs:
-  node-test:
-    name: Node.js Build & Vitest
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: 'npm'
-
-      - name: Install Dependencies
-        run: npm ci
-
-      - name: Build TypeScript
-        run: npm run build
-
-      - name: Run Vitest
-        run: npm test
-
-  rust-audit:
-    name: Rust Security Audit
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install Rust Toolchain
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Install cargo-audit
-        run: cargo install cargo-audit --locked
-
-      - name: Run cargo audit
-        run: cargo audit --manifest-path death-star/src/energy-allocation/Cargo.toml
-
-  go-audit:
-    name: Go Vulnerability Check
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: '1.22.10'
-
-      - name: Install govulncheck
-        run: go install golang.org/x/vuln/cmd/govulncheck@latest
-
-            - name: Install govulncheck
-        run: go install golang.org/x/vuln/cmd/govulncheck@latest
-
-      - name: Run govulncheck
-        run: govulncheck ./...
-        continue-on-error: true
-
-
-
-name: CI & Security Audit
-
-on:
-  push:
     branches: [ main, master ]
   pull_request:
     branches: [ main, master ]
@@ -84,7 +16,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.26.6'
+          go-version: '1.26.x'
           check-latest: true
 
       - name: Install govulncheck
@@ -92,4 +24,3 @@ jobs:
 
       - name: Run govulncheck
         run: govulncheck ./...
-

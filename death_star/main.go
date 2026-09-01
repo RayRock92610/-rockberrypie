@@ -1,21 +1,22 @@
 package main
 
 import (
-	"log"
-	"net/http"
+"log"
+"net/http"
+"time"
 )
 
 func main() {
-	// Simple HTTP entry point to initiate targeting
-	http.HandleFunc("/target", func(w http.ResponseWriter, r *http.Request) {
-		planet := r.URL.Query().Get("id")
-		log.Printf("🛰️ Targeting initiated for: %s", planet)
+mux := http.NewServeMux()
 
-		// Logic to call the Rust Energy Service via gRPC
-		// if response == "ready" { fire() }
-		w.WriteHeader(http.StatusAccepted)
-		w.Write([]byte("Target Locked. mTLS Handshake Verified."))
-	})
+server := &http.Server{
+            ":8080",
+dler:           mux,
+* time.Second,
+     10 * time.Second,
+    10 * time.Second,
+     30 * time.Second,
+}
 
-	log.Fatal(http.ListenAndServe(":8080", nil))
+log.Fatal(server.ListenAndServe())
 }
