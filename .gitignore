@@ -31,3 +31,6 @@ build/
 *.ppm
 *.mkv
 node_modules/
+node_modules/
+dist/
+
