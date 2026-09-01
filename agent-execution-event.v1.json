@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AgentExecutionEvent",
+  "type": "object",
+  "required": [
+    "event_id",
+    "timestamp",
+    "trace_id",
+    "pipeline_id",
+    "agent",
+    "model_config",
+    "input",
+    "reasoning_trace",
+    "tool_calls",
+    "state_delta",
+    "integrity"
+  ],
+  "properties": {
+    "event_id": { "type": "string", "format": "uuid" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "trace_id": { "type": "string" },
+    "pipeline_id": { "type": "string" },
+    "agent": {
+      "type": "object",
+      "required": ["id", "role", "persona"],
+      "properties": {
+        "id": { "type": "string" },
+        "role": { "type": "string" },
+        "persona": { "type": "string" }
+      }
+    },
+    "model_config": {
+      "type": "object",
+      "required": ["provider", "model", "temperature", "seed"],
+      "properties": {
+        "provider": { "type": "string" },
+        "model": { "type": "string" },
+        "temperature": { "type": "number" },
+        "top_p": { "type": "number" },
+        "seed": { "type": ["integer", "null"] },
+        "system_instruction_hash": { "type": "string" }
+      }
+    },
+    "input": {
+      "type": "object",
+      "required": ["raw_prompt_hash", "sanitized_input_summary"],
+      "properties": {
+        "raw_prompt_hash": { "type": "string" },
+        "sanitized_input_summary": { "type": "string" }
+      }
+    },
+    "reasoning_trace": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["step_number", "thought", "decision"],
+        "properties": {
+          "step_number": { "type": "integer" },
+          "thought": { "type": "string" },
+          "decision": { "type": "string" },
+          "confidence_score": { "type": "number" }
+        }
+      }
+    },
+    "tool_calls": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["tool_name", "parameters", "execution_status", "duration_ms"],
+        "properties": {
+          "tool_name": { "type": "string" },
+          "parameters": { "type": "object" },
+          "execution_status": { "type": "string", "enum": ["SUCCESS", "FAILED", "BLOCKED_BY_GUARDRAIL"] },
+          "output_hash": { "type": "string" },
+          "duration_ms": { "type": "integer" }
+        }
+      }
+    },
+    "state_delta": {
+      "type": "object",
+      "required": ["target_subsystem", "mutations"],
+      "properties": {
+        "target_subsystem": { "type": "string" },
+        "mutations": { "type": "array", "items": { "type": "object" } }
+      }
+    },
+    "integrity": {
+      "type": "object",
+      "required": ["prev_event_hash", "event_hash"],
+      "properties": {
+        "prev_event_hash": { "type": "string" },
+        "event_hash": { "type": "string" }
+      }
+    }
+  }
+}
