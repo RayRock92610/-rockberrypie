@@ -13,7 +13,7 @@ echo "[~] Initializing API Node Handshake..."
 
 # Configuration
 GITHUB_API="https://api.github.com/repos/RayRock92610/Kessel_Run_1"
-BONEYARD_NODE="http://10.0.0.15:37881"
+BONEYARD_NODE="https://10.0.0.15:37881"
 
 # Check GitHub Node
 GH_STATUS=$(curl -o /dev/null -s -w "%{http_code}" "$GITHUB_API")
