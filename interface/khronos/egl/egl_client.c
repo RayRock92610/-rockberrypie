@@ -1499,17 +1499,14 @@ EGLAPI EGLBoolean EGLAPIENTRY eglSwapInterval(EGLDisplay dpy, EGLint interval)
                interval = EGL_CONFIG_MAX_SWAP_INTERVAL;
 
             surface->swap_interval = (uint32_t) interval;
+
+            RPC_CALL2(eglIntSwapInterval_impl,
+               thread,
+               EGLINTSWAPINTERVAL_ID,
+               surface->serverbuffer,
+               surface->swap_interval);
          }
 
-         RPC_CALL2(eglIntSwapInterval_impl,
-            thread,
-            EGLINTSWAPINTERVAL_ID,
-            surface->serverbuffer,
-            surface->swap_interval);
-
-         /* TODO: should we raise an error if it's not a window
-          * surface, or silently ignore it?
-          */
          thread->error = EGL_SUCCESS;
          result = EGL_TRUE;
       } else {
