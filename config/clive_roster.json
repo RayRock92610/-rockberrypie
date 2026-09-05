@@ -1,0 +1,14 @@
+{
+  "roster_name": "Clive Roster",
+  "total_agents": 18,
+  "dispatch_engine": "Kessel Flow",
+  "primary_agents": {
+    "dragon": {"role": "Architect", "fallback": "robot"},
+    "robot": {"role": "Deterministic_Executor", "fallback": "dragon"},
+    "ghost": {"role": "Security_Auditor", "fallback": "dragon"},
+    "owl": {"role": "Context_Keeper", "fallback": "rabbit"},
+    "rabbit": {"role": "Fast_Task_Runner", "fallback": "owl"},
+    "octopus": {"role": "Parallel_Dispatcher", "fallback": "capybara"},
+    "capybara": {"role": "State_Cleaner", "fallback": "octopus"}
+  }
+}
