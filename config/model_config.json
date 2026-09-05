@@ -1,0 +1,19 @@
+{
+  "orchestrator": {
+    "primary_model": "gemini-3.1-pro-preview",
+    "fallback_model": "gemini-3-flash",
+    "api_provider": "google_genai",
+    "generation_config": {
+      "temperature": 1.0,
+      "max_output_tokens": 65536,
+      "thinking_config": {
+        "thinking_level": "high"
+      }
+    },
+    "tool_routing": {
+      "enable_search_grounding": true,
+      "enable_code_execution": true,
+      "custom_tools_endpoint": "gemini-3.1-pro-preview-customtools"
+    }
+  }
+}
