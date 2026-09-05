@@ -24,3 +24,10 @@ jobs:
 
       - name: Run govulncheck
         run: govulncheck ./...
+steps:
+  # ... other steps (like checkout and setup-go) ...
+  - name: Run govulncheck
+    uses: golang/govulncheck-action@v1
+    with:
+      go-version-file: 'go.mod'
+

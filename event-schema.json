@@ -1,0 +1,8 @@
+{
+  "type": "object",
+  "required": ["prev_event_hash", "event_hash"],
+  "properties": {
+    "prev_event_hash": { "type": "string" },
+    "event_hash": { "type": "string", "description": "SHA-256 of canonical JSON payload excluding event_hash" }
+  }
+}
