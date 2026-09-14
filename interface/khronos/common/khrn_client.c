@@ -301,7 +301,26 @@ void client_thread_state_init(CLIENT_THREAD_STATE_T *state)
 
 void client_thread_state_term(CLIENT_THREAD_STATE_T *state)
 {
-   // TODO: termination
+   state->error = EGL_SUCCESS;
+
+   state->bound_api = EGL_NONE;
+
+   state->opengl.context = NULL;
+   state->opengl.draw = NULL;
+   state->opengl.read = NULL;
+
+   state->openvg.context = NULL;
+   state->openvg.draw = NULL;
+   state->openvg.read = NULL;
+
+   state->high_priority = false;
+
+   state->merge_pos = 0;
+   state->merge_end = 0;
+
+   state->glgeterror_hack = 0;
+   state->async_error_notification = false;
+
    platform_term_rpc( state );
 }
 
