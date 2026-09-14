@@ -29,6 +29,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <string.h>
 #include <stdio.h>
 #include <limits.h>
+#include <sys/types.h>
 
 #include "containers/containers.h"
 #include "containers/core/containers_common.h"
@@ -75,23 +76,48 @@ static size_t io_file_write(VC_CONTAINER_IO_T *p_ctx, const void *buffer, size_t
 }
 
 /*****************************************************************************/
+static int file_seek(FILE *stream, int64_t offset, int whence)
+{
+#if defined(_VIDEOCORE)
+   extern int fseek64(FILE *fp, int64_t offset, int whence);
+   return fseek64(stream, offset, whence);
+#elif defined(_MSC_VER)
+   return _fseeki64(stream, offset, whence);
+#elif defined(_POSIX_C_SOURCE) && (_POSIX_C_SOURCE >= 200112L) || defined(__unix__) || defined(__APPLE__)
+   if (sizeof(off_t) < sizeof(int64_t))
+   {
+      if (offset > (int64_t)LONG_MAX || offset < (int64_t)LONG_MIN)
+         return -1;
+   }
+   return fseeko(stream, (off_t)offset, whence);
+#else
+   if (offset > (int64_t)LONG_MAX || offset < (int64_t)LONG_MIN)
+      return -1;
+   return fseek(stream, (long)offset, whence);
+#endif
+}
+
+static int64_t file_tell(FILE *stream)
+{
+#if defined(_VIDEOCORE)
+   extern int64_t ftell64(FILE *fp);
+   return ftell64(stream);
+#elif defined(_MSC_VER)
+   return _ftelli64(stream);
+#elif defined(_POSIX_C_SOURCE) && (_POSIX_C_SOURCE >= 200112L) || defined(__unix__) || defined(__APPLE__)
+   return (int64_t)ftello(stream);
+#else
+   return (int64_t)ftell(stream);
+#endif
+}
+
+/*****************************************************************************/
 static VC_CONTAINER_STATUS_T io_file_seek(VC_CONTAINER_IO_T *p_ctx, int64_t offset)
 {
    VC_CONTAINER_STATUS_T status = VC_CONTAINER_SUCCESS;
    int ret;
 
-   //FIXME: large file support
-#ifdef _VIDEOCORE
-   extern int fseek64(FILE *fp, int64_t offset, int whence);
-   ret = fseek64(p_ctx->module->stream, offset, SEEK_SET);
-#else
-   if (offset > (int64_t)UINT_MAX)
-   {
-      p_ctx->status = VC_CONTAINER_ERROR_EOS;
-      return VC_CONTAINER_ERROR_EOS;
-   }
-   ret = fseek(p_ctx->module->stream, (long)offset, SEEK_SET);
-#endif   
+   ret = file_seek(p_ctx->module->stream, offset, SEEK_SET);
    if(ret)
    {
       if( feof(p_ctx->module->stream) ) status = VC_CONTAINER_ERROR_EOS;
@@ -139,10 +165,9 @@ VC_CONTAINER_STATUS_T vc_container_io_file_open( VC_CONTAINER_IO_T *p_ctx,
    }
    else
    {
-      //FIXME: large file support, platform-specific file size
-      fseek(p_ctx->module->stream, 0, SEEK_END);
-      p_ctx->size = ftell(p_ctx->module->stream);
-      fseek(p_ctx->module->stream, 0, SEEK_SET);
+      file_seek(p_ctx->module->stream, 0, SEEK_END);
+      p_ctx->size = file_tell(p_ctx->module->stream);
+      file_seek(p_ctx->module->stream, 0, SEEK_SET);
    }
 
    p_ctx->capabilities = VC_CONTAINER_IO_CAPS_NO_CACHING;
