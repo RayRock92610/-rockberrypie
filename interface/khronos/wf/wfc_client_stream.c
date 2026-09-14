@@ -853,9 +853,6 @@ static KHRN_UMEM_HANDLE_T get_ustorage(EGLImageKHR im, KHRN_DEPS_T *deps)
    vcos_assert(eglimage_->external.src != KHRN_UMEM_HANDLE_INVALID);
    image = khrn_mem_lock(eglimage_->external.src);
 
-   /* FIXME: We probably don't need this. It doesn't make any sense */
-   khrn_deps_quick_write(deps, &image->interlock);
-
    ret = image->ustorage;
 
    khrn_mem_unlock(eglimage_->external.src);
