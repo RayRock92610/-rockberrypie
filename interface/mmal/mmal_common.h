@@ -52,8 +52,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MMAL_MIN(a,b) ((a)<(b)?(a):(b))
 #define MMAL_MAX(a,b) ((a)<(b)?(b):(a))
 
-/* FIXME: should be different for big endian */
+#if defined(__BIG_ENDIAN__) || defined(MMAL_IS_BIG_ENDIAN) || (defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__)
+#ifndef MMAL_IS_BIG_ENDIAN
+#define MMAL_IS_BIG_ENDIAN
+#endif
+#define MMAL_FOURCC(a,b,c,d) ((d) | (c << 8) | (b << 16) | (a << 24))
+#else
 #define MMAL_FOURCC(a,b,c,d) ((a) | (b << 8) | (c << 16) | (d << 24))
+#endif
 #define MMAL_PARAM_UNUSED(a) (void)(a)
 #define MMAL_MAGIC MMAL_FOURCC('m','m','a','l')
 
