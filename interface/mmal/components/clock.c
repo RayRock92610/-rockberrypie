@@ -775,9 +775,9 @@ static MMAL_STATUS_T clock_control_parameter_set(MMAL_PORT_T *port, const MMAL_P
       case MMAL_PARAMETER_CLOCK_FRAME_RATE:
       {
          const MMAL_PARAMETER_FRAME_RATE_T *p = (const MMAL_PARAMETER_FRAME_RATE_T *)param;
+         uint32_t frame_rate = p->frame_rate.den ? p->frame_rate.num / p->frame_rate.den : p->frame_rate.num;
          module->frame_rate = p->frame_rate;
-         /* XXX: take frame_rate.den into account */
-         module->frame_rate_log2 = pow2_shift(next_pow2(module->frame_rate.num));
+         module->frame_rate_log2 = pow2_shift(next_pow2(frame_rate));
          module->frame_duration = p->frame_rate.den * 1000000 / p->frame_rate.num;
          LOG_TRACE("frame rate %d/%d (%u) duration %"PRIi64,
                    module->frame_rate.num, module->frame_rate.den,
