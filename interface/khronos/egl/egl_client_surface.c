@@ -335,7 +335,14 @@ EGL_SURFACE_T *egl_surface_create(
       return 0;
    }
 
-   /* TODO: respect largest_pbuffer? */
+   if (largest_pbuffer) {
+      if (width > EGL_CONFIG_MAX_WIDTH) {
+         width = EGL_CONFIG_MAX_WIDTH;
+      }
+      if (height > EGL_CONFIG_MAX_HEIGHT) {
+         height = EGL_CONFIG_MAX_HEIGHT;
+      }
+   }
 
    surface->name = name;
    surface->type = type;
@@ -541,8 +548,6 @@ EGL_SURFACE_T *egl_surface_from_vg_image(
       *error = EGL_BAD_ALLOC;
       return 0;
    }
-
-   /* TODO: respect largest_pbuffer? */
 
    surface->name = name;
    surface->type = PBUFFER;
