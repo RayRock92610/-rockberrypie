@@ -343,6 +343,18 @@ static INLINE bool khrn_image_is_yuv422(KHRN_IMAGE_FORMAT_T format)
    return (format & IMAGE_FORMAT_COMP_MASK) == IMAGE_FORMAT_YUYV;
 }
 
+static INLINE bool khrn_image_is_lin(KHRN_IMAGE_FORMAT_T format)
+{
+   vcos_assert(format != IMAGE_FORMAT_INVALID);
+   return (format & IMAGE_FORMAT_LIN) != 0;
+}
+
+static INLINE bool khrn_image_is_pre(KHRN_IMAGE_FORMAT_T format)
+{
+   vcos_assert(format != IMAGE_FORMAT_INVALID);
+   return (format & IMAGE_FORMAT_PRE) != 0;
+}
+
 extern uint32_t khrn_image_get_bpp(KHRN_IMAGE_FORMAT_T format);
 
 extern uint32_t khrn_image_get_red_size(KHRN_IMAGE_FORMAT_T format);

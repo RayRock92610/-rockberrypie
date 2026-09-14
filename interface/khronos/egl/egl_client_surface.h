@@ -34,6 +34,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "interface/khronos/egl/egl_int.h"
 
 #include "interface/khronos/common/khrn_client_platform.h"
+#include "interface/khronos/common/khrn_int_image.h"
 
 typedef enum {
    WINDOW,
@@ -50,6 +51,16 @@ typedef enum {
    NONPRE,
    PRE
 } EGL_SURFACE_ALPHAFORMAT_T;
+
+static INLINE EGL_SURFACE_COLORSPACE_T khrn_image_to_colorspace(KHRN_IMAGE_FORMAT_T format)
+{
+   return khrn_image_is_lin(format) ? LINEAR : SRGB;
+}
+
+static INLINE EGL_SURFACE_ALPHAFORMAT_T khrn_image_to_alphaformat(KHRN_IMAGE_FORMAT_T format)
+{
+   return khrn_image_is_pre(format) ? PRE : NONPRE;
+}
 
 typedef struct {
    EGLSurface name;

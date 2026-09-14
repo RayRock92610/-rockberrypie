@@ -604,9 +604,8 @@ EGL_SURFACE_T *egl_surface_from_vg_image(
       surface->width = results[2];
       surface->height = results[3];
 
-      /* TODO: picking apart image formats like this seems messy */
-      surface->colorspace = (format & IMAGE_FORMAT_LIN) ? LINEAR : SRGB;
-      surface->alphaformat = (format & IMAGE_FORMAT_PRE) ? PRE : NONPRE;
+      surface->colorspace = khrn_image_to_colorspace(format);
+      surface->alphaformat = khrn_image_to_alphaformat(format);
       *error = EGL_SUCCESS;
       return surface;
    } else {
