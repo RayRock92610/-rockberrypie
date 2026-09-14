@@ -114,4 +114,37 @@ describe('HashChainedLogger', () => {
     expect(verification.valid).toBe(false);
     expect(verification.brokenSequence).toBe(1);
   });
+
+  describe('getLatestEventHash', () => {
+    it('should return GENESIS_HASH when database is empty', () => {
+      const latestHash = logger.getLatestEventHash();
+      expect(latestHash).toBe('0'.repeat(64));
+    });
+
+    it('should return the event_hash of the logged event when single event exists', () => {
+      const event = logger.logEvent(mockParams);
+      const latestHash = logger.getLatestEventHash();
+
+      expect(latestHash).toBe(event.integrity.event_hash);
+    });
+
+    it('should return the event_hash of the most recently logged event when multiple events exist', () => {
+      const event1 = logger.logEvent(mockParams);
+      expect(logger.getLatestEventHash()).toBe(event1.integrity.event_hash);
+
+      const params2: LogEventParams = {
+        ...mockParams,
+        event_id: '550e8400-e29b-41d4-a716-446655440002',
+      };
+      const event2 = logger.logEvent(params2);
+      expect(logger.getLatestEventHash()).toBe(event2.integrity.event_hash);
+
+      const params3: LogEventParams = {
+        ...mockParams,
+        event_id: '550e8400-e29b-41d4-a716-446655440003',
+      };
+      const event3 = logger.logEvent(params3);
+      expect(logger.getLatestEventHash()).toBe(event3.integrity.event_hash);
+    });
+  });
 });
