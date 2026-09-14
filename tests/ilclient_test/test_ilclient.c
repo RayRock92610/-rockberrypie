@@ -55,6 +55,7 @@ void *ilcs_get_common(void) { return NULL; }
 OMX_ERRORTYPE vcil_out_component_name_enum(OMX_STRING cComponentName, OMX_U32 nNameLength, OMX_U32 nIndex) { return OMX_ErrorNone; }
 OMX_ERRORTYPE vcil_out_create_component(void *ilcs, OMX_HANDLETYPE *pHandle, OMX_STRING cComponentName) { return OMX_ErrorNone; }
 OMX_ERRORTYPE vcil_out_get_debug_information(OMX_STRING debugInfo, OMX_S32 *pLen) { return OMX_ErrorNone; }
+int vcil_out_component_is_ilcs(void *ilcs, OMX_HANDLETYPE hComponent) { return 1; }
 
 
 int main() {
