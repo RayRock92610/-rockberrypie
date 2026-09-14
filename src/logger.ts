@@ -47,17 +47,43 @@ export class HashChainedLogger {
    * Recursively canonicalize objects by sorting keys alphabetically
    */
   public canonicalize(obj: unknown): string {
-    if (obj === null || typeof obj !== 'object') {
+    if (obj === null) {
+      return 'null';
+    }
+    const type = typeof obj;
+    if (type === 'string') {
       return JSON.stringify(obj);
     }
-    if (Array.isArray(obj)) {
-      return '[' + obj.map((item) => this.canonicalize(item)).join(',') + ']';
+    if (type === 'number' || type === 'boolean') {
+      return String(obj);
     }
-    const sortedKeys = Object.keys(obj as Record<string, unknown>).sort();
-    const keyValues = sortedKeys.map(
-      (key) => `${JSON.stringify(key)}:${this.canonicalize((obj as Record<string, unknown>)[key])}`
-    );
-    return '{' + keyValues.join(',') + '}';
+    if (type !== 'object') {
+      return 'null';
+    }
+
+    if (Array.isArray(obj)) {
+      let result = '[';
+      for (let i = 0; i < obj.length; i++) {
+        if (i > 0) result += ',';
+        result += this.canonicalize(obj[i]);
+      }
+      return result + ']';
+    }
+
+    const rec = obj as Record<string, unknown>;
+    const sortedKeys = Object.keys(rec).sort();
+    let result = '{';
+    let first = true;
+    for (let i = 0; i < sortedKeys.length; i++) {
+      const key = sortedKeys[i];
+      const val = rec[key];
+      if (val !== undefined) {
+        if (!first) result += ',';
+        result += `${JSON.stringify(key)}:${this.canonicalize(val)}`;
+        first = false;
+      }
+    }
+    return result + '}';
   }
 
   public computeHash(content: string): string {
@@ -152,7 +178,7 @@ export class HashChainedLogger {
         tool_calls: parsed.tool_calls,
         state_delta: parsed.state_delta,
         integrity: {
-          prev_event_hash: parsed.integrity.prev_event_hash,
+          prev_event_hash: parsed.integrity?.prev_event_hash,
         },
       };
 
