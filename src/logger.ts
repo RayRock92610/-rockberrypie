@@ -6,6 +6,7 @@ import {
 } from './types/logger.js';
 
 const GENESIS_HASH = '0'.repeat(64);
+const SAFE_STRING_REGEX = /[\x00-\x1f"\\]/;
 
 export interface LogEventParams {
   event_id: string;
@@ -47,17 +48,29 @@ export class HashChainedLogger {
    * Recursively canonicalize objects by sorting keys alphabetically
    */
   public canonicalize(obj: unknown): string {
-    if (obj === null || typeof obj !== 'object') {
-      return JSON.stringify(obj);
+    if (obj === null) return 'null';
+    const type = typeof obj;
+    if (type === 'string') {
+      return SAFE_STRING_REGEX.test(obj) ? JSON.stringify(obj) : '"' + obj + '"';
     }
+    if (type === 'boolean') return obj ? 'true' : 'false';
+    if (type === 'number') return Number.isFinite(obj) ? String(obj) : 'null';
+    if (type !== 'object') return JSON.stringify(obj) as unknown as string;
+
     if (Array.isArray(obj)) {
       return '[' + obj.map((item) => this.canonicalize(item)).join(',') + ']';
     }
-    const sortedKeys = Object.keys(obj as Record<string, unknown>).sort();
-    const keyValues = sortedKeys.map(
-      (key) => `${JSON.stringify(key)}:${this.canonicalize((obj as Record<string, unknown>)[key])}`
-    );
-    return '{' + keyValues.join(',') + '}';
+
+    const rec = obj as Record<string, unknown>;
+    const sortedKeys = Object.keys(rec).sort();
+    let result = '{';
+    for (let i = 0; i < sortedKeys.length; i++) {
+      if (i > 0) result += ',';
+      const key = sortedKeys[i];
+      const keyStr = SAFE_STRING_REGEX.test(key) ? JSON.stringify(key) : '"' + key + '"';
+      result += keyStr + ':' + this.canonicalize(rec[key]);
+    }
+    return result + '}';
   }
 
   public computeHash(content: string): string {
