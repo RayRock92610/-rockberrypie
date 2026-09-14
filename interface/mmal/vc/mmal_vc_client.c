@@ -199,7 +199,7 @@ static void mmal_vc_handle_event_msg(VCHIQ_HEADER_T *vchiq_header,
 {
    mmal_worker_event_to_host *msg = (mmal_worker_event_to_host *)vchiq_header->data;
    MMAL_COMPONENT_T *component = msg->client_component;
-   MMAL_BUFFER_HEADER_T *buffer;
+   MMAL_BUFFER_HEADER_T *buffer = NULL;
    MMAL_STATUS_T status;
    MMAL_PORT_T *port;
 
@@ -251,7 +251,6 @@ static void mmal_vc_handle_event_msg(VCHIQ_HEADER_T *vchiq_header,
       if (vst != VCHIQ_SUCCESS)
       {
          LOG_TRACE("queue event bulk rx len %d failed to start", buffer->length);
-         mmal_buffer_header_release(buffer);
          goto error;
       }
    }
@@ -268,8 +267,11 @@ static void mmal_vc_handle_event_msg(VCHIQ_HEADER_T *vchiq_header,
    return;
 
 error:
-   /* FIXME: How to abort bulk receive if necessary? */
-   msg->length = 0; /* FIXME: set a buffer flag to signal error */
+   if (buffer)
+   {
+      buffer->flags |= MMAL_BUFFER_HEADER_FLAG_TRANSMISSION_FAILED;
+      mmal_buffer_header_release(buffer);
+   }
    vchiq_release_message(service, vchiq_header);
 }
 
