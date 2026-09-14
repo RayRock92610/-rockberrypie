@@ -121,29 +121,26 @@ VCHIQ_STATUS_T khan_callback(VCHIQ_REASON_T reason, VCHIQ_HEADER_T *header,
          return VCHIQ_SUCCESS;
       } // if
 
-      if (command == ASYNC_COMMAND_DESTROY)
+      PLATFORM_SEMAPHORE_T sem;
+      if (khronos_platform_semaphore_create(&sem, msg, 1) == KHR_SUCCESS)
       {
-         /* todo: destroy */
-      }
-      else
-      {
-         PLATFORM_SEMAPHORE_T sem;
-         if (khronos_platform_semaphore_create(&sem, msg, 1) == KHR_SUCCESS)
-         {
-            switch (command) {
-            case ASYNC_COMMAND_WAIT:
-               khronos_platform_semaphore_acquire(&sem);
-               break;
-            case ASYNC_COMMAND_POST:
-               khronos_platform_semaphore_release(&sem);
-               break;
-            default:
-               vcos_assert_msg(0, "khan_callback: unknown message type");
-               break;
-            }
-            khronos_platform_semaphore_destroy(&sem);
+         switch (command) {
+         case ASYNC_COMMAND_WAIT:
+            khronos_platform_semaphore_acquire(&sem);
+            break;
+         case ASYNC_COMMAND_POST:
+            khronos_platform_semaphore_release(&sem);
+            break;
+         case ASYNC_COMMAND_DESTROY:
+            /* destroy: khronos_platform_semaphore_create opened the semaphore,
+             * falling through to khronos_platform_semaphore_destroy below will release/destroy it. */
+            break;
+         default:
+            vcos_assert_msg(0, "khan_callback: unknown message type");
+            break;
          }
-      } // else
+         khronos_platform_semaphore_destroy(&sem);
+      }
       vchiq_release_message(handle, header);
       break;
    }
