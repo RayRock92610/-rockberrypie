@@ -75,23 +75,37 @@ static size_t io_file_write(VC_CONTAINER_IO_T *p_ctx, const void *buffer, size_t
 }
 
 /*****************************************************************************/
+static int io_file_seek_cmd(FILE *stream, int64_t offset, int whence)
+{
+#ifdef _VIDEOCORE
+   extern int fseek64(FILE *fp, int64_t offset, int whence);
+   return fseek64(stream, offset, whence);
+#elif defined(_WIN32) || defined(WIN32)
+   return _fseeki64(stream, offset, whence);
+#else
+   return fseeko(stream, (off_t)offset, whence);
+#endif
+}
+
+static int64_t io_file_tell_cmd(FILE *stream)
+{
+#ifdef _VIDEOCORE
+   extern int64_t ftell64(FILE *fp);
+   return ftell64(stream);
+#elif defined(_WIN32) || defined(WIN32)
+   return _ftelli64(stream);
+#else
+   return (int64_t)ftello(stream);
+#endif
+}
+
+/*****************************************************************************/
 static VC_CONTAINER_STATUS_T io_file_seek(VC_CONTAINER_IO_T *p_ctx, int64_t offset)
 {
    VC_CONTAINER_STATUS_T status = VC_CONTAINER_SUCCESS;
    int ret;
 
-   //FIXME: large file support
-#ifdef _VIDEOCORE
-   extern int fseek64(FILE *fp, int64_t offset, int whence);
-   ret = fseek64(p_ctx->module->stream, offset, SEEK_SET);
-#else
-   if (offset > (int64_t)UINT_MAX)
-   {
-      p_ctx->status = VC_CONTAINER_ERROR_EOS;
-      return VC_CONTAINER_ERROR_EOS;
-   }
-   ret = fseek(p_ctx->module->stream, (long)offset, SEEK_SET);
-#endif   
+   ret = io_file_seek_cmd(p_ctx->module->stream, offset, SEEK_SET);
    if(ret)
    {
       if( feof(p_ctx->module->stream) ) status = VC_CONTAINER_ERROR_EOS;
@@ -139,10 +153,17 @@ VC_CONTAINER_STATUS_T vc_container_io_file_open( VC_CONTAINER_IO_T *p_ctx,
    }
    else
    {
-      //FIXME: large file support, platform-specific file size
-      fseek(p_ctx->module->stream, 0, SEEK_END);
-      p_ctx->size = ftell(p_ctx->module->stream);
-      fseek(p_ctx->module->stream, 0, SEEK_SET);
+      if (io_file_seek_cmd(p_ctx->module->stream, 0, SEEK_END) == 0)
+      {
+         p_ctx->size = io_file_tell_cmd(p_ctx->module->stream);
+         if (p_ctx->size < 0)
+            p_ctx->size = 0;
+         io_file_seek_cmd(p_ctx->module->stream, 0, SEEK_SET);
+      }
+      else
+      {
+         p_ctx->size = 0;
+      }
    }
 
    p_ctx->capabilities = VC_CONTAINER_IO_CAPS_NO_CACHING;
