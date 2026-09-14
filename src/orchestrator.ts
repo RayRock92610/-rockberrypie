@@ -1,3 +1,4 @@
+import crypto from 'node:crypto';
 import { HashChainedLogger } from './logger.js';
 import { AgentRunner } from './agent-runner.js';
 import { InputGuardrail } from './guardrails.js';
@@ -36,7 +37,7 @@ export class PipelineOrchestrator {
     pipelineId: string,
     steps: PipelineStep[]
   ): Promise<OrchestrationResult> {
-    const traceId = `trace-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+    const traceId = `trace-${crypto.randomUUID()}`;
     const events: AgentExecutionEvent[] = [];
 
     for (const step of steps) {
