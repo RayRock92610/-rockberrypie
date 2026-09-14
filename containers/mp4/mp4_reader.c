@@ -1736,12 +1736,16 @@ static VC_CONTAINER_STATUS_T mp4_reader_seek(VC_CONTAINER_T *p_ctx,
    /* Deal with the easy case first */
    if(!*offset)
    {
+      uint32_t success_count = 0;
       /* Initialise tracks */
       for(i = 0; i < p_ctx->tracks_num; i++)
       {
-         /* FIXME: we should check we've got at least one success */
-        mp4_read_sample_header(p_ctx, i, &p_ctx->tracks[i]->priv->module->state);
+         status = mp4_read_sample_header(p_ctx, i, &p_ctx->tracks[i]->priv->module->state);
+         if(status == VC_CONTAINER_SUCCESS)
+            success_count++;
       }
+      if(p_ctx->tracks_num && !success_count)
+         return status != VC_CONTAINER_SUCCESS ? status : VC_CONTAINER_ERROR_FAILED;
       return VC_CONTAINER_SUCCESS;
    }
 
@@ -1862,10 +1866,20 @@ VC_CONTAINER_STATUS_T mp4_reader_open( VC_CONTAINER_T *p_ctx )
    }
 
    /* Initialise tracks */
-   for(i = 0; i < p_ctx->tracks_num; i++)
    {
-      /* FIXME: we should check we've got at least one success */
-      status = mp4_read_sample_header(p_ctx, i, &p_ctx->tracks[i]->priv->module->state);
+      uint32_t success_count = 0;
+      for(i = 0; i < p_ctx->tracks_num; i++)
+      {
+         status = mp4_read_sample_header(p_ctx, i, &p_ctx->tracks[i]->priv->module->state);
+         if(status == VC_CONTAINER_SUCCESS)
+            success_count++;
+      }
+      if(p_ctx->tracks_num && !success_count)
+      {
+         if(status == VC_CONTAINER_SUCCESS)
+            status = VC_CONTAINER_ERROR_FAILED;
+         goto error;
+      }
    }
 
    status = SEEK(p_ctx, module->data_offset);
