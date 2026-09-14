@@ -81,3 +81,4 @@ VCHPRE_ void VCHPOST_ vcil_out_fill_buffer_done(ILCS_COMMON_T *st, void *call, i
 VCHPRE_ OMX_ERRORTYPE VCHPOST_ vcil_out_get_debug_information(ILCS_COMMON_T *st, OMX_STRING debugInfo, OMX_S32 *pLen);
 VCHPRE_ OMX_ERRORTYPE VCHPOST_ vcil_out_create_component(ILCS_COMMON_T *st, OMX_HANDLETYPE hComponent, OMX_STRING component_name);
 VCHPRE_ OMX_ERRORTYPE VCHPOST_ vcil_out_component_name_enum(ILCS_COMMON_T *st, OMX_STRING cComponentName, OMX_U32 nNameLength, OMX_U32 nIndex);
+VCHPRE_ int VCHPOST_ vcil_out_component_is_ilcs(ILCS_COMMON_T *st, OMX_HANDLETYPE hComponent);

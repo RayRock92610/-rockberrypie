@@ -752,6 +752,30 @@ OMX_ERRORTYPE vcil_out_get_debug_information(ILCS_COMMON_T *st, OMX_STRING debug
    return OMX_ErrorNone;
 }
 
+int vcil_out_component_is_ilcs(ILCS_COMMON_T *st, OMX_HANDLETYPE hComponent)
+{
+   VC_PRIVATE_COMPONENT_T *list;
+   int found = 0;
+
+   if (!st || !hComponent)
+      return 0;
+
+   vcos_semaphore_wait(&st->component_lock);
+   list = st->component_list;
+   while (list != NULL)
+   {
+      if (list->comp == (OMX_COMPONENTTYPE *)hComponent)
+      {
+         found = 1;
+         break;
+      }
+      list = list->next;
+   }
+   vcos_semaphore_post(&st->component_lock);
+
+   return found;
+}
+
 // Called on the host side to create an OMX component.
 OMX_ERRORTYPE vcil_out_create_component(ILCS_COMMON_T *st, OMX_HANDLETYPE hComponent, OMX_STRING component_name)
 {
