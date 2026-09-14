@@ -848,16 +848,16 @@ EGLint egl_surface_get_mapped_buffer_attrib(EGL_SURFACE_T *surface, EGLint attri
       *value = khrn_image_get_stride(format, surface->width);
       return EGL_SUCCESS;
    case EGL_BITMAP_ORIGIN_KHR:
-      *value = EGL_LOWER_LEFT_KHR;     // TODO: is this correct?
+      *value = EGL_LOWER_LEFT_KHR;
       return EGL_SUCCESS;
    case EGL_BITMAP_PIXEL_RED_OFFSET_KHR:
-      *value = is565 ? 11 : 0;         // TODO: I've probably got these wrong too
+      *value = is565 ? 11 : 16;
       return EGL_SUCCESS;
    case EGL_BITMAP_PIXEL_GREEN_OFFSET_KHR:
       *value = is565 ? 5 : 8;
       return EGL_SUCCESS;
    case EGL_BITMAP_PIXEL_BLUE_OFFSET_KHR:
-      *value = is565 ? 0 : 16;
+      *value = is565 ? 0 : 0;
       return EGL_SUCCESS;
    case EGL_BITMAP_PIXEL_ALPHA_OFFSET_KHR:
       *value = is565 ? 0 : 24;
