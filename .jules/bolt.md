@@ -23,3 +23,6 @@
 ## 2026-08-04 - Optimize character string searches with strcspn
 **Learning:** When searching for the first occurrence of any character from a set of delimiters in a C string, manually looping and calling `strchr` repeatedly introduces significant overhead. Replacing these loops with the standard library function `strcspn` utilizes highly optimized block memory operations for a massive performance gain.
 **Action:** Replace open-coded `strchr` loops with `strcspn` for efficient character set matching.
+## 2026-09-16 - Optimize better-sqlite3 prepared statements
+**Learning:** Calling `.prepare()` repeatedly in a hot loop or frequently called functions with `better-sqlite3` re-compiles the query every time, causing significant CPU overhead.
+**Action:** Cache compiled `Database.Statement` objects in class properties and reuse them to achieve near zero-cost database interactions.
