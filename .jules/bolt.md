@@ -27,3 +27,7 @@
 ## 2026-09-17 - Optimize SQLite Prepared Statements in Logger
 **Learning:** Repeatedly calling `db.prepare()` inside frequently executed functions (like event loggers) causes severe CPU overhead due to query recompilation in `better-sqlite3`.
 **Action:** Always cache prepared statements in class properties or variables for reuse, especially for database operations within hot paths or high-frequency event handlers.
+
+## 2026-09-18 - Optimize busy-waiting with vcos_event
+**Learning:** In polling loops waiting for an abort flag, using `vcos_sleep()` introduces a busy-wait that wastes CPU cycles. Replacing it with a blocking wait using `vcos_event_wait()` and `vcos_event_signal()` eliminates this overhead.
+**Action:** When implementing waiting loops for abort flags, use `vcos_event` synchronization primitives instead of polling with `vcos_sleep`.
