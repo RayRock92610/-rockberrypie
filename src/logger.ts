@@ -22,10 +22,23 @@ export interface LogEventParams {
 
 export class HashChainedLogger {
   private db: Database.Database;
+  private insertEventStmt: Database.Statement;
+  private latestEventHashStmt: Database.Statement;
+  private selectAllEventsStmt: Database.Statement;
 
   constructor(dbPath: string = 'agent_audit.db') {
     this.db = new Database(dbPath);
     this.initDatabase();
+
+    // ⚡ Bolt: Cache prepared statements to avoid query recompilation overhead
+    // on every event logged or queried.
+    this.latestEventHashStmt = this.db.prepare('SELECT event_hash FROM audit_events ORDER BY sequence DESC LIMIT 1');
+    this.insertEventStmt = this.db.prepare(`
+      INSERT INTO audit_events (
+        event_id, trace_id, pipeline_id, timestamp, prev_event_hash, event_hash, payload
+      ) VALUES (?, ?, ?, ?, ?, ?, ?)
+    `);
+    this.selectAllEventsStmt = this.db.prepare('SELECT sequence, prev_event_hash, event_hash, payload FROM audit_events ORDER BY sequence ASC');
   }
 
   private initDatabase(): void {
@@ -78,9 +91,7 @@ export class HashChainedLogger {
   }
 
   public getLatestEventHash(): string {
-    const row = this.db
-      .prepare('SELECT event_hash FROM audit_events ORDER BY sequence DESC LIMIT 1')
-      .get() as { event_hash: string } | undefined;
+    const row = this.latestEventHashStmt.get() as { event_hash: string } | undefined;
     return row ? row.event_hash : GENESIS_HASH;
   }
 
@@ -118,13 +129,7 @@ export class HashChainedLogger {
     // Validate payload against Zod schema prior to persistence
     const validatedEvent = AgentExecutionEventSchema.parse(fullEvent);
 
-    const stmt = this.db.prepare(`
-      INSERT INTO audit_events (
-        event_id, trace_id, pipeline_id, timestamp, prev_event_hash, event_hash, payload
-      ) VALUES (?, ?, ?, ?, ?, ?, ?)
-    `);
-
-    stmt.run(
+    this.insertEventStmt.run(
       validatedEvent.event_id,
       validatedEvent.trace_id,
       validatedEvent.pipeline_id,
@@ -141,9 +146,7 @@ export class HashChainedLogger {
    * Verify total integrity of the local hash chain
    */
   public verifyChainIntegrity(): { valid: boolean; brokenSequence?: number } {
-    const rows = this.db
-      .prepare('SELECT sequence, prev_event_hash, event_hash, payload FROM audit_events ORDER BY sequence ASC')
-      .all() as Array<{ sequence: number; prev_event_hash: string; event_hash: string; payload: string }>;
+    const rows = this.selectAllEventsStmt.all() as Array<{ sequence: number; prev_event_hash: string; event_hash: string; payload: string }>;
 
     let expectedPrevHash = GENESIS_HASH;
 
