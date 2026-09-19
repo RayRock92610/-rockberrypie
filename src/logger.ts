@@ -146,7 +146,9 @@ export class HashChainedLogger {
    * Verify total integrity of the local hash chain
    */
   public verifyChainIntegrity(): { valid: boolean; brokenSequence?: number } {
-    const rows = this.selectAllEventsStmt.all() as Array<{ sequence: number; prev_event_hash: string; event_hash: string; payload: string }>;
+    // ⚡ Bolt: Use .iterate() instead of .all() to stream rows iteratively
+    // This significantly reduces memory spikes and CPU overhead when querying large datasets.
+    const rows = this.selectAllEventsStmt.iterate() as IterableIterator<{ sequence: number; prev_event_hash: string; event_hash: string; payload: string }>;
 
     let expectedPrevHash = GENESIS_HASH;
 
