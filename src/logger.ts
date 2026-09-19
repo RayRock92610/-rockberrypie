@@ -146,7 +146,7 @@ export class HashChainedLogger {
    * Verify total integrity of the local hash chain
    */
   public verifyChainIntegrity(): { valid: boolean; brokenSequence?: number } {
-    const rows = this.selectAllEventsStmt.all() as Array<{ sequence: number; prev_event_hash: string; event_hash: string; payload: string }>;
+    const rows = this.selectAllEventsStmt.iterate() as IterableIterator<{ sequence: number; prev_event_hash: string; event_hash: string; payload: string }>;
 
     let expectedPrevHash = GENESIS_HASH;
 
