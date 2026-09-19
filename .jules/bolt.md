@@ -27,3 +27,7 @@
 ## 2026-09-17 - Optimize SQLite Prepared Statements in Logger
 **Learning:** Repeatedly calling `db.prepare()` inside frequently executed functions (like event loggers) causes severe CPU overhead due to query recompilation in `better-sqlite3`.
 **Action:** Always cache prepared statements in class properties or variables for reuse, especially for database operations within hot paths or high-frequency event handlers.
+
+## 2026-09-19 - Optimize SQLite select queries with .iterate()
+**Learning:** Using `.all()` in `better-sqlite3` buffers all rows in memory, which leads to massive memory spikes and CPU overhead for large datasets.
+**Action:** Use `.iterate()` instead of `.all()` when streaming or processing rows sequentially to significantly reduce memory footprint and improve execution speed.
