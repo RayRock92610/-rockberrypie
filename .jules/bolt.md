@@ -5,7 +5,7 @@
 ## 2026-07-14 - Redundant Cache Lookup in Tight Loop
 **Learning:** Pre-compiling regex before passing it to hot-loop functions eliminates repeated dictionary lookups and type checks per file/directory traversed.
 **Action:** Always hoist configuration parsing or pattern compilation out of hot loops (like os.walk) to achieve better performance.
-## $(date +%Y-%m-%d) - Edge Case Testing for File Reading Permissions
+## 2026-09-19 - Edge Case Testing for File Reading Permissions
 **Learning:** Checking for IOError when attempting to read a file isn't just about missing files, it also covers permission denied cases. Unittest mock wasn't enough to properly cover the physical file permission behavior, so actual filesystem tests using os.chmod provide higher fidelity.
 **Action:** When testing file I/O operations, use `os.chmod` to construct real unreadable file scenarios instead of purely mocking the open function.
 
@@ -27,3 +27,7 @@
 ## 2026-09-17 - Optimize SQLite Prepared Statements in Logger
 **Learning:** Repeatedly calling `db.prepare()` inside frequently executed functions (like event loggers) causes severe CPU overhead due to query recompilation in `better-sqlite3`.
 **Action:** Always cache prepared statements in class properties or variables for reuse, especially for database operations within hot paths or high-frequency event handlers.
+
+## 2026-09-19 - Optimize SQLite Dataset Queries
+**Learning:** When querying large datasets (e.g., log chains) using 'better-sqlite3', using the '.all()' method pulls the entire dataset into an array in memory, causing memory spikes and CPU overhead.
+**Action:** Use the '.iterate()' method instead of '.all()'. This streams the rows iteratively, significantly reducing memory spikes and CPU overhead.
