@@ -43,6 +43,9 @@ export class HashChainedLogger {
 
   private initDatabase(): void {
     this.db.exec(`
+      PRAGMA journal_mode = WAL;
+      PRAGMA synchronous = NORMAL;
+
       CREATE TABLE IF NOT EXISTS audit_events (
         sequence INTEGER PRIMARY KEY AUTOINCREMENT,
         event_id TEXT UNIQUE NOT NULL,

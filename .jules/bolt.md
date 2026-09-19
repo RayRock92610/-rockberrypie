@@ -31,3 +31,7 @@
 ## 2026-09-19 - Optimize SQLite Dataset Queries
 **Learning:** When querying large datasets (e.g., log chains) using 'better-sqlite3', using the '.all()' method pulls the entire dataset into an array in memory, causing memory spikes and CPU overhead.
 **Action:** Use the '.iterate()' method instead of '.all()'. This streams the rows iteratively, significantly reducing memory spikes and CPU overhead.
+
+## 2026-09-19 - Enable SQLite WAL mode
+**Learning:** SQLite's default rollback journal mode can cause significant I/O overhead on frequent inserts. Enabling Write-Ahead Logging (WAL) and setting synchronous=NORMAL drastically reduces this disk write latency.
+**Action:** When initializing a SQLite database that expects a high volume of writes (like an event logger), execute `PRAGMA journal_mode = WAL;` and `PRAGMA synchronous = NORMAL;`.
