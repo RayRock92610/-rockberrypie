@@ -6,6 +6,7 @@ export interface AgentRunOptions {
   agent: AgentExecutionEvent['agent'];
   modelConfig: AgentExecutionEvent['model_config'];
   rawPrompt: string;
+  rawPromptHash?: string;
   sanitizedSummary: string;
   pipelineId: string;
   traceId?: string;
@@ -38,7 +39,8 @@ export class AgentRunner {
   ): Promise<AgentExecutionEvent> {
     const eventId = crypto.randomUUID();
     const traceId = options.traceId || `trace-${crypto.randomUUID()}`;
-    const promptHash = this.hashPrompt(options.rawPrompt);
+    // ⚡ Bolt: Use pre-computed hash if available to avoid redundant SHA-256 overhead
+    const promptHash = options.rawPromptHash || this.hashPrompt(options.rawPrompt);
 
     const startTime = Date.now();
     
