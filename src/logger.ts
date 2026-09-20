@@ -6,7 +6,6 @@ import {
 } from './types/logger.js';
 
 const GENESIS_HASH = '0'.repeat(64);
-const SAFE_STRING_REGEX = /[\x00-\x1f"\\]/;
 
 export interface LogEventParams {
   event_id: string;
@@ -67,7 +66,7 @@ export class HashChainedLogger {
     if (obj === null) return 'null';
     const type = typeof obj;
     if (type === 'string') {
-      return SAFE_STRING_REGEX.test(obj) ? JSON.stringify(obj) : '"' + obj + '"';
+      return JSON.stringify(obj);
     }
     if (type === 'boolean') return obj ? 'true' : 'false';
     if (type === 'number') return Number.isFinite(obj) ? String(obj) : 'null';
@@ -83,8 +82,7 @@ export class HashChainedLogger {
     for (let i = 0; i < sortedKeys.length; i++) {
       if (i > 0) result += ',';
       const key = sortedKeys[i];
-      const keyStr = SAFE_STRING_REGEX.test(key) ? JSON.stringify(key) : '"' + key + '"';
-      result += keyStr + ':' + this.canonicalize(rec[key]);
+      result += JSON.stringify(key) + ':' + this.canonicalize(rec[key]);
     }
     return result + '}';
   }
