@@ -60,6 +60,7 @@ export class PipelineOrchestrator {
             agent: step.agent,
             modelConfig: step.modelConfig,
             rawPrompt: step.prompt,
+            rawPromptHash: guardrailResult.rawPromptHash,
             sanitizedSummary: guardrailResult.sanitizedSummary,
             pipelineId,
             traceId,
