@@ -34,6 +34,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "containers/core/containers_common.h"
 #include "containers/core/containers_utils.h"
 #include "containers/core/containers_uri.h"
+#include "containers/core/containers_logging.h"
 
 #define MAX_NUM_CACHED_AREAS 16
 #define MAX_NUM_MEMORY_AREAS 4
@@ -514,7 +515,12 @@ static size_t vc_container_io_cache_refill( VC_CONTAINER_IO_T *p_ctx,
 {
    size_t ret = vc_container_io_cache_flush( p_ctx, cache, 1 );
 
-   if(ret) return 0; /* TODO what should we do there ? */
+   if(ret)
+   {
+      LOG_ERROR(0, "failed to flush cache");
+      p_ctx->status = VC_CONTAINER_ERROR_FAILED;
+      return 0;
+   }
 
    if(p_ctx->priv->actual_offset != cache->offset)
    {
@@ -535,7 +541,12 @@ static size_t vc_container_io_cache_refill_bypass( VC_CONTAINER_IO_T *p_ctx,
 {
    size_t ret = vc_container_io_cache_flush( p_ctx, cache, 1 );
 
-   if(ret) return 0; /* TODO what should we do there ? */
+   if(ret)
+   {
+      LOG_ERROR(0, "failed to flush cache");
+      p_ctx->status = VC_CONTAINER_ERROR_FAILED;
+      return 0;
+   }
 
    if(p_ctx->priv->actual_offset != cache->offset)
    {
