@@ -6,6 +6,7 @@ export interface AgentRunOptions {
   agent: AgentExecutionEvent['agent'];
   modelConfig: AgentExecutionEvent['model_config'];
   rawPrompt: string;
+  rawPromptHash: string;
   sanitizedSummary: string;
   pipelineId: string;
   traceId?: string;
@@ -16,13 +17,6 @@ export class AgentRunner {
 
   constructor(logger: HashChainedLogger) {
     this.logger = logger;
-  }
-
-  /**
-   * Generates a deterministic SHA-256 hash of the incoming prompt payload
-   */
-  private hashPrompt(prompt: string): string {
-    return crypto.createHash('sha256').update(prompt, 'utf8').digest('hex');
   }
 
   /**
@@ -38,7 +32,8 @@ export class AgentRunner {
   ): Promise<AgentExecutionEvent> {
     const eventId = crypto.randomUUID();
     const traceId = options.traceId || `trace-${crypto.randomUUID()}`;
-    const promptHash = this.hashPrompt(options.rawPrompt);
+    // ⚡ Bolt Optimization: Reuse pre-computed hash from earlier in pipeline to avoid redundant CPU overhead.
+    const promptHash = options.rawPromptHash;
 
     const startTime = Date.now();
     

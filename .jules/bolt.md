@@ -39,3 +39,7 @@
 ## 2026-09-20 - Optimize string serialization by removing regex fast-path
 **Learning:** Manually checking strings with a regex to conditionally bypass `JSON.stringify()` is an anti-pattern. Node's native `JSON.stringify()` is highly optimized and often faster than the combined overhead of executing a RegExp test in JavaScript and performing manual string concatenation, even for simple strings.
 **Action:** Rely on standard library `JSON.stringify()` for string serialization rather than attempting manual regex-based fast paths.
+
+## 2026-09-21 - Eliminate redundant cryptographic hash computation
+**Learning:** In sequential orchestration pipelines, recomputing cryptographic hashes (e.g., SHA-256) of large string payloads across different stages (like guardrails and agent execution) introduces redundant CPU overhead.
+**Action:** Compute the hash once at the earliest stage and pass it in the options object to subsequent steps to eliminate redundant CPU overhead.
