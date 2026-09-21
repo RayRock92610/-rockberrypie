@@ -60,6 +60,8 @@ export class PipelineOrchestrator {
             agent: step.agent,
             modelConfig: step.modelConfig,
             rawPrompt: step.prompt,
+            // ⚡ Bolt Optimization: Pass the hash computed during the guardrail step to eliminate redundant SHA-256 computations in the runner
+            rawPromptHash: guardrailResult.rawPromptHash,
             sanitizedSummary: guardrailResult.sanitizedSummary,
             pipelineId,
             traceId,

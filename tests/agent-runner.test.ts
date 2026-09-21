@@ -31,6 +31,7 @@ describe('AgentRunner Integration', () => {
         agent: { id: 'agent-jules', role: 'maintenance', persona: 'jules' },
         modelConfig: { provider: 'google', model: 'gemini-3.1-pro', temperature: 0, seed: 42 },
         rawPrompt: 'Check system health and clear stale cache',
+        rawPromptHash: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855', // Mock hash
         sanitizedSummary: 'Check system health',
         pipelineId: 'kessel-flow-main',
       },
