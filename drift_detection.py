@@ -4,7 +4,7 @@ import hashlib
 import fnmatch
 import argparse
 import sys
-import concurrent.futures
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # CONFIGURATION DEFAULTS
 BASELINE_FILE = os.environ.get("K_BASELINE", "baseline.json")
@@ -66,7 +66,7 @@ def create_baseline(directory, exclusions):
     compiled_exclusions = _get_compiled_exclusions(exclusions)
 
     # ⚡ Bolt: Use a ThreadPoolExecutor to parallelize the hashing I/O bottleneck
-    with concurrent.futures.ThreadPoolExecutor() as executor:
+    with ThreadPoolExecutor() as executor:
         future_to_path = {}
         for root, dirs, files in os.walk(directory):
             # In-place modification of dirs to skip excluded subtrees
@@ -85,7 +85,7 @@ def create_baseline(directory, exclusions):
                 future = executor.submit(get_file_hash, full_path)
                 future_to_path[future] = rel_path
 
-        for future in concurrent.futures.as_completed(future_to_path):
+        for future in as_completed(future_to_path):
             rel_path = future_to_path[future]
             f_hash = future.result()
             if f_hash: baseline[rel_path] = f_hash
@@ -104,7 +104,7 @@ def check_integrity(directory, exclusions):
     compiled_exclusions = _get_compiled_exclusions(exclusions)
 
     # ⚡ Bolt: Use a ThreadPoolExecutor to parallelize the hashing I/O bottleneck
-    with concurrent.futures.ThreadPoolExecutor() as executor:
+    with ThreadPoolExecutor() as executor:
         future_to_path = {}
         for root, dirs, files in os.walk(directory):
             # In-place modification of dirs to skip excluded subtrees
@@ -126,7 +126,7 @@ def check_integrity(directory, exclusions):
                 else:
                     current_state[rel_path] = None # Or just track the key
 
-        for future in concurrent.futures.as_completed(future_to_path):
+        for future in as_completed(future_to_path):
             rel_path = future_to_path[future]
             f_hash = future.result()
             if f_hash: current_state[rel_path] = f_hash
