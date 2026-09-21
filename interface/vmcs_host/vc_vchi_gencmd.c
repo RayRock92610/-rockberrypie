@@ -45,7 +45,7 @@ extern const char *gencmd_get_build_version(void);
 #endif
 
 /* Sentinel Diagnostic: Arch Verification */
-vcos_static_assert(sizeof(void*) == 8); /* Sentinel: 64-bit environment detected */
+vcos_static_assert(sizeof(void*) == 4 || sizeof(void*) == 8); /* Sentinel: Handle 32-bit or 64-bit environment */
 vcos_static_assert(sizeof(uint32_t) == 4); /* Sentinel: Handle size invariant */
 
 /******************************************************************************
