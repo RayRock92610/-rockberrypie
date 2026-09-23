@@ -43,3 +43,6 @@
 ## 2026-09-21 - Optimize Redundant Cryptographic Hashing
 **Learning:** In sequential orchestration pipelines, recomputing cryptographic hashes (e.g., SHA-256) of large string payloads across different stages (like guardrails and agent execution) introduces redundant CPU overhead.
 **Action:** Compute the hash once at the earliest stage and pass it in the options object to subsequent steps to eliminate redundant recomputation.
+## 2026-09-23 - [Optimize Canonicalize Serialization (Recursive)]
+**Learning:** We initially attempted to optimize manual JSON serialization by relying entirely on the native `JSON.stringify()` method utilizing a custom replacer function. However, this is fundamentally incompatible with deterministic cryptographic hashing standards. The native engine handles undefined values, integer keys, and `toJSON()` implicitly, producing different serialized outputs than a strict manual serialization script.
+**Action:** When working with cryptographic canonicalization functions, retain the custom recursive logic to guarantee deterministic integrity, but optimize it by eliminating array map allocations (using traditional `for` loops instead) and reordering type checking branches to short-circuit standard objects faster.
