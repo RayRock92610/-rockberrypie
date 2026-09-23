@@ -61,30 +61,42 @@ export class HashChainedLogger {
 
   /**
    * Recursively canonicalize objects by sorting keys alphabetically
+   * ⚡ Bolt: Optimized by replacing intermediate array allocations (like .map().join())
+   * with traditional for loops and ordering type-checking branches.
    */
   public canonicalize(obj: unknown): string {
     if (obj === null) return 'null';
     const type = typeof obj;
+    if (type === 'object') {
+      if (Array.isArray(obj)) {
+        let result = '[';
+        for (let i = 0; i < obj.length; i++) {
+          if (i > 0) result += ',';
+          const val = this.canonicalize(obj[i]);
+          // JSON.stringify can return undefined for functions/symbols, which is
+          // passed through via the cast. We need to check it dynamically.
+          result += (val as unknown) === undefined ? '' : val;
+        }
+        return result + ']';
+      }
+
+      const rec = obj as Record<string, unknown>;
+      const sortedKeys = Object.keys(rec).sort();
+      let result = '{';
+      for (let i = 0; i < sortedKeys.length; i++) {
+        if (i > 0) result += ',';
+        const key = sortedKeys[i];
+        result += JSON.stringify(key) + ':' + this.canonicalize(rec[key]);
+      }
+      return result + '}';
+    }
+
     if (type === 'string') {
       return JSON.stringify(obj);
     }
     if (type === 'boolean') return obj ? 'true' : 'false';
     if (type === 'number') return Number.isFinite(obj) ? String(obj) : 'null';
-    if (type !== 'object') return JSON.stringify(obj) as unknown as string;
-
-    if (Array.isArray(obj)) {
-      return '[' + obj.map((item) => this.canonicalize(item)).join(',') + ']';
-    }
-
-    const rec = obj as Record<string, unknown>;
-    const sortedKeys = Object.keys(rec).sort();
-    let result = '{';
-    for (let i = 0; i < sortedKeys.length; i++) {
-      if (i > 0) result += ',';
-      const key = sortedKeys[i];
-      result += JSON.stringify(key) + ':' + this.canonicalize(rec[key]);
-    }
-    return result + '}';
+    return JSON.stringify(obj) as unknown as string;
   }
 
   public computeHash(content: string): string {
