@@ -47,3 +47,7 @@
 ## 2026-09-23 - Optimize JSON Canonicalization
 **Learning:** When optimizing deterministic JSON canonicalization for cryptographic hashing, custom recursive serialization can be heavily sped up by replacing intermediate array allocations (like `.map().join()`) with traditional `for` loops and optimizing type-checking branch order.
 **Action:** Avoid intermediate array creations in hot recursive paths, and use direct string concatenation with `for` loops to eliminate memory allocation overhead.
+
+## 2026-09-24 - Optimize Guardrail prompt summarization for large inputs
+**Learning:** Performing regex replacements over unbounded inputs just to extract a small bounded prefix introduces severe O(N) performance penalties on large strings.
+**Action:** Slice the input string down to a safe upper bound (e.g., 1024 characters) before applying expensive regex operations to achieve O(1) performance for prefix summarization.
