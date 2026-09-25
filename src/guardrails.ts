@@ -18,6 +18,11 @@ export class InputGuardrail {
     /drop\s+database/i,
   ];
 
+  private static COMBINED_PATTERN = new RegExp(
+    InputGuardrail.INJECTION_PATTERNS.map((p) => p.source).join('|'),
+    'i'
+  );
+
   /**
    * Computes SHA-256 digest of raw input
    */
@@ -32,10 +37,13 @@ export class InputGuardrail {
     const violations: string[] = [];
     let riskScore = 0.0;
 
-    for (const pattern of this.INJECTION_PATTERNS) {
-      if (pattern.test(input)) {
-        violations.push(`Pattern match: ${pattern.source}`);
-        riskScore += 0.35;
+    // ⚡ Bolt: Use a combined RegExp for a fast-path rejection
+    if (this.COMBINED_PATTERN.test(input)) {
+      for (const pattern of this.INJECTION_PATTERNS) {
+        if (pattern.test(input)) {
+          violations.push(`Pattern match: ${pattern.source}`);
+          riskScore += 0.35;
+        }
       }
     }
 
