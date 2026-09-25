@@ -51,3 +51,7 @@
 ## 2026-09-24 - Optimize Guardrail prompt summarization for large inputs
 **Learning:** Performing regex replacements over unbounded inputs just to extract a small bounded prefix introduces severe O(N) performance penalties on large strings.
 **Action:** Slice the input string down to a safe upper bound (e.g., 1024 characters) before applying expensive regex operations to achieve O(1) performance for prefix summarization.
+
+## 2026-09-25 - Fix undefined value handling in manual JSON canonicalization
+**Learning:** When replacing array `.map().join()` with manual `for` loops and string concatenation in custom JSON serialization, explicitly check for values that evaluate to `undefined` (such as unhandled types returning `undefined` from `JSON.stringify()`). Failure to do so will implicitly coerce them to the literal string 'undefined' upon concatenation, breaking deterministic formatting.
+**Action:** When replacing native JSON serialization, explicitly handle `undefined` values: skip them for object properties and serialize them to `"null"` for array elements to exactly mimic `JSON.stringify()` behavior.

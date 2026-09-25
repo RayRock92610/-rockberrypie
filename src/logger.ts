@@ -64,7 +64,8 @@ export class HashChainedLogger {
    * ⚡ Bolt: Optimized by replacing intermediate array allocations (like .map().join())
    * with traditional for loops and ordering type-checking branches.
    */
-  public canonicalize(obj: unknown): string {
+  public canonicalize(obj: unknown): string | undefined {
+    if (obj === undefined) return undefined;
     if (obj === null) return 'null';
     const type = typeof obj;
     if (type === 'object') {
@@ -75,7 +76,7 @@ export class HashChainedLogger {
           const val = this.canonicalize(obj[i]);
           // JSON.stringify can return undefined for functions/symbols, which is
           // passed through via the cast. We need to check it dynamically.
-          result += (val as unknown) === undefined ? '' : val;
+          result += (val as unknown) === undefined ? 'null' : val;
         }
         return result + ']';
       }
@@ -83,10 +84,15 @@ export class HashChainedLogger {
       const rec = obj as Record<string, unknown>;
       const sortedKeys = Object.keys(rec).sort();
       let result = '{';
+      let first = true;
       for (let i = 0; i < sortedKeys.length; i++) {
-        if (i > 0) result += ',';
         const key = sortedKeys[i];
-        result += JSON.stringify(key) + ':' + this.canonicalize(rec[key]);
+        const val = this.canonicalize(rec[key]);
+        if ((val as unknown) !== undefined) {
+          if (!first) result += ',';
+          result += JSON.stringify(key) + ':' + val;
+          first = false;
+        }
       }
       return result + '}';
     }
@@ -96,7 +102,7 @@ export class HashChainedLogger {
     }
     if (type === 'boolean') return obj ? 'true' : 'false';
     if (type === 'number') return Number.isFinite(obj) ? String(obj) : 'null';
-    return JSON.stringify(obj) as unknown as string;
+    return undefined;
   }
 
   public computeHash(content: string): string {
