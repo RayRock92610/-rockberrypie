@@ -45,6 +45,7 @@ export class InputGuardrail {
 
     // Generate sanitized summary (stripping unsafe control characters)
     const sanitizedSummary = input
+      .slice(0, 1024)
       .replace(/[\u0000-\u001F\u007F-\u009F]/g, '')
       .trim()
       .slice(0, 256);
