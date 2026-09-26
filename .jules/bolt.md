@@ -51,3 +51,7 @@
 ## 2026-09-24 - Optimize Guardrail prompt summarization for large inputs
 **Learning:** Performing regex replacements over unbounded inputs just to extract a small bounded prefix introduces severe O(N) performance penalties on large strings.
 **Action:** Slice the input string down to a safe upper bound (e.g., 1024 characters) before applying expensive regex operations to achieve O(1) performance for prefix summarization.
+
+## 2026-09-25 - Optimize Guardrail prompt evaluation with combined regex
+**Learning:** Testing a string against an array of regular expressions iteratively is O(N) over the number of patterns for non-matching strings.
+**Action:** Combine the regular expressions into a single `COMBINED_PATTERN` using `.map(p => p.source).join('|')`. If the combined pattern doesn't match, we can skip the loop entirely for a massive performance gain on clean inputs.
