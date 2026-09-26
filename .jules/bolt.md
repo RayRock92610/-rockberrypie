@@ -55,3 +55,7 @@
 ## 2026-09-25 - Optimize Guardrail prompt evaluation with combined regex
 **Learning:** Testing a string against an array of regular expressions iteratively is O(N) over the number of patterns for non-matching strings.
 **Action:** Combine the regular expressions into a single `COMBINED_PATTERN` using `.map(p => p.source).join('|')`. If the combined pattern doesn't match, we can skip the loop entirely for a massive performance gain on clean inputs.
+
+## 2026-09-26 - Handling undefined in custom JSON canonicalization
+**Learning:** When replacing array `.map().join()` with manual `for` loops and string concatenation in custom JSON serialization, failing to explicitly handle `undefined` values (which `JSON.stringify()` drops for objects and serializes to `null` for arrays) causes implicit string coercion to 'undefined' or breaks deterministic formatting.
+**Action:** Always explicitly handle `undefined` values in custom JSON serialization to match `JSON.stringify()` behavior: skip them for object properties and serialize them to `"null"` for array elements.
