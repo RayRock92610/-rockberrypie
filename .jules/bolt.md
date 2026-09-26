@@ -55,3 +55,8 @@
 ## 2026-09-25 - Optimize Guardrail prompt evaluation with combined regex
 **Learning:** Testing a string against an array of regular expressions iteratively is O(N) over the number of patterns for non-matching strings.
 **Action:** Combine the regular expressions into a single `COMBINED_PATTERN` using `.map(p => p.source).join('|')`. If the combined pattern doesn't match, we can skip the loop entirely for a massive performance gain on clean inputs.
+
+
+## 2026-09-26 - 🧪 Bolt: Missing Error Test in Audit Node
+**Learning:** Adding test coverage for early break error conditions ensures connection timeouts do not infinitely hang and request errors correctly continue node evaluation paths.
+**Action:** Append mock tests for `ConnectionError`, `ConnectTimeout`, and `RequestException` in `test_kessel.py`.
