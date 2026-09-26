@@ -75,7 +75,7 @@ export class HashChainedLogger {
           const val = this.canonicalize(obj[i]);
           // JSON.stringify can return undefined for functions/symbols, which is
           // passed through via the cast. We need to check it dynamically.
-          result += (val as unknown) === undefined ? '' : val;
+          result += (val as unknown) === undefined ? 'null' : val;
         }
         return result + ']';
       }
@@ -83,10 +83,14 @@ export class HashChainedLogger {
       const rec = obj as Record<string, unknown>;
       const sortedKeys = Object.keys(rec).sort();
       let result = '{';
+      let first = true;
       for (let i = 0; i < sortedKeys.length; i++) {
-        if (i > 0) result += ',';
         const key = sortedKeys[i];
-        result += JSON.stringify(key) + ':' + this.canonicalize(rec[key]);
+        const val = this.canonicalize(rec[key]);
+        if ((val as unknown) === undefined) continue;
+        if (!first) result += ',';
+        result += JSON.stringify(key) + ':' + val;
+        first = false;
       }
       return result + '}';
     }
