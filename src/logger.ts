@@ -24,6 +24,7 @@ export class HashChainedLogger {
   private insertEventStmt: Database.Statement;
   private latestEventHashStmt: Database.Statement;
   private selectAllEventsStmt: Database.Statement;
+  private cachedLatestHash: string | null = null;
 
   constructor(dbPath: string = 'agent_audit.db') {
     this.db = new Database(dbPath);
@@ -108,8 +109,12 @@ export class HashChainedLogger {
   }
 
   public getLatestEventHash(): string {
+    if (this.cachedLatestHash !== null) {
+      return this.cachedLatestHash;
+    }
     const row = this.latestEventHashStmt.get() as { event_hash: string } | undefined;
-    return row ? row.event_hash : GENESIS_HASH;
+    this.cachedLatestHash = row ? row.event_hash : GENESIS_HASH;
+    return this.cachedLatestHash;
   }
 
   public logEvent(params: LogEventParams): AgentExecutionEvent {
@@ -155,6 +160,9 @@ export class HashChainedLogger {
       validatedEvent.integrity.event_hash,
       JSON.stringify(validatedEvent)
     );
+
+    // ⚡ Bolt: Cache the new hash to avoid querying it on the next logEvent call
+    this.cachedLatestHash = validatedEvent.integrity.event_hash;
 
     return validatedEvent;
   }

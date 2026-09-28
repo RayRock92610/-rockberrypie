@@ -58,4 +58,7 @@
 
 ## 2026-09-26 - Handling undefined in custom JSON canonicalization
 **Learning:** When replacing array `.map().join()` with manual `for` loops and string concatenation in custom JSON serialization, failing to explicitly handle `undefined` values (which `JSON.stringify()` drops for objects and serializes to `null` for arrays) causes implicit string coercion to 'undefined' or breaks deterministic formatting.
-**Action:** Always explicitly handle `undefined` values in custom JSON serialization to match `JSON.stringify()` behavior: skip them for object properties and serialize them to `"null"` for array elements.
+
+## 2026-09-27 - Optimize SQLite Last Insert Read
+**Learning:** Querying the database for the latest record state (like a previous hash in an audit log) on every insert introduces unnecessary read I/O and synchronous blocking in an append-only system.
+**Action:** Cache the latest deterministic state in memory to eliminate redundant SELECT queries during sequential inserts.
