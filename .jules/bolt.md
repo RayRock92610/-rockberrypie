@@ -62,3 +62,7 @@
 ## 2026-09-27 - Optimize SQLite Last Insert Read
 **Learning:** Querying the database for the latest record state (like a previous hash in an audit log) on every insert introduces unnecessary read I/O and synchronous blocking in an append-only system.
 **Action:** Cache the latest deterministic state in memory to eliminate redundant SELECT queries during sequential inserts.
+
+## 2026-10-01 - Optimize cryptographic hashing performance
+**Learning:** Node.js v21+ introduces `crypto.hash()` which computes hashes in a single call. This is significantly faster (around 2x) than the stream-based `crypto.createHash().update().digest()` approach, because it avoids creating the intermediate Hash object and stream overhead.
+**Action:** When computing a hash for a single string or buffer in Node.js v21+, replace `crypto.createHash(algo).update(data).digest(encoding)` with `crypto.hash(algo, data, encoding)`.
