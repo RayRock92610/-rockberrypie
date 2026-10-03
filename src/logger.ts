@@ -32,13 +32,14 @@ export class HashChainedLogger {
 
     // ⚡ Bolt: Cache prepared statements to avoid query recompilation overhead
     // on every event logged or queried.
-    this.latestEventHashStmt = this.db.prepare('SELECT event_hash FROM audit_events ORDER BY sequence DESC LIMIT 1');
+    // ⚡ Bolt: Use .pluck(true) to return a string primitive and .raw(true) to return flat arrays to bypass JS object allocation.
+    this.latestEventHashStmt = this.db.prepare('SELECT event_hash FROM audit_events ORDER BY sequence DESC LIMIT 1').pluck(true);
     this.insertEventStmt = this.db.prepare(`
       INSERT INTO audit_events (
         event_id, trace_id, pipeline_id, timestamp, prev_event_hash, event_hash, payload
       ) VALUES (?, ?, ?, ?, ?, ?, ?)
     `);
-    this.selectAllEventsStmt = this.db.prepare('SELECT sequence, prev_event_hash, event_hash, payload FROM audit_events ORDER BY sequence ASC');
+    this.selectAllEventsStmt = this.db.prepare('SELECT sequence, prev_event_hash, event_hash, payload FROM audit_events ORDER BY sequence ASC').raw(true);
   }
 
   private initDatabase(): void {
@@ -113,8 +114,8 @@ export class HashChainedLogger {
     if (this.cachedLatestHash !== null) {
       return this.cachedLatestHash;
     }
-    const row = this.latestEventHashStmt.get() as { event_hash: string } | undefined;
-    this.cachedLatestHash = row ? row.event_hash : GENESIS_HASH;
+    const hash = this.latestEventHashStmt.get() as string | undefined;
+    this.cachedLatestHash = hash ? hash : GENESIS_HASH;
     return this.cachedLatestHash;
   }
 
@@ -174,16 +175,17 @@ export class HashChainedLogger {
   public verifyChainIntegrity(): { valid: boolean; brokenSequence?: number } {
     // ⚡ Bolt: Use .iterate() instead of .all() to stream rows iteratively
     // This significantly reduces memory spikes and CPU overhead when querying large datasets.
-    const rows = this.selectAllEventsStmt.iterate() as IterableIterator<{ sequence: number; prev_event_hash: string; event_hash: string; payload: string }>;
+    const rows = this.selectAllEventsStmt.iterate() as IterableIterator<[number, string, string, string]>;
 
     let expectedPrevHash = GENESIS_HASH;
 
     for (const row of rows) {
-      if (row.prev_event_hash !== expectedPrevHash) {
-        return { valid: false, brokenSequence: row.sequence };
+      const [sequence, prev_event_hash, event_hash, payload] = row;
+      if (prev_event_hash !== expectedPrevHash) {
+        return { valid: false, brokenSequence: sequence };
       }
 
-      const parsed = JSON.parse(row.payload);
+      const parsed = JSON.parse(payload);
       const partialPayload = {
         event_id: parsed.event_id,
         timestamp: parsed.timestamp,
@@ -201,11 +203,11 @@ export class HashChainedLogger {
       };
 
       const recomputedHash = this.computeHash(this.canonicalize(partialPayload));
-      if (recomputedHash !== row.event_hash) {
-        return { valid: false, brokenSequence: row.sequence };
+      if (recomputedHash !== event_hash) {
+        return { valid: false, brokenSequence: sequence };
       }
 
-      expectedPrevHash = row.event_hash;
+      expectedPrevHash = event_hash;
     }
 
     return { valid: true };
