@@ -70,3 +70,7 @@
 ## 2026-10-03 - Optimize native C-Level File Hashing via hashlib.file_digest
 **Learning:** Python 3.11+ introduces `hashlib.file_digest(fileobj, digest)` which executes the read-and-update loop entirely in C/OpenSSL, bypassing Python buffer allocations and bytecode loop evaluation for a 15–30% faster traversal hashing.
 **Action:** When hashing file objects in Python 3.11+, use `hashlib.file_digest(f, "sha256")` to avoid the overhead of manual buffered reading loops.
+
+## 2026-10-03 - Optimize SQLite Query Row Mapping
+**Learning:** When querying single columns or a few fields with `better-sqlite3`, the default row mapping allocates JavaScript objects. This causes heap allocation overhead in hot paths.
+**Action:** Chain `.pluck(true)` to return primitives or `.raw(true)` to return flat arrays, bypassing JavaScript object key creation and shape allocation.
