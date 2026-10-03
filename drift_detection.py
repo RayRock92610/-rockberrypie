@@ -12,18 +12,22 @@ CONFIG_FILE = "config.ini"
 BUFFER_SIZE = 1048576
 
 def get_file_hash(filepath):
-    sha256_hash = hashlib.sha256()
     try:
-        size = os.path.getsize(filepath)
         with open(filepath, "rb") as f:
-            # ⚡ Bolt: Read small files entirely into memory to eliminate the loop overhead
-            # associated with chunked reading.
+            # ⚡ Bolt: Use hashlib.file_digest (Python 3.11+) to execute the read-and-update
+            # loop entirely in C/OpenSSL, bypassing Python buffer allocations.
+            if hasattr(hashlib, "file_digest"):
+                return hashlib.file_digest(f, "sha256").hexdigest()
+
+            # Fallback for older runtimes
+            sha256_hash = hashlib.sha256()
+            size = os.path.getsize(filepath)
             if size <= BUFFER_SIZE:
                 sha256_hash.update(f.read())
             else:
                 while data := f.read(BUFFER_SIZE):
                     sha256_hash.update(data)
-        return sha256_hash.hexdigest()
+            return sha256_hash.hexdigest()
     except IOError:
         return None
 
