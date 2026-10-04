@@ -68,13 +68,22 @@ typedef enum SDTV_MODE_T_
 /** Different aspect ratios */
 typedef enum SDTV_ASPECT_T_
 {
-   // TODO: extend this to allow picture placement/size to be communicated.
    SDTV_ASPECT_UNKNOWN  = 0, /**<Unknown */
    SDTV_ASPECT_4_3      = 1, /**<4:3 */
    SDTV_ASPECT_14_9     = 2, /**<14:9 */
    SDTV_ASPECT_16_9     = 3, /**<16:9 */
+   SDTV_ASPECT_CUSTOM   = 4, /**<Custom aspect ratio */
    SDTV_ASPECTFORCE_32BIT = 0x80000000
 } SDTV_ASPECT_T;
+
+/** SDTV custom picture placement and sizing */
+typedef struct SDTV_CUSTOM_OPTIONS_T_
+{
+   uint16_t width;
+   uint16_t height;
+   uint16_t x_offset;
+   uint16_t y_offset;
+} SDTV_CUSTOM_OPTIONS_T;
 
 /** SDTV power on option */
 typedef struct SDTV_OPTIONS_T_
