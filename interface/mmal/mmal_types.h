@@ -56,8 +56,7 @@ typedef enum
    MMAL_ESPIPE,                      /**< Illegal seek */
    MMAL_EILSEQ,                      /**< Illegal byte sequence */
    MMAL_ENOTREADY,                   /**< Component is not ready \attention FIXME: not POSIX */
-   MMAL_ECONFIG,                     /**< Component is not configured \attention FIXME: not POSIX */
-   MMAL_EISCONN,                     /**< Port is already connected */
+   MMAL_EISCONN = 12,                /**< Port is already connected */
    MMAL_ENOTCONN,                    /**< Port is disconnected */
    MMAL_EAGAIN,                      /**< Resource temporarily unavailable. Try again later*/
    MMAL_EFAULT,                      /**< Bad address */
