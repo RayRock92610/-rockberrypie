@@ -196,6 +196,8 @@ static const char *aspect_ratio_sd_str(SDTV_ASPECT_T aspect_ratio) {
       return "14:9";
    case SDTV_ASPECT_16_9:
       return "16:9";
+   case SDTV_ASPECT_CUSTOM:
+      return "Custom";
    default:
       return "unknown AR";
    }
@@ -959,6 +961,10 @@ int main( int argc, char **argv )
             else if ( vcos_strcasecmp( "16:9", aspect_str ) == 0 )
             {
                sdtvon_aspect = SDTV_ASPECT_16_9;
+            }
+            else if ( vcos_strcasecmp( "Custom", aspect_str ) == 0 )
+            {
+               sdtvon_aspect = SDTV_ASPECT_CUSTOM;
             }
 
             if (s == 3 && vcos_strcasecmp( "P", progressive_str ) == 0 )

@@ -21,8 +21,6 @@ overrides:
   vite@<=6.4.2: '>=6.4.3'
   vitest@<3.2.6: '>=3.2.6'
 
-pnpmfileChecksum: sha256-r13ID6+225z6ZeukqxUQ8grUfoPb6irlCT+c3jbIFn8=
-
 importers:
 
   .:

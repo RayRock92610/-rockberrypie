@@ -64,6 +64,7 @@ async function runE2E() {
   console.log('\n[2/3] Verifying SQLite tamper-evident audit chain integrity...');
   const integrity = logger.verifyChainIntegrity();
   console.log(`Chain Valid: ${integrity.valid}`);
+  console.log(`Total Blocks Checked: ${integrity.totalEvents}`);
   if (!integrity.valid) {
     throw new Error('Cryptographic audit chain verification failed!');
   }
