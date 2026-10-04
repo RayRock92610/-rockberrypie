@@ -55,7 +55,7 @@ typedef enum
    MMAL_EIO,                         /**< I/O error */
    MMAL_ESPIPE,                      /**< Illegal seek */
    MMAL_ECORRUPT,                    /**< Data is corrupt \attention FIXME: not POSIX */
-   MMAL_ENOTREADY,                   /**< Component is not ready \attention FIXME: not POSIX */
+   MMAL_EBUSY,                       /**< Component or resource is busy / not ready */
    MMAL_ECONFIG,                     /**< Component is not configured \attention FIXME: not POSIX */
    MMAL_EISCONN,                     /**< Port is already connected */
    MMAL_ENOTCONN,                    /**< Port is disconnected */
@@ -64,6 +64,9 @@ typedef enum
    /* Do not add new codes here unless they match something from POSIX */
    MMAL_STATUS_MAX = 0x7FFFFFFF      /**< Force to 32 bit */
 } MMAL_STATUS_T;
+
+/** Backward compatibility alias for legacy non-POSIX error code */
+#define MMAL_ENOTREADY MMAL_EBUSY
 
 /** Describes a rectangle */
 typedef struct

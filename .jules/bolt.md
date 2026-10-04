@@ -78,3 +78,7 @@
 ## 2026-10-04 - Optimize JSON Canonicalization Verification
 **Learning:** Destructuring and rebuilding a large parsed JSON object (e.g., 10+ keys) to omit a single property creates severe GC pressure and object allocation overhead inside tight iterative loops (like streaming database row validation). Assigning `undefined` to the property mutates the object in place without deoptimizing V8's hidden classes, and is efficiently ignored by our custom JSON canonicalizer.
 **Action:** When performing verification hashing over large payloads from a database, mutate the `JSON.parse` output directly (e.g., `parsed.integrity.event_hash = undefined`) instead of constructing an entirely new verification object mapping all fields manually.
+
+## 2026-10-04 - Map MMAL_ENOTREADY to POSIX MMAL_EBUSY
+**Learning:** MMAL_STATUS_T enum values form a frozen ABI contract with VideoCore firmware. Deleting entries shifts the index, breaking IPC.
+**Action:** Replaced in-place with MMAL_EBUSY and added backward compatibility alias.
