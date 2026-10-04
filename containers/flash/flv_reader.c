@@ -800,8 +800,7 @@ static VC_CONTAINER_STATUS_T flv_reader_read( VC_CONTAINER_T *p_ctx,
    FLV_READER_STATE_T *state = &module->state;
    unsigned int data_size;
 
-   if(flags & VC_CONTAINER_READ_FLAG_FORCE_TRACK)
-      state = p_ctx->tracks[packet->track]->priv->module->state;
+   /* TODO: select right state */
 
    status = flv_read_sample_header(p_ctx, state);
    if(status != VC_CONTAINER_SUCCESS) return status;

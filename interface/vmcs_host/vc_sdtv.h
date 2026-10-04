@@ -73,7 +73,6 @@ typedef enum SDTV_ASPECT_T_
    SDTV_ASPECT_4_3      = 1, /**<4:3 */
    SDTV_ASPECT_14_9     = 2, /**<14:9 */
    SDTV_ASPECT_16_9     = 3, /**<16:9 */
-   SDTV_ASPECT_CUSTOM   = 4, /**<Custom */
    SDTV_ASPECTFORCE_32BIT = 0x80000000
 } SDTV_ASPECT_T;
 

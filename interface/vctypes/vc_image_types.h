@@ -69,7 +69,7 @@ typedef enum
    VC_IMAGE_RGB666,   /* 32-bit format holding 18 bits of 6.6.6 RGB */
    VC_IMAGE_PAL4_OBSOLETE,     // 4bpp palettised image with embedded palette
    VC_IMAGE_PAL8_OBSOLETE,     // 8bpp palettised image with embedded palette
-   VC_IMAGE_RGBA32,   /* RGB888 with an alpha byte after each pixel */
+   VC_IMAGE_RGBA32,   /* RGB888 with an alpha byte after each pixel */ /* xxx: isn't it BEFORE each pixel? */
    VC_IMAGE_YUV422,   /* a line of Y (32-byte padded), a line of U (16-byte padded), and a line of V (16-byte padded) */
    VC_IMAGE_RGBA565,  /* RGB565 with a transparent patch */
    VC_IMAGE_RGBA16,   /* Compressed (4444) version of RGBA32 */

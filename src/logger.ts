@@ -24,7 +24,6 @@ export class HashChainedLogger {
   private insertEventStmt: Database.Statement;
   private latestEventHashStmt: Database.Statement;
   private selectAllEventsStmt: Database.Statement;
-  private cachedLatestHash: string | null = null;
 
   constructor(dbPath: string = 'agent_audit.db') {
     this.db = new Database(dbPath);
@@ -32,14 +31,13 @@ export class HashChainedLogger {
 
     // ⚡ Bolt: Cache prepared statements to avoid query recompilation overhead
     // on every event logged or queried.
-    // ⚡ Bolt: Use .pluck(true) to return a string primitive and .raw(true) to return flat arrays to bypass JS object allocation.
-    this.latestEventHashStmt = this.db.prepare('SELECT event_hash FROM audit_events ORDER BY sequence DESC LIMIT 1').pluck(true);
+    this.latestEventHashStmt = this.db.prepare('SELECT event_hash FROM audit_events ORDER BY sequence DESC LIMIT 1');
     this.insertEventStmt = this.db.prepare(`
       INSERT INTO audit_events (
         event_id, trace_id, pipeline_id, timestamp, prev_event_hash, event_hash, payload
       ) VALUES (?, ?, ?, ?, ?, ?, ?)
     `);
-    this.selectAllEventsStmt = this.db.prepare('SELECT sequence, prev_event_hash, event_hash, payload FROM audit_events ORDER BY sequence ASC').raw(true);
+    this.selectAllEventsStmt = this.db.prepare('SELECT sequence, prev_event_hash, event_hash, payload FROM audit_events ORDER BY sequence ASC');
   }
 
   private initDatabase(): void {
@@ -62,61 +60,53 @@ export class HashChainedLogger {
   }
 
   /**
-   * Recursively canonicalize objects by sorting keys alphabetically
-   * ⚡ Bolt: Optimized by replacing intermediate array allocations (like .map().join())
-   * with traditional for loops and ordering type-checking branches.
+   * Recursively canonicalize objects by sorting keys alphabetically.
+   * ⚡ Bolt: Uses zero-allocation inline string concatenation and standard `for` loops
+   * instead of `Array.prototype.map().join()` to eliminate intermediate buffer
+   * garbage collection overhead in hot logging paths.
    */
-  public canonicalize(obj: unknown): string {
-    if (obj === null) return 'null';
-    const type = typeof obj;
-    if (type === 'object') {
-      if (Array.isArray(obj)) {
-        let result = '[';
-        for (let i = 0; i < obj.length; i++) {
-          if (i > 0) result += ',';
-          const val = this.canonicalize(obj[i]);
-          // JSON.stringify can return undefined for functions/symbols, which is
-          // passed through via the cast. We need to check it dynamically.
-          result += (val as unknown) === undefined ? 'null' : val;
-        }
-        return result + ']';
-      }
+  public canonicalize(val: unknown): string {
+    if (val === null || typeof val !== 'object') {
+      return JSON.stringify(val);
+    }
 
-      const rec = obj as Record<string, unknown>;
-      const sortedKeys = Object.keys(rec).sort();
-      let result = '{';
-      let first = true;
-      for (let i = 0; i < sortedKeys.length; i++) {
-        const key = sortedKeys[i];
-        const val = this.canonicalize(rec[key]);
-        if ((val as unknown) === undefined) continue;
-        if (!first) result += ',';
-        result += JSON.stringify(key) + ':' + val;
+    if (Array.isArray(val)) {
+      const len = val.length;
+      let res = '[';
+      for (let i = 0; i < len; i++) {
+        if (i > 0) res += ',';
+        const item = val[i];
+        res += item === undefined ? 'null' : this.canonicalize(item);
+      }
+      return res + ']';
+    }
+
+    const rec = val as Record<string, unknown>;
+    const keys = Object.keys(rec).sort();
+    const len = keys.length;
+    let res = '{';
+    let first = true;
+
+    for (let i = 0; i < len; i++) {
+      const key = keys[i];
+      const value = rec[key];
+      if (value !== undefined && typeof value !== 'function' && typeof value !== 'symbol') {
+        if (!first) res += ',';
+        res += JSON.stringify(key) + ':' + this.canonicalize(value);
         first = false;
       }
-      return result + '}';
     }
 
-    if (type === 'string') {
-      return JSON.stringify(obj);
-    }
-    if (type === 'boolean') return obj ? 'true' : 'false';
-    if (type === 'number') return Number.isFinite(obj) ? String(obj) : 'null';
-    return JSON.stringify(obj) as unknown as string;
+    return res + '}';
   }
 
   public computeHash(content: string): string {
-    // ⚡ Bolt: Using native crypto.hash() for ~2x performance over createHash()
-    return crypto.hash('sha256', content, 'hex');
+    return crypto.createHash('sha256').update(content, 'utf8').digest('hex');
   }
 
   public getLatestEventHash(): string {
-    if (this.cachedLatestHash !== null) {
-      return this.cachedLatestHash;
-    }
-    const hash = this.latestEventHashStmt.get() as string | undefined;
-    this.cachedLatestHash = hash ? hash : GENESIS_HASH;
-    return this.cachedLatestHash;
+    const row = this.latestEventHashStmt.get() as { event_hash: string } | undefined;
+    return row ? row.event_hash : GENESIS_HASH;
   }
 
   public logEvent(params: LogEventParams): AgentExecutionEvent {
@@ -163,39 +153,47 @@ export class HashChainedLogger {
       JSON.stringify(validatedEvent)
     );
 
-    // ⚡ Bolt: Cache the new hash to avoid querying it on the next logEvent call
-    this.cachedLatestHash = validatedEvent.integrity.event_hash;
-
     return validatedEvent;
   }
 
   /**
    * Verify total integrity of the local hash chain
    */
-  public verifyChainIntegrity(): { valid: boolean; brokenSequence?: number; totalEvents?: number } {
+  public verifyChainIntegrity(): { valid: boolean; brokenSequence?: number } {
     // ⚡ Bolt: Use .iterate() instead of .all() to stream rows iteratively
     // This significantly reduces memory spikes and CPU overhead when querying large datasets.
-    const rows = this.selectAllEventsStmt.iterate() as IterableIterator<[number, string, string, string]>;
+    const rows = this.selectAllEventsStmt.iterate() as IterableIterator<{ sequence: number; prev_event_hash: string; event_hash: string; payload: string }>;
 
     let expectedPrevHash = GENESIS_HASH;
 
     for (const row of rows) {
-      const [sequence, prev_event_hash, event_hash, payload] = row;
-      if (prev_event_hash !== expectedPrevHash) {
-        return { valid: false, brokenSequence: sequence };
+      if (row.prev_event_hash !== expectedPrevHash) {
+        return { valid: false, brokenSequence: row.sequence };
       }
 
-      const parsed = JSON.parse(payload);
-      if (parsed?.integrity) {
-        parsed.integrity.event_hash = undefined;
+      const parsed = JSON.parse(row.payload);
+      const partialPayload = {
+        event_id: parsed.event_id,
+        timestamp: parsed.timestamp,
+        trace_id: parsed.trace_id,
+        pipeline_id: parsed.pipeline_id,
+        agent: parsed.agent,
+        model_config: parsed.model_config,
+        input: parsed.input,
+        reasoning_trace: parsed.reasoning_trace,
+        tool_calls: parsed.tool_calls,
+        state_delta: parsed.state_delta,
+        integrity: {
+          prev_event_hash: parsed.integrity.prev_event_hash,
+        },
+      };
+
+      const recomputedHash = this.computeHash(this.canonicalize(partialPayload));
+      if (recomputedHash !== row.event_hash) {
+        return { valid: false, brokenSequence: row.sequence };
       }
 
-      const recomputedHash = this.computeHash(this.canonicalize(parsed));
-      if (recomputedHash !== event_hash) {
-        return { valid: false, brokenSequence: sequence };
-      }
-
-      expectedPrevHash = event_hash;
+      expectedPrevHash = row.event_hash;
     }
 
     return { valid: true };

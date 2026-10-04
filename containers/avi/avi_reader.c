@@ -722,7 +722,7 @@ static VC_CONTAINER_STATUS_T avi_scan_standard_index_chunk(VC_CONTAINER_T *p_ctx
    if (status || chunk_size < 24 || track_num != seek_track_num)
       return VC_CONTAINER_ERROR_FORMAT_INVALID;
 
-   if (entry_size != 2 || (index_sub_type != 0 && index_sub_type != AVI_INDEX_2FIELD) || index_type != AVI_INDEX_OF_CHUNKS)
+   if (entry_size != 2 || index_sub_type != 0 || index_type != AVI_INDEX_OF_CHUNKS)
       return VC_CONTAINER_ERROR_FORMAT_NOT_SUPPORTED;
 
    entry_count = MIN(entry_count, (chunk_size - 24) / (entry_size * 4));
@@ -840,7 +840,7 @@ static VC_CONTAINER_STATUS_T avi_scan_super_index_chunk(VC_CONTAINER_T *p_ctx, u
       if (status || index_size < 24 || track_num != index_track_num) return VC_CONTAINER_ERROR_FORMAT_INVALID;
       
       /* FIXME: We should probably support AVI_INDEX_2FIELD as well */
-      if (entry_size != 4 || (index_sub_type != 0 && index_sub_type != AVI_INDEX_2FIELD))
+      if (entry_size != 4 || index_sub_type != 0)
          return VC_CONTAINER_ERROR_FORMAT_NOT_SUPPORTED;
    
       entry_count = MIN(entry_count, (index_size - 24) / entry_size);

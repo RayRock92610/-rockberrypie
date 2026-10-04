@@ -8,7 +8,6 @@ export interface PipelineStep {
   agent: AgentExecutionEvent['agent'];
   modelConfig: AgentExecutionEvent['model_config'];
   prompt: string;
-  isDynamic?: boolean;
   executor: () => Promise<{
     reasoningTrace: AgentExecutionEvent['reasoning_trace'];
     toolCalls: AgentExecutionEvent['tool_calls'];
@@ -41,13 +40,9 @@ export class PipelineOrchestrator {
     const traceId = `trace-${crypto.randomUUID()}`;
     const events: AgentExecutionEvent[] = [];
 
-    // ⚡ Bolt: Evaluate the first guardrail immediately so we can overlap subsequent evaluations
-    let nextGuardrail = steps.length > 0 && !steps[0].isDynamic ? InputGuardrail.evaluate(steps[0].prompt) : null;
-
-    for (let i = 0; i < steps.length; i++) {
-      const step = steps[i];
-      // 1. Evaluate Guardrails (using the pre-computed result for this step)
-      const guardrailResult = nextGuardrail ?? InputGuardrail.evaluate(step.prompt);
+    for (const step of steps) {
+      // 1. Evaluate Guardrails
+      const guardrailResult = InputGuardrail.evaluate(step.prompt);
       if (!guardrailResult.passed) {
         return {
           pipelineId,
@@ -60,7 +55,7 @@ export class PipelineOrchestrator {
 
       // 2. Execute Step via AgentRunner
       try {
-        const eventPromise = this.runner.executeStep(
+        const event = await this.runner.executeStep(
           {
             agent: step.agent,
             modelConfig: step.modelConfig,
@@ -72,16 +67,6 @@ export class PipelineOrchestrator {
           },
           step.executor
         );
-
-        // ⚡ Bolt: While the current step is awaiting I/O (executor/db), compute the guardrail
-        // for the *next* step. This overlaps synchronous CPU work with async I/O wait time.
-        if (i + 1 < steps.length && !steps[i + 1].isDynamic) {
-          nextGuardrail = InputGuardrail.evaluate(steps[i + 1].prompt);
-        } else {
-          nextGuardrail = null;
-        }
-
-        const event = await eventPromise;
         events.push(event);
       } catch (err: any) {
         return {
