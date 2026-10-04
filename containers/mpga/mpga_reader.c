@@ -171,10 +171,13 @@ static VC_CONTAINER_STATUS_T mpga_sync( VC_CONTAINER_T *p_ctx )
 
    if (module->version)
    {
-      /* FIXME: we don't currently care whether or not the number of channels changes mid-stream */
-      if (version != module->version || layer != module->layer)
+      /* Ensure that version, layer, sample rate, and channels remain constant mid-stream.
+       * If they change mid-stream, the decoding and demuxing will break unless downstream components are reconfigured,
+       * which is not currently supported. */
+      if (version != module->version || layer != module->layer ||
+          channels != module->channels || sample_rate != module->sample_rate)
       {
-         LOG_DEBUG(p_ctx, "version or layer not allowed to change mid-stream");
+         LOG_DEBUG(p_ctx, "format not allowed to change mid-stream");
          return VC_CONTAINER_ERROR_FORMAT_NOT_SUPPORTED;
       }
    }
