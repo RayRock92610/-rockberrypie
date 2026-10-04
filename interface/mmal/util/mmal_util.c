@@ -49,7 +49,6 @@ static struct {
    STATUS_TO_STR(ESPIPE),
    STATUS_TO_STR(ECORRUPT),
    STATUS_TO_STR(ENOTREADY),
-   STATUS_TO_STR(ECONFIG),
    {0, 0}
 };
 

@@ -260,9 +260,6 @@ int mmal_status_to_int(MMAL_STATUS_T status)
       case MMAL_ENOTREADY :
          vcos_log_error("Component is not ready \attention FIXME: not POSIX");
          break;
-      case MMAL_ECONFIG :
-         vcos_log_error("Component is not configured \attention FIXME: not POSIX");
-         break;
       case MMAL_EISCONN :
          vcos_log_error("Port is already connected ");
          break;
