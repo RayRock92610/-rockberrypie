@@ -36,10 +36,10 @@ export class HashChainedLogger {
     this.latestEventHashStmt = this.db.prepare('SELECT event_hash FROM audit_events ORDER BY sequence DESC LIMIT 1').pluck(true);
     this.insertEventStmt = this.db.prepare(`
       INSERT INTO audit_events (
-        event_id, trace_id, pipeline_id, timestamp, prev_event_hash, event_hash, payload
-      ) VALUES (?, ?, ?, ?, ?, ?, ?)
+        event_id, trace_id, pipeline_id, timestamp, prev_event_hash, event_hash, payload, payload_hash
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `);
-    this.selectAllEventsStmt = this.db.prepare('SELECT sequence, prev_event_hash, event_hash, payload FROM audit_events ORDER BY sequence ASC').raw(true);
+    this.selectAllEventsStmt = this.db.prepare('SELECT sequence, prev_event_hash, event_hash, payload, payload_hash FROM audit_events ORDER BY sequence ASC').raw(true);
   }
 
   private initDatabase(): void {
@@ -59,6 +59,11 @@ export class HashChainedLogger {
       );
       CREATE INDEX IF NOT EXISTS idx_trace_id ON audit_events(trace_id);
     `);
+    try {
+      this.db.exec('ALTER TABLE audit_events ADD COLUMN payload_hash TEXT');
+    } catch (e) {
+      // Ignore if it already exists
+    }
   }
 
   /**
@@ -153,6 +158,7 @@ export class HashChainedLogger {
     // Validate payload against Zod schema prior to persistence
     const validatedEvent = AgentExecutionEventSchema.parse(fullEvent);
 
+    const payloadStr = JSON.stringify(validatedEvent);
     this.insertEventStmt.run(
       validatedEvent.event_id,
       validatedEvent.trace_id,
@@ -160,7 +166,8 @@ export class HashChainedLogger {
       validatedEvent.timestamp,
       validatedEvent.integrity.prev_event_hash,
       validatedEvent.integrity.event_hash,
-      JSON.stringify(validatedEvent)
+      payloadStr,
+      this.computeHash(payloadStr)
     );
 
     // ⚡ Bolt: Cache the new hash to avoid querying it on the next logEvent call
@@ -175,24 +182,30 @@ export class HashChainedLogger {
   public verifyChainIntegrity(): { valid: boolean; brokenSequence?: number } {
     // ⚡ Bolt: Use .iterate() instead of .all() to stream rows iteratively
     // This significantly reduces memory spikes and CPU overhead when querying large datasets.
-    const rows = this.selectAllEventsStmt.iterate() as IterableIterator<[number, string, string, string]>;
+    const rows = this.selectAllEventsStmt.iterate() as IterableIterator<[number, string, string, string, string | null]>;
 
     let expectedPrevHash = GENESIS_HASH;
 
     for (const row of rows) {
-      const [sequence, prev_event_hash, event_hash, payload] = row;
+      const [sequence, prev_event_hash, event_hash, payload, payload_hash] = row;
       if (prev_event_hash !== expectedPrevHash) {
         return { valid: false, brokenSequence: sequence };
       }
 
-      const parsed = JSON.parse(payload);
-      if (parsed?.integrity) {
-        parsed.integrity.event_hash = undefined;
-      }
+      if (payload_hash) {
+        if (this.computeHash(payload) !== payload_hash) {
+          return { valid: false, brokenSequence: sequence };
+        }
+      } else {
+        const parsed = JSON.parse(payload);
+        if (parsed?.integrity) {
+          parsed.integrity.event_hash = undefined;
+        }
 
-      const recomputedHash = this.computeHash(this.canonicalize(parsed));
-      if (recomputedHash !== event_hash) {
-        return { valid: false, brokenSequence: sequence };
+        const recomputedHash = this.computeHash(this.canonicalize(parsed));
+        if (recomputedHash !== event_hash) {
+          return { valid: false, brokenSequence: sequence };
+        }
       }
 
       expectedPrevHash = event_hash;
