@@ -246,9 +246,6 @@ int mmal_status_to_int(MMAL_STATUS_T status)
       case MMAL_ENOENT :
          vcos_log_error("No such file or directory");
          break;
-      case MMAL_ENXIO :
-         vcos_log_error("No such device or address");
-         break;
       case MMAL_EIO :
          vcos_log_error("I/O error");
          break;
