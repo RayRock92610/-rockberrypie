@@ -78,3 +78,6 @@
 ## 2026-10-04 - Optimize JSON Canonicalization Verification
 **Learning:** Destructuring and rebuilding a large parsed JSON object (e.g., 10+ keys) to omit a single property creates severe GC pressure and object allocation overhead inside tight iterative loops (like streaming database row validation). Assigning `undefined` to the property mutates the object in place without deoptimizing V8's hidden classes, and is efficiently ignored by our custom JSON canonicalizer.
 **Action:** When performing verification hashing over large payloads from a database, mutate the `JSON.parse` output directly (e.g., `parsed.integrity.event_hash = undefined`) instead of constructing an entirely new verification object mapping all fields manually.
+## $(date +%Y-%m-%d) - Fix disabled connect function for output ports
+**Learning:** Found that `pf_connect` for output ports was explicitly disabled (`&& 0 /* FIXME: disabled for now */`) in `mmal_graph.c` (around line 1444), which matched the issue for input ports previously. I removed the disabling condition to allow output port connection logic to proceed.
+**Action:** Always search the codebase for similar "disabled for now" blocks when one is identified and requested to be fixed, as multiple port types (input/output) often share symmetric logic.
