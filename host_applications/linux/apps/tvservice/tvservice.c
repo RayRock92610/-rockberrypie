@@ -196,6 +196,8 @@ static const char *aspect_ratio_sd_str(SDTV_ASPECT_T aspect_ratio) {
       return "14:9";
    case SDTV_ASPECT_16_9:
       return "16:9";
+   case SDTV_ASPECT_CUSTOM:
+      return "Custom";
    default:
       return "unknown AR";
    }
