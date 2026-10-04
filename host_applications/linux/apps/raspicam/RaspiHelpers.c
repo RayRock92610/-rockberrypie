@@ -32,6 +32,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <memory.h>
 #include <unistd.h>
 #include <stdint.h>
+#include <libgen.h>
 
 #include <fcntl.h>
 #include <sys/ioctl.h>
@@ -66,7 +67,7 @@ void print_app_details(FILE *fd)
    if (!app_name)
       app_name = "Un-named";
 
-   fprintf(fd, "\n\"%s\" Camera App (commit %s%s)\n\n", basename(app_name), GIT_COMMIT_ID, TAINTED);
+   fprintf(fd, "\n\"%s\" Camera App (commit %s%s)\n\n", basename((char*)app_name), GIT_COMMIT_ID, TAINTED);
 }
 
 void display_valid_parameters(char *name, void (*app_help)(char*))
@@ -260,9 +261,6 @@ int mmal_status_to_int(MMAL_STATUS_T status)
       case MMAL_ENOTREADY :
          vcos_log_error("Component is not ready \attention FIXME: not POSIX");
          break;
-      case MMAL_ECONFIG :
-         vcos_log_error("Component is not configured \attention FIXME: not POSIX");
-         break;
       case MMAL_EISCONN :
          vcos_log_error("Port is already connected ");
          break;
@@ -274,6 +272,9 @@ int mmal_status_to_int(MMAL_STATUS_T status)
          break;
       case MMAL_EFAULT :
          vcos_log_error("Bad address");
+         break;
+      case MMAL_STATUS_MAX :
+         vcos_log_error("Unknown status error");
          break;
       default :
          vcos_log_error("Unknown status error");
