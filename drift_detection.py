@@ -8,7 +8,6 @@ import concurrent.futures
 
 # CONFIGURATION DEFAULTS
 BASELINE_FILE = os.environ.get("K_BASELINE", "baseline.json")
-CONFIG_FILE = "config.ini"
 BUFFER_SIZE = 1048576
 
 def get_file_hash(filepath):
