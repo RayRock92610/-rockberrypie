@@ -1664,7 +1664,8 @@ int raspicamcontrol_set_annotate(MMAL_COMPONENT_T *camera, const int settings, c
 
       if (process_datetime && (settings & ANNOTATE_TIME_TEXT))
       {
-         int current_len = strlen(annotate.text);
+         /* Bolt ⚡: Cache string length once to eliminate redundant O(N) traversals */
+         const size_t current_len = strlen(annotate.text);
          if(annotate.text[0] != '\0')
          {
             strftime(tmp, 32, " %X", &tm );
@@ -1678,7 +1679,8 @@ int raspicamcontrol_set_annotate(MMAL_COMPONENT_T *camera, const int settings, c
 
       if (process_datetime && (settings & ANNOTATE_DATE_TEXT))
       {
-         int current_len = strlen(annotate.text);
+         /* Bolt ⚡: Cache string length once to eliminate redundant O(N) traversals */
+         const size_t current_len = strlen(annotate.text);
          if(annotate.text[0] != '\0')
          {
             strftime(tmp, 32, " %x", &tm );

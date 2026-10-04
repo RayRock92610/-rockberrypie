@@ -262,9 +262,10 @@ static VC_CONTAINER_STATUS_T rtsp_send_describe_request( VC_CONTAINER_T *p_ctx )
    char *ptr = module->comms_buffer, *end = ptr + COMMS_BUFFER_SIZE;
    char *uri = p_ctx->priv->io->uri;
 
-   if (strlen(uri) > RTSP_URI_LENGTH_MAX)
+   const size_t uri_len = strlen(uri);
+   if (uri_len > RTSP_URI_LENGTH_MAX)
    {
-      LOG_ERROR(p_ctx, "RTSP: URI is too long (%d>%d)", strlen(uri), RTSP_URI_LENGTH_MAX);
+      LOG_ERROR(p_ctx, "RTSP: URI is too long (%d>%d)", uri_len, RTSP_URI_LENGTH_MAX);
       return VC_CONTAINER_ERROR_URI_OPEN_FAILED;
    }
 
@@ -290,9 +291,10 @@ static VC_CONTAINER_STATUS_T rtsp_send_setup_request( VC_CONTAINER_T *p_ctx,
    char *ptr = module->comms_buffer, *end = ptr + COMMS_BUFFER_SIZE;
    char *uri = t_module->control_uri;
 
-   if (strlen(uri) > RTSP_URI_LENGTH_MAX)
+   const size_t uri_len = strlen(uri);
+   if (uri_len > RTSP_URI_LENGTH_MAX)
    {
-      LOG_ERROR(p_ctx, "RTSP: Control URI is too long (%d>%d)", strlen(uri), RTSP_URI_LENGTH_MAX);
+      LOG_ERROR(p_ctx, "RTSP: Control URI is too long (%d>%d)", uri_len, RTSP_URI_LENGTH_MAX);
       return VC_CONTAINER_ERROR_URI_OPEN_FAILED;
    }
 
@@ -320,9 +322,10 @@ static VC_CONTAINER_STATUS_T rtsp_send_play_request( VC_CONTAINER_T *p_ctx,
    char *ptr = module->comms_buffer, *end = ptr + COMMS_BUFFER_SIZE;
    char *uri = t_module->control_uri;
 
-   if (strlen(uri) > RTSP_URI_LENGTH_MAX)
+   const size_t uri_len = strlen(uri);
+   if (uri_len > RTSP_URI_LENGTH_MAX)
    {
-      LOG_ERROR(p_ctx, "RTSP: Control URI is too long (%d>%d)", strlen(uri), RTSP_URI_LENGTH_MAX);
+      LOG_ERROR(p_ctx, "RTSP: Control URI is too long (%d>%d)", uri_len, RTSP_URI_LENGTH_MAX);
       return VC_CONTAINER_ERROR_URI_OPEN_FAILED;
    }
 
@@ -350,9 +353,10 @@ static VC_CONTAINER_STATUS_T rtsp_send_teardown_request( VC_CONTAINER_T *p_ctx,
    char *ptr = module->comms_buffer, *end = ptr + COMMS_BUFFER_SIZE;
    char *uri = t_module->control_uri;
 
-   if (strlen(uri) > RTSP_URI_LENGTH_MAX)
+   const size_t uri_len = strlen(uri);
+   if (uri_len > RTSP_URI_LENGTH_MAX)
    {
-      LOG_ERROR(p_ctx, "RTSP: Control URI is too long (%d>%d)", strlen(uri), RTSP_URI_LENGTH_MAX);
+      LOG_ERROR(p_ctx, "RTSP: Control URI is too long (%d>%d)", uri_len, RTSP_URI_LENGTH_MAX);
       return VC_CONTAINER_ERROR_URI_OPEN_FAILED;
    }
 
