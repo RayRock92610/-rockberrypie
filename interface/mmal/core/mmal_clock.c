@@ -613,7 +613,7 @@ MMAL_STATUS_T mmal_clock_request_add(MMAL_CLOCK_T *clock, int64_t media_time,
    {
       LOG_TRACE("dropping request: media time %"PRIi64" now %"PRIi64, media_time, media_time_now);
       UNLOCK(private);
-      return MMAL_ECORRUPT;
+      return MMAL_EILSEQ;
    }
 
    /* The clock module is usually only used for time-keeping, so all the

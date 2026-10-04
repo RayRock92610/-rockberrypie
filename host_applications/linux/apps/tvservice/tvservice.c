@@ -188,20 +188,13 @@ static const char *aspect_ratio_str(HDMI_ASPECT_T aspect_ratio) {
 }
 
 /* Return the string presentation of aspect ratio */
-static const char *aspect_ratio_sd_str(SDTV_ASPECT_T aspect_ratio) {
-   switch(aspect_ratio) {
-   case SDTV_ASPECT_4_3:
-      return "4:3";
-   case SDTV_ASPECT_14_9:
-      return "14:9";
-   case SDTV_ASPECT_16_9:
-      return "16:9";
-   case SDTV_ASPECT_CUSTOM:
-      return "Custom";
-   default:
-      return "unknown AR";
-   }
-}
+static const char *aspect_ratio_sd_str[] = {
+   "unknown AR",
+   "4:3",
+   "14:9",
+   "16:9",
+   "Custom"
+};
 
 //Print a string and update the offset into the status buffer
 //Return non-zero if string is truncated, zero otherwise
@@ -440,7 +433,7 @@ static const char *status_mode( TV_DISPLAY_STATE_T *tvstate ) {
          }
       }
       //This is the format's aspect ratio
-      tmp = status_sprintf(mode_str, MAX_STATUS_STR_LENGTH, &offset, " %s", aspect_ratio_sd_str(tvstate->display.sdtv.display_options.aspect));
+      tmp = status_sprintf(mode_str, MAX_STATUS_STR_LENGTH, &offset, " %s", (tvstate->display.sdtv.display_options.aspect <= SDTV_ASPECT_CUSTOM) ? aspect_ratio_sd_str[tvstate->display.sdtv.display_options.aspect] : aspect_ratio_sd_str[0]);
    } else if (tvstate->state & VC_LCD_ATTACHED_DEFAULT) {
       status_sprintf(mode_str, MAX_STATUS_STR_LENGTH, &offset, "LCD");
    } else {
