@@ -171,10 +171,21 @@ static VC_CONTAINER_STATUS_T mpga_sync( VC_CONTAINER_T *p_ctx )
 
    if (module->version)
    {
-      if (version != module->version || layer != module->layer ||
-          channels != module->channels || sample_rate != module->sample_rate)
+      if (version != module->version || layer != module->layer)
       {
-         LOG_DEBUG(p_ctx, "format changes are not allowed mid-stream");
+         LOG_ERROR(p_ctx, "mid-stream format change unsupported (version %d->%d, layer %d->%d)",
+                   module->version, version, module->layer, layer);
+         return VC_CONTAINER_ERROR_FORMAT_NOT_SUPPORTED;
+      }
+
+      /* Validate mid-stream audio format invariants */
+      if (p_ctx->tracks_num > 0 && p_ctx->tracks[0] && p_ctx->tracks[0]->format->type->audio.channels &&
+          (p_ctx->tracks[0]->format->type->audio.channels != channels ||
+           p_ctx->tracks[0]->format->type->audio.sample_rate != sample_rate))
+      {
+         LOG_ERROR(p_ctx, "mid-stream format change unsupported (channels %d->%d, sample_rate %d->%d)",
+                   p_ctx->tracks[0]->format->type->audio.channels, channels,
+                   p_ctx->tracks[0]->format->type->audio.sample_rate, sample_rate);
          return VC_CONTAINER_ERROR_FORMAT_NOT_SUPPORTED;
       }
    }
