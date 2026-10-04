@@ -1415,7 +1415,7 @@ static MMAL_STATUS_T mmal_component_create_from_graph(const char *name, MMAL_COM
       component->input[i]->priv->pf_set_format = graph_port_format_commit;
       component->input[i]->priv->pf_parameter_get = graph_port_parameter_get;
       component->input[i]->priv->pf_parameter_set = graph_port_parameter_set;
-      if (graph->input[i]->priv->pf_connect && 0 /* FIXME: disabled for now */)
+      if (graph->input[i]->priv->pf_connect)
          component->input[i]->priv->pf_connect = graph_port_connect;
       component->input[i]->priv->pf_payload_alloc = graph_port_payload_alloc;
       component->input[i]->priv->pf_payload_free = graph_port_payload_free;
@@ -1441,7 +1441,7 @@ static MMAL_STATUS_T mmal_component_create_from_graph(const char *name, MMAL_COM
       component->output[i]->priv->pf_set_format = graph_port_format_commit;
       component->output[i]->priv->pf_parameter_get = graph_port_parameter_get;
       component->output[i]->priv->pf_parameter_set = graph_port_parameter_set;
-      if (graph->output[i]->priv->pf_connect && 0 /* FIXME: disabled for now */)
+      if (graph->output[i]->priv->pf_connect)
          component->output[i]->priv->pf_connect = graph_port_connect;
       component->output[i]->priv->pf_payload_alloc = graph_port_payload_alloc;
       component->output[i]->priv->pf_payload_free = graph_port_payload_free;
