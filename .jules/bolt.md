@@ -74,3 +74,7 @@
 ## 2026-10-03 - Optimize SQLite Query Row Mapping
 **Learning:** When querying single columns or a few fields with `better-sqlite3`, the default row mapping allocates JavaScript objects. This causes heap allocation overhead in hot paths.
 **Action:** Chain `.pluck(true)` to return primitives or `.raw(true)` to return flat arrays, bypassing JavaScript object key creation and shape allocation.
+
+## 2026-10-04 - Optimize JSON Canonicalization Verification
+**Learning:** Destructuring and rebuilding a large parsed JSON object (e.g., 10+ keys) to omit a single property creates severe GC pressure and object allocation overhead inside tight iterative loops (like streaming database row validation). Assigning `undefined` to the property mutates the object in place without deoptimizing V8's hidden classes, and is efficiently ignored by our custom JSON canonicalizer.
+**Action:** When performing verification hashing over large payloads from a database, mutate the `JSON.parse` output directly (e.g., `parsed.integrity.event_hash = undefined`) instead of constructing an entirely new verification object mapping all fields manually.

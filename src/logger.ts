@@ -186,23 +186,11 @@ export class HashChainedLogger {
       }
 
       const parsed = JSON.parse(payload);
-      const partialPayload = {
-        event_id: parsed.event_id,
-        timestamp: parsed.timestamp,
-        trace_id: parsed.trace_id,
-        pipeline_id: parsed.pipeline_id,
-        agent: parsed.agent,
-        model_config: parsed.model_config,
-        input: parsed.input,
-        reasoning_trace: parsed.reasoning_trace,
-        tool_calls: parsed.tool_calls,
-        state_delta: parsed.state_delta,
-        integrity: {
-          prev_event_hash: parsed.integrity.prev_event_hash,
-        },
-      };
+      if (parsed?.integrity) {
+        parsed.integrity.event_hash = undefined;
+      }
 
-      const recomputedHash = this.computeHash(this.canonicalize(partialPayload));
+      const recomputedHash = this.computeHash(this.canonicalize(parsed));
       if (recomputedHash !== event_hash) {
         return { valid: false, brokenSequence: sequence };
       }
