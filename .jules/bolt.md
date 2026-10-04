@@ -78,3 +78,6 @@
 ## 2026-10-04 - Optimize JSON Canonicalization Verification
 **Learning:** Destructuring and rebuilding a large parsed JSON object (e.g., 10+ keys) to omit a single property creates severe GC pressure and object allocation overhead inside tight iterative loops (like streaming database row validation). Assigning `undefined` to the property mutates the object in place without deoptimizing V8's hidden classes, and is efficiently ignored by our custom JSON canonicalizer.
 **Action:** When performing verification hashing over large payloads from a database, mutate the `JSON.parse` output directly (e.g., `parsed.integrity.event_hash = undefined`) instead of constructing an entirely new verification object mapping all fields manually.
+## 2024-05-24 - Suppress command complete event on port enable error
+**Learning:** When port enable or pool resize fails, a command complete event might still be generated, causing ambiguous state signals in the OMX component. We must suppress the command complete event by clearing the `MMALOMX_ACTION_NOTIFY_ENABLE` flag when the status is not `MMAL_SUCCESS`.
+**Action:** When inspecting state transition bugs in the MMAL OMX wrappers, check if failure branches correctly suppress completion notifications that are queued in the bitmask flags (`port->actions`).

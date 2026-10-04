@@ -139,12 +139,13 @@ static void mmalomx_commands_check_port_actions(MMALOMX_COMPONENT_T *component,
          status = mmal_pool_resize(port->pool, port->mmal->buffer_num, 0);
       if (status != MMAL_SUCCESS)
          mmalomx_callback_event_handler(component, OMX_EventError, mmalil_error_to_omx(status), 0, NULL);
-      /* FIXME: we're still going to generate a cmd complete. Not sure if that's an issue. */
    }
 
    MMALOMX_LOCK_PORT(component, port);
 
    port->actions &= ~exec_actions;
+   if ((exec_actions & MMALOMX_ACTION_PENDING_ENABLE) && status != MMAL_SUCCESS)
+      port->actions &= ~MMALOMX_ACTION_NOTIFY_ENABLE;
    if ((port->actions & MMALOMX_ACTION_CHECK_ALLOCATED) && port->populated)
       port->actions &= ~MMALOMX_ACTION_CHECK_ALLOCATED;
    if ((port->actions & MMALOMX_ACTION_CHECK_DEALLOCATED) && !port->buffers)
