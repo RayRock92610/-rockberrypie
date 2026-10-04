@@ -1,3 +1,6 @@
+## 2026-10-04 - mmal: implement clock port connection functionality
+**Learning:** In MMAL graph, clock port connection functionality was disabled via assigning the function pointer to `NULL`. The solution involves checking if the underlying graph clock port defines a `pf_connect` function. If it does, we assign the `graph_port_connect` function to the component's clock port `pf_connect` pointer, utilizing the existing port proxying pattern.
+**Action:** Next time when implementing a "disabled for now" port function in the MMAL framework (e.g., `pf_connect`), verify whether a proxy mechanism (like `graph_port_connect`) exists, check if the underlying port supports it via a presence check (e.g., `graph->clock[i]->priv->pf_connect`), and assign the proxy function accordingly. Be sure to strip out "disabled" conditions (e.g., `&& 0`) to actually enable the feature.
 ## YYYY-MM-DD - ⚡ Optimize redundant map lookup in containers autotest
 **Learning:** `std::set::erase(iterator)` performs in amortized O(1) time and is better than `std::set::erase(key)` which is O(log N).
 **Action:** When finding a key and then erasing it, save the iterator and use `erase(iterator)` to avoid redundant map lookups.
@@ -82,3 +85,7 @@
 ## 2026-10-04 - Extend SDTV aspect to communicate picture placement/size safely
 **Learning:** Adding new fields to structures (like `TV_SDTV_ON_PARAM_T` and `SDTV_OPTIONS_T_`) that are directly used as IPC wire protocols between host and VideoCore can break downstream ABI constraints and corrupt the firmware payload.
 **Action:** When extending functionality in core headers linked directly to the firmware (like VideoCore headers `vc_sdtv.h`), use existing enum extensions unless explicitly tasked with managing the complete firmware lifecycle. Do not modify fixed message length constraints unless strictly instructed.
+
+## 2026-10-04 - Overlap synchronous CPU processing with asynchronous I/O wait times in sequential loops
+**Learning:** When you have a strict sequential requirement for a series of steps (so you cannot parallelize the steps using `Promise.all`), you can still often improve performance by interleaving operations. If a step involves both a CPU-bound phase (e.g. guardrail evaluation/hashing) and an async I/O-bound phase (e.g. a database write), you can overlap the CPU work of step *N+1* with the I/O await of step *N*.
+**Action:** When inspecting loops iterating over sequential `await` promises, look for pure, stateless CPU work at the beginning of the loop iteration. Pre-compute the CPU work for the first element outside the loop, then inside the loop, while the current step's async I/O promise is pending (un-awaited), eagerly compute the CPU work for the next iteration. Then `await` the current step's promise.
