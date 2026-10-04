@@ -89,3 +89,7 @@
 ## $(date +%Y-%m-%d) - Optimize JSON.parse in logger.ts
 **Learning:** Parsing JSON and canonicalizing it during a high-volume iterative verification loop causes significant CPU overhead. Storing a pre-computed hash of the payload in the database and verifying that hash instead drastically reduces this overhead.
 **Action:** When validating data integrity in a sequential pipeline where large payloads are involved, compute the payload hash at insertion time and store it as a separate column. Use this pre-computed hash for fast verification, falling back to parsing and canonicalizing only for backward compatibility with older records.
+
+## 2026-10-04 - HashChainedLogger Canonicalize Determinism Verification
+**Learning:** \`JSON.stringify\` semantics diverge between objects and arrays: object properties with \`undefined\` values are completely omitted, whereas array items with \`undefined\` values serialize as \`null\` (\`[1, null, 3]\`). Cryptographic hash chaining breaks if the custom canonicalizer deviates from this behavior.
+**Action:** Enforce automated edge-case assertions covering undefined array mapping, object key lexicographical sorting, and sparse structures before verifying audit log integrity.

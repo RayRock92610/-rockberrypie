@@ -30,9 +30,6 @@ export class HashChainedLogger {
     this.db = new Database(dbPath);
     this.initDatabase();
 
-    // ⚡ Bolt: Cache prepared statements to avoid query recompilation overhead
-    // on every event logged or queried.
-    // ⚡ Bolt: Use .pluck(true) to return a string primitive and .raw(true) to return flat arrays to bypass JS object allocation.
     this.latestEventHashStmt = this.db.prepare('SELECT event_hash FROM audit_events ORDER BY sequence DESC LIMIT 1').pluck(true);
     this.insertEventStmt = this.db.prepare(`
       INSERT INTO audit_events (
@@ -66,11 +63,6 @@ export class HashChainedLogger {
     }
   }
 
-  /**
-   * Recursively canonicalize objects by sorting keys alphabetically
-   * ⚡ Bolt: Optimized by replacing intermediate array allocations (like .map().join())
-   * with traditional for loops and ordering type-checking branches.
-   */
   public canonicalize(obj: unknown): string {
     if (obj === null) return 'null';
     const type = typeof obj;
@@ -80,8 +72,6 @@ export class HashChainedLogger {
         for (let i = 0; i < obj.length; i++) {
           if (i > 0) result += ',';
           const val = this.canonicalize(obj[i]);
-          // JSON.stringify can return undefined for functions/symbols, which is
-          // passed through via the cast. We need to check it dynamically.
           result += (val as unknown) === undefined ? 'null' : val;
         }
         return result + ']';
@@ -111,7 +101,6 @@ export class HashChainedLogger {
   }
 
   public computeHash(content: string): string {
-    // ⚡ Bolt: Using native crypto.hash() for ~2x performance over createHash()
     return crypto.hash('sha256', content, 'hex');
   }
 
@@ -155,9 +144,7 @@ export class HashChainedLogger {
       },
     };
 
-    // Validate payload against Zod schema prior to persistence
     const validatedEvent = AgentExecutionEventSchema.parse(fullEvent);
-
     const payloadStr = JSON.stringify(validatedEvent);
     this.insertEventStmt.run(
       validatedEvent.event_id,
@@ -170,29 +157,25 @@ export class HashChainedLogger {
       this.computeHash(payloadStr)
     );
 
-    // ⚡ Bolt: Cache the new hash to avoid querying it on the next logEvent call
     this.cachedLatestHash = validatedEvent.integrity.event_hash;
 
     return validatedEvent;
   }
 
-  /**
-   * Verify total integrity of the local hash chain
-   */
-  public verifyChainIntegrity(): { valid: boolean; brokenSequence?: number; totalEvents?: number } {
-    // ⚡ Bolt: Use .iterate() instead of .all() to stream rows iteratively
-    // This significantly reduces memory spikes and CPU overhead when querying large datasets.
+  public verifyChainIntegrity(options: { strict?: boolean } = {}): { valid: boolean; brokenSequence?: number; totalEvents?: number } {
     const rows = this.selectAllEventsStmt.iterate() as IterableIterator<[number, string, string, string, string | null]>;
-
     let expectedPrevHash = GENESIS_HASH;
+    let totalEvents = 0;
 
     for (const row of rows) {
       const [sequence, prev_event_hash, event_hash, payload, payload_hash] = row;
+      totalEvents++;
+
       if (prev_event_hash !== expectedPrevHash) {
         return { valid: false, brokenSequence: sequence };
       }
 
-      if (payload_hash) {
+      if (payload_hash && !options.strict) {
         if (this.computeHash(payload) !== payload_hash) {
           return { valid: false, brokenSequence: sequence };
         }
@@ -211,7 +194,7 @@ export class HashChainedLogger {
       expectedPrevHash = event_hash;
     }
 
-    return { valid: true };
+    return { valid: true, totalEvents };
   }
 
   public close(): void {

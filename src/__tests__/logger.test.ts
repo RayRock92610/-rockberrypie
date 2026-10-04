@@ -114,6 +114,48 @@ describe('HashChainedLogger', () => {
     expect(verification.valid).toBe(false);
     expect(verification.brokenSequence).toBe(1);
   });
+
+  it('should detect tampering if payload and payload_hash are both modified and strict mode is on', () => {
+    logger.logEvent(mockParams);
+
+    const db = new Database(TEST_DB);
+    // Tamper with payload
+    db.prepare("UPDATE audit_events SET payload = REPLACE(payload, 'Run unit test suite', 'Tampered payload') WHERE sequence = 1").run();
+    // Tamper with payload_hash to match the tampered payload
+    const tamperedPayload = db.prepare("SELECT payload FROM audit_events WHERE sequence = 1").pluck(true).get() as string;
+    const fakeHash = logger.computeHash(tamperedPayload);
+    db.prepare("UPDATE audit_events SET payload_hash = ? WHERE sequence = 1").run(fakeHash);
+    db.close();
+
+    // In fast path, it will NOT detect this!
+    // But in strict mode, it WILL detect this.
+    const verification = logger.verifyChainIntegrity({ strict: true });
+    expect(verification.valid).toBe(false);
+    expect(verification.brokenSequence).toBe(1);
+  });
+
+  it('should verify a mixed chain of legacy (NULL payload_hash) and new rows', () => {
+    // Log event 1 (new row with payload_hash)
+    logger.logEvent(mockParams);
+
+    // Log event 2 (simulate legacy row without payload_hash)
+    const params2: LogEventParams = {
+      ...mockParams,
+      event_id: '550e8400-e29b-41d4-a716-446655440001',
+    };
+    logger.logEvent(params2);
+
+    // Make event 2 legacy
+    const db = new Database(TEST_DB);
+    db.prepare("UPDATE audit_events SET payload_hash = NULL WHERE sequence = 2").run();
+    db.close();
+
+    // Verification should succeed
+    const verification = logger.verifyChainIntegrity();
+    expect(verification.valid).toBe(true);
+    expect(verification.totalEvents).toBe(2);
+  });
+
 });
 
 describe('HashChainedLogger.canonicalize - RFC/JSON Parity & Edge Cases', () => {
