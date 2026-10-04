@@ -21,12 +21,14 @@ overrides:
   vite@<=6.4.2: '>=6.4.3'
   vitest@<3.2.6: '>=3.2.6'
 
+pnpmfileChecksum: sha256-r13ID6+225z6ZeukqxUQ8grUfoPb6irlCT+c3jbIFn8=
+
 importers:
 
   .:
     dependencies:
       better-sqlite3:
-        specifier: ^13.0.3
+        specifier: 13.0.3
         version: 13.0.3
       zod:
         specifier: ^4.5.4
