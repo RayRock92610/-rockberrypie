@@ -145,7 +145,9 @@ static void mmalomx_commands_check_port_actions(MMALOMX_COMPONENT_T *component,
 
    port->actions &= ~exec_actions;
    if ((exec_actions & MMALOMX_ACTION_PENDING_ENABLE) && status != MMAL_SUCCESS)
+   {
       port->actions &= ~MMALOMX_ACTION_NOTIFY_ENABLE;
+   }
    if ((port->actions & MMALOMX_ACTION_CHECK_ALLOCATED) && port->populated)
       port->actions &= ~MMALOMX_ACTION_CHECK_ALLOCATED;
    if ((port->actions & MMALOMX_ACTION_CHECK_DEALLOCATED) && !port->buffers)

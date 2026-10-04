@@ -64,9 +64,6 @@ typedef enum
    MMAL_STATUS_MAX = 0x7FFFFFFF      /**< Force to 32 bit */
 } MMAL_STATUS_T;
 
-/** Backward compatibility alias for legacy non-POSIX error code */
-#define MMAL_ECONFIG MMAL_ENXIO
-
 /** Describes a rectangle */
 typedef struct
 {
