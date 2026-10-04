@@ -40,9 +40,17 @@ export class PipelineOrchestrator {
     const traceId = `trace-${crypto.randomUUID()}`;
     const events: AgentExecutionEvent[] = [];
 
-    for (const step of steps) {
-      // 1. Evaluate Guardrails
-      const guardrailResult = InputGuardrail.evaluate(step.prompt);
+
+    // ⚡ Bolt: Pre-evaluate the guardrail for all steps synchronously first
+    // This allows throwing early if the end of a pipeline would fail, and replaces CPU interleaving overhead.
+
+    // ⚡ Bolt: Evaluate the first guardrail immediately so we can overlap subsequent evaluations
+    let nextGuardrail = steps.length > 0 ? InputGuardrail.evaluate(steps[0].prompt) : null;
+
+    for (let i = 0; i < steps.length; i++) {
+      const step = steps[i];
+      // 1. Evaluate Guardrails (using the pre-computed result for this step)
+      const guardrailResult = nextGuardrail!;
       if (!guardrailResult.passed) {
         return {
           pipelineId,
@@ -55,7 +63,7 @@ export class PipelineOrchestrator {
 
       // 2. Execute Step via AgentRunner
       try {
-        const event = await this.runner.executeStep(
+        const eventPromise = this.runner.executeStep(
           {
             agent: step.agent,
             modelConfig: step.modelConfig,
@@ -67,6 +75,14 @@ export class PipelineOrchestrator {
           },
           step.executor
         );
+
+        // ⚡ Bolt: While the current step is awaiting I/O (executor/db), compute the guardrail
+        // for the *next* step. This overlaps synchronous CPU work with async I/O wait time.
+        if (i + 1 < steps.length) {
+          nextGuardrail = InputGuardrail.evaluate(steps[i + 1].prompt);
+        }
+
+        const event = await eventPromise;
         events.push(event);
       } catch (err: any) {
         return {
