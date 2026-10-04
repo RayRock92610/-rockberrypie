@@ -78,3 +78,7 @@
 ## 2026-10-04 - Optimize JSON Canonicalization Verification
 **Learning:** Destructuring and rebuilding a large parsed JSON object (e.g., 10+ keys) to omit a single property creates severe GC pressure and object allocation overhead inside tight iterative loops (like streaming database row validation). Assigning `undefined` to the property mutates the object in place without deoptimizing V8's hidden classes, and is efficiently ignored by our custom JSON canonicalizer.
 **Action:** When performing verification hashing over large payloads from a database, mutate the `JSON.parse` output directly (e.g., `parsed.integrity.event_hash = undefined`) instead of constructing an entirely new verification object mapping all fields manually.
+
+## 2026-10-04 - Extend SDTV aspect to communicate picture placement/size safely
+**Learning:** Adding new fields to structures (like `TV_SDTV_ON_PARAM_T` and `SDTV_OPTIONS_T_`) that are directly used as IPC wire protocols between host and VideoCore can break downstream ABI constraints and corrupt the firmware payload.
+**Action:** When extending functionality in core headers linked directly to the firmware (like VideoCore headers `vc_sdtv.h`), use existing enum extensions unless explicitly tasked with managing the complete firmware lifecycle. Do not modify fixed message length constraints unless strictly instructed.
