@@ -1470,7 +1470,8 @@ static MMAL_STATUS_T mmal_component_create_from_graph(const char *name, MMAL_COM
       component->clock[i]->priv->pf_set_format = graph_port_format_commit;
       component->clock[i]->priv->pf_parameter_get = graph_port_parameter_get;
       component->clock[i]->priv->pf_parameter_set = graph_port_parameter_set;
-      component->clock[i]->priv->pf_connect = NULL; /* FIXME: disabled for now */
+      if (graph->clock[i]->priv->pf_connect)
+         component->clock[i]->priv->pf_connect = graph_port_connect;
       component->clock[i]->priv->pf_payload_alloc = graph_port_payload_alloc;
       component->clock[i]->priv->pf_payload_free = graph_port_payload_free;
 
