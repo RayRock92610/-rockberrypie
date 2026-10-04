@@ -226,7 +226,7 @@ static MMAL_STATUS_T container_map_to_mmal_status(VC_CONTAINER_STATUS_T cstatus)
    switch (cstatus)
    {
       case VC_CONTAINER_SUCCESS: return MMAL_SUCCESS;
-      case VC_CONTAINER_ERROR_CORRUPTED: return MMAL_ECORRUPT;
+      case VC_CONTAINER_ERROR_CORRUPTED: return MMAL_EILSEQ;
       case VC_CONTAINER_ERROR_OUT_OF_MEMORY: return MMAL_ENOMEM;
       case VC_CONTAINER_ERROR_OUT_OF_RESOURCES: return MMAL_ENOSPC;
       case VC_CONTAINER_ERROR_NOT_READY: return MMAL_ENOTREADY;

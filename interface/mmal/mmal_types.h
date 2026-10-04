@@ -54,7 +54,7 @@ typedef enum
    MMAL_ENXIO,                       /**< No such device or address */
    MMAL_EIO,                         /**< I/O error */
    MMAL_ESPIPE,                      /**< Illegal seek */
-   MMAL_ECORRUPT,                    /**< Data is corrupt \attention FIXME: not POSIX */
+   MMAL_EILSEQ,                      /**< Illegal byte sequence */
    MMAL_ENOTREADY,                   /**< Component is not ready \attention FIXME: not POSIX */
    MMAL_ECONFIG,                     /**< Component is not configured \attention FIXME: not POSIX */
    MMAL_EISCONN,                     /**< Port is already connected */
