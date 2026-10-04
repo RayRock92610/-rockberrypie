@@ -73,24 +73,7 @@ describe('HashChainedLogger', () => {
     expect(canonicalA).toBe(canonicalB);
   });
 
-  it('should properly canonicalize arrays, nulls, and undefined values', () => {
-    // Arrays should maintain order and undefined should be serialized as 'null' (per JSON.stringify behavior)
-    const arrayA = [1, null, undefined, 4];
-    const canonicalArrayA = logger.canonicalize(arrayA);
-    expect(canonicalArrayA).toBe('[1,null,null,4]');
 
-    // Objects should skip undefined values
-    const objWithUndefined = { a: 1, b: undefined, c: null };
-    const canonicalObj = logger.canonicalize(objWithUndefined);
-    expect(canonicalObj).toBe('{"a":1,"c":null}');
-
-    // Null as root should work
-    expect(logger.canonicalize(null)).toBe('null');
-
-    // Complex nested array
-    const complexArray = [undefined, null, [1, undefined]];
-    expect(logger.canonicalize(complexArray)).toBe('[null,null,[1,null]]');
-  });
 
   it('should log an event and correctly set Genesis hash for the first event', () => {
     const event = logger.logEvent(mockParams);
@@ -132,5 +115,46 @@ describe('HashChainedLogger', () => {
     const verification = logger.verifyChainIntegrity();
     expect(verification.valid).toBe(false);
     expect(verification.brokenSequence).toBe(1);
+  });
+
+});
+
+describe('HashChainedLogger.canonicalize edge cases', () => {
+  let logger: HashChainedLogger;
+  const TEST_DB = path.join(__dirname, 'test_audit_edge.db');
+
+  beforeEach(() => {
+    if (fs.existsSync(TEST_DB)) {
+      fs.unlinkSync(TEST_DB);
+    }
+    logger = new HashChainedLogger(TEST_DB);
+  });
+
+  afterEach(() => {
+    logger.close();
+    if (fs.existsSync(TEST_DB)) {
+      fs.unlinkSync(TEST_DB);
+    }
+  });
+
+  it('omits undefined object properties while preserving nulls', () => {
+    const input = { b: undefined, a: null, c: 'test' };
+    expect(logger.canonicalize(input)).toBe('{"a":null,"c":"test"}');
+  });
+
+  it('maps undefined array elements to null', () => {
+    const input = [1, undefined, 3];
+    expect(logger.canonicalize(input)).toBe('[1,null,3]');
+  });
+
+  it('handles root null and empty structures', () => {
+    expect(logger.canonicalize(null)).toBe('null');
+    expect(logger.canonicalize({})).toBe('{}');
+    expect(logger.canonicalize([])).toBe('[]');
+  });
+
+  it('sorts nested object keys deterministically', () => {
+    const input = { z: { b: 2, a: 1 }, y: [ { d: 4, c: 3 } ] };
+    expect(logger.canonicalize(input)).toBe('{"y":[{"c":3,"d":4}],"z":{"a":1,"b":2}}');
   });
 });
