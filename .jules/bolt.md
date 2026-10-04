@@ -74,3 +74,7 @@
 ## 2026-10-03 - Optimize SQLite Query Row Mapping
 **Learning:** When querying single columns or a few fields with `better-sqlite3`, the default row mapping allocates JavaScript objects. This causes heap allocation overhead in hot paths.
 **Action:** Chain `.pluck(true)` to return primitives or `.raw(true)` to return flat arrays, bypassing JavaScript object key creation and shape allocation.
+
+## 2026-10-04 - Optimize 0-byte file hashing
+**Learning:** Scanning large codebases frequently encounters 0-byte marker files. Opening an OS file descriptor and executing hashlib incurs unnecessary syscall overhead for empty files.
+**Action:** Check file size via `os.path.getsize(filepath)` before opening the file, and return a hardcoded SHA-256 for empty strings to bypass kernel I/O.

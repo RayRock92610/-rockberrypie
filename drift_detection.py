@@ -11,8 +11,13 @@ BASELINE_FILE = os.environ.get("K_BASELINE", "baseline.json")
 CONFIG_FILE = "config.ini"
 BUFFER_SIZE = 1048576
 
+EMPTY_SHA256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+
 def get_file_hash(filepath):
     try:
+        # ⚡ Bolt: Bypass kernel I/O for 0-byte files
+        if os.path.getsize(filepath) == 0:
+            return EMPTY_SHA256
         with open(filepath, "rb") as f:
             # ⚡ Bolt: Use hashlib.file_digest (Python 3.11+) to execute the read-and-update
             # loop entirely in C/OpenSSL, bypassing Python buffer allocations.
