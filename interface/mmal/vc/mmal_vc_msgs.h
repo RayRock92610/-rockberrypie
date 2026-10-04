@@ -58,7 +58,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /** A MMAL_CONTROL_SERVICE_T gets space for a single message. This
   * is the space allocated for these messages.
   */
-#define MMAL_WORKER_MSG_LEN  28
+#define MMAL_WORKER_MSG_LEN  32
 
 /** Maximum size of the format extradata.
  * FIXME: should probably be made bigger and maybe be passed separately from the info.

@@ -212,7 +212,7 @@ static MMAL_BOOL_T scheduler_component_process_buffers(MMAL_COMPONENT_T *compone
       LOG_ERROR("failed to add request");
       out->length = 0;
       mmal_port_buffer_header_callback(port_out, out);
-      if (cb_status != MMAL_ECORRUPT)
+      if (cb_status != MMAL_EILSEQ)
          module->status = cb_status;
    }
    out = 0;
