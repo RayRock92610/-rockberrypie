@@ -254,8 +254,8 @@ int mmal_status_to_int(MMAL_STATUS_T status)
       case MMAL_ESPIPE :
          vcos_log_error("Illegal seek");
          break;
-      case MMAL_ECORRUPT :
-         vcos_log_error("Data is corrupt \attention FIXME: not POSIX");
+      case MMAL_EILSEQ :
+         vcos_log_error("Illegal byte sequence");
          break;
       case MMAL_ENOTREADY :
          vcos_log_error("Component is not ready \attention FIXME: not POSIX");
