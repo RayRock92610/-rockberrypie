@@ -120,16 +120,15 @@ int main_mbox(int argc, char *argv[])
   char command[MAX_STRING] = {};
   char result[MAX_STRING] = {};
 
-  size_t command_offset = 0;
   for (i = 1; i < argc; i++)
   {
-    if (command_offset >= sizeof(command) - 1)
-       break;
-    if (command_offset > 0)
+    char *c = command + strlen(command);
+    if (c > command)
     {
-       command_offset = vcos_safe_strcpy(command, " ", sizeof(command), command_offset);
+       strncat(c, " ", command + sizeof command - c);
+       c = command + strlen(command);
     }
-    command_offset = vcos_safe_strcpy(command, argv[i], sizeof(command), command_offset);
+    strncat(c, argv[i], command + sizeof command - c);
   }
 
   int ret = gencmd(mb, command, result, sizeof result);
@@ -217,11 +216,8 @@ int main( int argc, char **argv )
 
       for (; i <= argc-1; i++)
       {
-         if (buffer_offset >= sizeof(buffer) - 1)
-            break;
          buffer_offset = vcos_safe_strcpy( buffer, argv[i], sizeof(buffer), buffer_offset );
-         if (buffer_offset < sizeof(buffer) - 1)
-            buffer_offset = vcos_safe_strcpy( buffer, " ", sizeof(buffer), buffer_offset );
+         buffer_offset = vcos_safe_strcpy( buffer, " ", sizeof(buffer), buffer_offset );
       }
 
       if( show_time )
@@ -249,8 +245,7 @@ int main( int argc, char **argv )
 
       if ( buffer[0] != '\0' )
       {
-         size_t buffer_len = strlen(buffer);
-         if ( buffer_len > 0 && buffer[ buffer_len - 1] == '\n' )
+         if ( buffer[ strlen( buffer) - 1] == '\n' )
          {
             fputs( buffer, stdout );
          }

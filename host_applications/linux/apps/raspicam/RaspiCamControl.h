@@ -140,15 +140,15 @@ typedef struct raspicam_camera_parameters_s
    int contrast;              /// -100 to 100
    int brightness;            ///  0 to 100
    int saturation;            ///  -100 to 100
-   int ISO;                   ///  0 (auto), or 100 to 800
+   int ISO;                   ///  TODO : what range?
    int videoStabilisation;    /// 0 or 1 (false or true)
    int exposureCompensation;  /// -10 to +10 ?
    MMAL_PARAM_EXPOSUREMODE_T exposureMode;
    MMAL_PARAM_EXPOSUREMETERINGMODE_T exposureMeterMode;
    MMAL_PARAM_AWBMODE_T awbMode;
-      MMAL_PARAM_IMAGEFX_T imageEffect;
+   MMAL_PARAM_IMAGEFX_T imageEffect;
+   MMAL_PARAMETER_IMAGEFX_PARAMETERS_T imageEffectsParameters;
    MMAL_PARAM_COLOURFX_T colourEffects;
-   MMAL_PARAM_THUMBNAIL_CONFIG_T thumbnailConfig;
    MMAL_PARAM_FLICKERAVOID_T flickerAvoidMode;
    int rotation;              /// 0-359
    int hflip;                 /// 0 or 1
@@ -211,7 +211,6 @@ int raspicamcontrol_set_awb_mode(MMAL_COMPONENT_T *camera, MMAL_PARAM_AWBMODE_T 
 int raspicamcontrol_set_awb_gains(MMAL_COMPONENT_T *camera, float r_gain, float b_gain);
 int raspicamcontrol_set_imageFX(MMAL_COMPONENT_T *camera, MMAL_PARAM_IMAGEFX_T imageFX);
 int raspicamcontrol_set_colourFX(MMAL_COMPONENT_T *camera, const MMAL_PARAM_COLOURFX_T *colourFX);
-int raspicamcontrol_set_thumbnail_parameters(MMAL_COMPONENT_T *camera, const MMAL_PARAM_THUMBNAIL_CONFIG_T *thumbnailConfig);
 int raspicamcontrol_set_rotation(MMAL_COMPONENT_T *camera, int rotation);
 int raspicamcontrol_set_flips(MMAL_COMPONENT_T *camera, int hflip, int vflip);
 int raspicamcontrol_set_ROI(MMAL_COMPONENT_T *camera, PARAM_FLOAT_RECT_T rect);

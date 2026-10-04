@@ -335,14 +335,7 @@ EGL_SURFACE_T *egl_surface_create(
       return 0;
    }
 
-   if (largest_pbuffer) {
-      if (width > EGL_CONFIG_MAX_WIDTH) {
-         width = EGL_CONFIG_MAX_WIDTH;
-      }
-      if (height > EGL_CONFIG_MAX_HEIGHT) {
-         height = EGL_CONFIG_MAX_HEIGHT;
-      }
-   }
+   /* TODO: respect largest_pbuffer? */
 
    surface->name = name;
    surface->type = type;
@@ -549,6 +542,8 @@ EGL_SURFACE_T *egl_surface_from_vg_image(
       return 0;
    }
 
+   /* TODO: respect largest_pbuffer? */
+
    surface->name = name;
    surface->type = PBUFFER;
 
@@ -609,8 +604,9 @@ EGL_SURFACE_T *egl_surface_from_vg_image(
       surface->width = results[2];
       surface->height = results[3];
 
-      surface->colorspace = khrn_image_to_colorspace(format);
-      surface->alphaformat = khrn_image_to_alphaformat(format);
+      /* TODO: picking apart image formats like this seems messy */
+      surface->colorspace = (format & IMAGE_FORMAT_LIN) ? LINEAR : SRGB;
+      surface->alphaformat = (format & IMAGE_FORMAT_PRE) ? PRE : NONPRE;
       *error = EGL_SUCCESS;
       return surface;
    } else {
@@ -852,16 +848,16 @@ EGLint egl_surface_get_mapped_buffer_attrib(EGL_SURFACE_T *surface, EGLint attri
       *value = khrn_image_get_stride(format, surface->width);
       return EGL_SUCCESS;
    case EGL_BITMAP_ORIGIN_KHR:
-      *value = EGL_LOWER_LEFT_KHR;
+      *value = EGL_LOWER_LEFT_KHR;     // TODO: is this correct?
       return EGL_SUCCESS;
    case EGL_BITMAP_PIXEL_RED_OFFSET_KHR:
-      *value = is565 ? 11 : 16;
+      *value = is565 ? 11 : 0;         // TODO: I've probably got these wrong too
       return EGL_SUCCESS;
    case EGL_BITMAP_PIXEL_GREEN_OFFSET_KHR:
       *value = is565 ? 5 : 8;
       return EGL_SUCCESS;
    case EGL_BITMAP_PIXEL_BLUE_OFFSET_KHR:
-      *value = is565 ? 0 : 0;
+      *value = is565 ? 0 : 16;
       return EGL_SUCCESS;
    case EGL_BITMAP_PIXEL_ALPHA_OFFSET_KHR:
       *value = is565 ? 0 : 24;

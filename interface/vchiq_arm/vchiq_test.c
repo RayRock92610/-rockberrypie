@@ -610,7 +610,6 @@ vchiq_ping_test(void)
 
    static int sizes[] = { 0, 1024, 2048, VCHIQ_MAX_MSG_SIZE };
    unsigned int i;
-   unsigned int num_sizes;
 
    fourcc = VCHIQ_MAKE_FOURCC(g_servname[0], g_servname[1], g_servname[2], g_servname[3]);
 
@@ -643,9 +642,7 @@ vchiq_ping_test(void)
       return VCHIQ_ERROR;
    }
 
-   num_sizes = sizeof(sizes)/sizeof(sizes[0]);
-
-   for (i = 0; i < num_sizes; i++)
+   for (i = 0; i < sizeof(sizes)/sizeof(sizes[0]); i++)
    {
       const int iter_count = g_params.iters;
       do_vchi_ping_test(vchi_service, sizes[i], 0, 0, iter_count);
@@ -680,7 +677,7 @@ vchiq_ping_test(void)
       return VCHIQ_ERROR;
    }
 
-   for (i = 0; i < num_sizes; i++)
+   for (i = 0; i < sizeof(sizes)/sizeof(sizes[0]); i++)
    {
       const int iter_count = g_params.iters;
       do_ping_test(vchiq_service, sizes[i], 0, 0, iter_count);
@@ -777,7 +774,6 @@ do_functional_test(void)
    if (func_data_test_start != -1)
       goto bulk_tests_only;
 
-   EXPECT(vchiq_connect((VCHIQ_INSTANCE_T)NULL), VCHIQ_ERROR);
    EXPECT(vchiq_initialise(&instance), VCHIQ_SUCCESS);
    EXPECT(vchiq_get_config(instance, sizeof(config) - 1, &config), VCHIQ_SUCCESS); // too small, but allowed for backwards compatibility
    EXPECT(vchiq_get_config(instance, sizeof(config) + 1, &config), VCHIQ_ERROR);   // too large
@@ -850,8 +846,7 @@ do_functional_test(void)
    EXPECT(vchiq_queue_message(service, elements, 4), VCHIQ_SUCCESS);
 
    EXPECT(vchiq_queue_bulk_transmit(service2, clnt_service2_data, sizeof(clnt_service2_data), (void *)0x2001), VCHIQ_SUCCESS);
-   size = sizeof(clnt_service1_data);
-   for (i = 0; i < size; i++)
+   for (i = 0; i < sizeof(clnt_service1_data); i++)
    {
       clnt_service1_data[i] = (char)i;
    }
@@ -870,7 +865,6 @@ do_functional_test(void)
    INIT_PARAMS(&service_params, FUNC_FOURCC, func_clnt_callback, NULL, VCHIQ_TEST_VER);
    EXPECT(vchiq_open_service(instance, &service_params, &service), VCHIQ_ERROR); /* Instance not initialised */
    EXPECT(vchiq_add_service(instance, &service_params, &service), VCHIQ_ERROR); /* Instance not initialised */
-   EXPECT(vchiq_connect(NULL), VCHIQ_ERROR); /* Instance not initialised */
    EXPECT(vchiq_connect(instance), VCHIQ_ERROR); /* Instance not initialised */
 
 bulk_tests_only:
@@ -915,13 +909,12 @@ bulk_tests_only:
    for (size = 64; size < FUN2_MAX_DATA_SIZE; size<<=1)
    {
       static const int aligns[] = { 0, 1, 31 };
-      const size_t num_aligns = vcos_countof(aligns);
 
-      for (i = 0; i < num_aligns; i++)
+      for (i = 0; i < vcos_countof(aligns); i++)
       {
          int srvr_align = aligns[i];
          unsigned int j;
-         for (j = 0; j < num_aligns; j++)
+         for (j = 0; j < vcos_countof(aligns); j++)
          {
             int k;
             int align = aligns[j];

@@ -376,7 +376,7 @@ GL_API void GL_APIENTRY glBufferData (GLenum target, GLsizeiptr size, const GLvo
       if(buffer.id != ~0 && buffer.mapped_pointer != 0)
       {
          /* buffer is mapped */
-         glxx_set_error(state, GL_INVALID_OPERATION);
+         set_error(state, GL_INVALID_OPERATION);
       }
       else
       {
@@ -441,7 +441,7 @@ GL_API void GL_APIENTRY glBufferSubData (GLenum target, GLintptr base, GLsizeipt
       if(buffer.id != ~0 && buffer.mapped_pointer != 0)
       {
          /* buffer is mapped */
-         glxx_set_error(state, GL_INVALID_OPERATION);
+         set_error(state, GL_INVALID_OPERATION);
       }
       else
       {
@@ -646,12 +646,28 @@ static bool is_color_type(GLenum type)
           type == GL_FLOAT;
 }
 
-
+static bool is_aligned( GLenum type, size_t value)
+{
+   switch (type) {
+   case GL_BYTE:
+   case GL_UNSIGNED_BYTE:
+      return GL_TRUE;
+   case GL_SHORT:
+   case GL_UNSIGNED_SHORT:
+      return (value & 1) == 0;
+   case GL_FIXED:
+   case GL_FLOAT:
+      return (value & 3) == 0;
+   default:
+      UNREACHABLE();
+      return GL_FALSE;
+   }
+}
 
 GL_API void GL_APIENTRY glColorPointer (GLint size, GLenum type, GLsizei stride, const GLvoid *pointer)
 {
    if (is_color_type(type)) {
-      if (is_color_size(size) && glxx_is_aligned(type, (size_t)pointer) && glxx_is_aligned(type, (size_t)stride) && stride >= 0) {
+      if (is_color_size(size) && is_aligned(type, (size_t)pointer) && is_aligned(type, (size_t)stride) && stride >= 0) {
          glintAttribPointer(GLXX_API_11, GL11_IX_COLOR, size, type, GL_TRUE, stride, pointer);
       } else
          glxx_set_error_api(GLXX_API_11, GL_INVALID_VALUE);
@@ -808,7 +824,7 @@ GL_API void GL_APIENTRY glCompressedTexSubImage2D (GLenum target, GLint level, G
       {
       case GL_ETC1_RGB8_OES:
          // Cannot specify subimages of ETC1 textures
-         glxx_set_error(state, GL_INVALID_OPERATION);
+         set_error(state, GL_INVALID_OPERATION);
          break;
       case GL_PALETTE4_RGB8_OES:
       case GL_PALETTE4_RGBA8_OES:
@@ -821,7 +837,7 @@ GL_API void GL_APIENTRY glCompressedTexSubImage2D (GLenum target, GLint level, G
       case GL_PALETTE8_RGBA4_OES:
       case GL_PALETTE8_RGB5_A1_OES:
          // Cannot specify subimages of paletted textures
-         glxx_set_error(state, GL_INVALID_OPERATION);
+         set_error(state, GL_INVALID_OPERATION);
          break;
       default:
          // Some format we don't recognise
@@ -1164,16 +1180,15 @@ static void draw_arrays_or_elements(CLIENT_THREAD_STATE_T *thread, GLXX_CLIENT_S
       {
          cache_info.send_any = 1;
 
-         if (state->attrib[i].pointer == NULL) {
-            glxx_set_error(state, GL_INVALID_OPERATION);
+         /* TODO: what should we do if people give us null pointers? */
+         if (state->attrib[i].pointer == NULL)
             return;
-         }
       }
    }
 
    if(type==0)
    {
-      first = (int)(uintptr_t)indices;
+      first = (int)indices;
       indices_offset = first;
       indices_buffer = 0;
       send_indices = 0;
@@ -1196,7 +1211,7 @@ static void draw_arrays_or_elements(CLIENT_THREAD_STATE_T *thread, GLXX_CLIENT_S
       else
       {
          indices_key = 0;
-         indices_offset = (uint32_t)(uintptr_t)indices;
+         indices_offset = (uint32_t)indices;
 
          if (cache_info.send_any)
             max = RPC_INT_RES(RPC_CALL3_RES(
@@ -1337,7 +1352,7 @@ GL_API void GL_APIENTRY glDrawElements (GLenum mode, GLsizei count, GLenum type,
          set_error(state, GL_INVALID_ENUM);
          return;
       }
-      if (!glxx_is_aligned(type, (size_t)indices)) {
+      if (!is_aligned(type, (size_t)indices)) {
          set_error(state, GL_INVALID_VALUE);
          return;
       }
@@ -2819,33 +2834,6 @@ GL_APICALL int GL_APIENTRY glGetUniformLocation (GLuint program, const char *nam
    CURRENT VERTEX ATTRIB 0,0,0,1 GetVertexAttributes
 */
 
-
-static bool get_vertex_attrib_param(GLXX_CLIENT_STATE_T *state, GLuint index, GLenum pname, GLint *param)
-{
-   switch (pname) {
-   case GL_VERTEX_ATTRIB_ARRAY_ENABLED:
-      *param = state->attrib[index].enabled ? GL_TRUE : GL_FALSE;
-      return true;
-   case GL_VERTEX_ATTRIB_ARRAY_SIZE:
-      *param = (GLint) state->attrib[index].size;
-      return true;
-   case GL_VERTEX_ATTRIB_ARRAY_STRIDE:
-      *param = (GLint) state->attrib[index].stride;
-      return true;
-   case GL_VERTEX_ATTRIB_ARRAY_TYPE:
-      *param = (GLint) state->attrib[index].type;
-      return true;
-   case GL_VERTEX_ATTRIB_ARRAY_NORMALIZED:
-      *param = state->attrib[index].normalized ? GL_TRUE : GL_FALSE;
-      return true;
-   case GL_VERTEX_ATTRIB_ARRAY_BUFFER_BINDING:
-      *param = (GLint) state->attrib[index].buffer;
-      return true;
-   default:
-      return false;
-   }
-}
-
 GL_APICALL void GL_APIENTRY glGetVertexAttribfv (GLuint index, GLenum pname, GLfloat *params)
 {
    CLIENT_THREAD_STATE_T *thread = CLIENT_GET_THREAD_STATE();
@@ -2863,15 +2851,31 @@ GL_APICALL void GL_APIENTRY glGetVertexAttribfv (GLuint index, GLenum pname, GLf
             params[3] = state->attrib[index].value[3];
             break;
 
+         //TODO: is this the best way to handle conversions? We duplicate
+         //the entire switch statement.
+         case GL_VERTEX_ATTRIB_ARRAY_ENABLED:
+            params[0] = state->attrib[index].enabled ? 1.0f : 0.0f;
+            break;
+         case GL_VERTEX_ATTRIB_ARRAY_SIZE:
+            params[0] = (GLfloat)state->attrib[index].size;
+            break;
+         case GL_VERTEX_ATTRIB_ARRAY_STRIDE:
+            params[0] = (GLfloat)state->attrib[index].stride;
+            break;
+         case GL_VERTEX_ATTRIB_ARRAY_TYPE:
+            params[0] = (GLfloat)state->attrib[index].type;
+            break;
+         case GL_VERTEX_ATTRIB_ARRAY_NORMALIZED:
+            params[0] = state->attrib[index].normalized ? 1.0f : 0.0f;
+            break;
+         case GL_VERTEX_ATTRIB_ARRAY_BUFFER_BINDING:
+            params[0] = (GLfloat)state->attrib[index].buffer;
+            break;
+
+
+
          default:
-            {
-               GLint param;
-               if (get_vertex_attrib_param(state, index, pname, &param)) {
-                  params[0] = (GLfloat)param;
-               } else {
-                  set_error(state, GL_INVALID_ENUM);
-               }
-            }
+            set_error(state, GL_INVALID_ENUM);
             break;
          }
       else
@@ -2889,7 +2893,28 @@ GL_APICALL void GL_APIENTRY glGetVertexAttribiv (GLuint index, GLenum pname, GLi
 
       if (index < GL20_CONFIG_MAX_VERTEX_ATTRIBS)
          switch (pname) {
+         case GL_VERTEX_ATTRIB_ARRAY_ENABLED:
+            params[0] = (GLint) state->attrib[index].enabled ? GL_TRUE : GL_FALSE;
+            break;
+         case GL_VERTEX_ATTRIB_ARRAY_SIZE:
+            params[0] = (GLint) state->attrib[index].size;
+            break;
+         case GL_VERTEX_ATTRIB_ARRAY_STRIDE:
+            params[0] = (GLint) state->attrib[index].stride;
+            break;
+         case GL_VERTEX_ATTRIB_ARRAY_TYPE:
+            params[0] = (GLint) state->attrib[index].type;
+            break;
+         case GL_VERTEX_ATTRIB_ARRAY_NORMALIZED:
+            params[0] = (GLint) state->attrib[index].normalized ? GL_TRUE : GL_FALSE;
+            break;
+         case GL_VERTEX_ATTRIB_ARRAY_BUFFER_BINDING:
+            params[0] = (GLint) state->attrib[index].buffer;
+            break;
 
+
+         //TODO: is this the best way to handle conversions? We duplicate
+         //the entire switch statement.
          case GL_CURRENT_VERTEX_ATTRIB:
             params[0] = (GLint)state->attrib[index].value[0];
             params[1] = (GLint)state->attrib[index].value[1];
@@ -2898,14 +2923,7 @@ GL_APICALL void GL_APIENTRY glGetVertexAttribiv (GLuint index, GLenum pname, GLi
             break;
 
          default:
-            {
-               GLint param;
-               if (get_vertex_attrib_param(state, index, pname, &param)) {
-                  params[0] = param;
-               } else {
-                  set_error(state, GL_INVALID_ENUM);
-               }
-            }
+            set_error(state, GL_INVALID_ENUM);
             break;
          }
       else
@@ -3418,7 +3436,7 @@ static bool is_normal_type(GLenum type)
 GL_API void GL_APIENTRY glNormalPointer (GLenum type, GLsizei stride, const GLvoid *pointer)
 {
    if (is_normal_type(type)) {
-      if (glxx_is_aligned(type, (size_t)pointer) && glxx_is_aligned(type, (size_t)stride) && stride >= 0) {
+      if (is_aligned(type, (size_t)pointer) && is_aligned(type, (size_t)stride) && stride >= 0) {
          glintAttribPointer(GLXX_API_11, GL11_IX_NORMAL, 3, type, GL_TRUE, stride, pointer);
       } else
          glxx_set_error_api(GLXX_API_11, GL_INVALID_VALUE);
@@ -3964,7 +3982,7 @@ static bool is_texture_coord_type(GLenum type)
 GL_API void GL_APIENTRY glTexCoordPointer (GLint size, GLenum type, GLsizei stride, const GLvoid *pointer)
 {
    if (is_texture_coord_type(type)) {
-      if (is_texture_coord_size(size) && glxx_is_aligned(type, (size_t)pointer) && glxx_is_aligned(type, (size_t)stride) && stride >= 0) {
+      if (is_texture_coord_size(size) && is_aligned(type, (size_t)pointer) && is_aligned(type, (size_t)stride) && stride >= 0) {
          glintAttribPointer(GLXX_API_11, GL11_IX_CLIENT_ACTIVE_TEXTURE, size, type, GL_FALSE, stride, pointer);
       } else
          glxx_set_error_api(GLXX_API_11, GL_INVALID_VALUE);
@@ -4837,7 +4855,7 @@ static bool is_vertex_type(GLenum type)
 GL_API void GL_APIENTRY glVertexPointer (GLint size, GLenum type, GLsizei stride, const GLvoid *pointer)
 {
    if (is_vertex_type(type)) {
-      if (is_vertex_size(size) && glxx_is_aligned(type, (size_t)pointer) && glxx_is_aligned(type, (size_t)stride) && stride >= 0) {
+      if (is_vertex_size(size) && is_aligned(type, (size_t)pointer) && is_aligned(type, (size_t)stride) && stride >= 0) {
          glintAttribPointer(GLXX_API_11, GL11_IX_VERTEX, size, type, GL_FALSE, stride, pointer);
       } else
          glxx_set_error_api(GLXX_API_11, GL_INVALID_VALUE);
@@ -4871,7 +4889,7 @@ static bool is_point_size_type(GLenum type)
 GL_API void GL_APIENTRY glPointSizePointerOES (GLenum type, GLsizei stride, const GLvoid *pointer)
 {
    if (is_point_size_type(type)) {
-      if (glxx_is_aligned(type, (size_t)pointer) && glxx_is_aligned(type, (size_t)stride) && stride >= 0) {
+      if (is_aligned(type, (size_t)pointer) && is_aligned(type, (size_t)stride) && stride >= 0) {
          glintAttribPointer(GLXX_API_11, GL11_IX_POINT_SIZE, 1, type, GL_FALSE, stride, pointer);
       } else
          glxx_set_error_api(GLXX_API_11, GL_INVALID_VALUE);
@@ -4999,21 +5017,12 @@ GL_APICALL void GL_APIENTRY glShaderSource(GLuint shader, GLsizei count, const c
 
       int total = (int)(rpc_pad_bulk(count * 4) + rpc_pad_bulk(count * 4));
       int i;
-      /* Optimization: Cache lengths to avoid redundant O(N) strlen() calls on large shader strings.
-       * We use a stack buffer for common small arrays to avoid malloc overhead. */
-      GLint cached_len_buf[32];
-      GLint *cached_len = (count <= 32) ? cached_len_buf : khrn_platform_malloc(count * sizeof(GLint), "glShaderSource lengths");
 
       for (i = 0; i < count; i++) {
-         if (!string[i]) {
-            cached_len[i] = 0;
-         } else if (!length || length[i] < 0) {
-            cached_len[i] = (GLint)strlen(string[i]) + 1;
-            total += rpc_pad_bulk(cached_len[i]);
-         } else {
-            cached_len[i] = length[i];
+         if (!length || length[i] < 0)
+            total += rpc_pad_bulk(string[i] ? (int)strlen(string[i]) + 1 : 1);
+         else
             total += rpc_pad_bulk(length[i]);
-         }
       }
 
       rpc_begin(thread);
@@ -5043,7 +5052,7 @@ GL_APICALL void GL_APIENTRY glShaderSource(GLuint shader, GLsizei count, const c
          GLint len;
 
          if (!length || length[i] < 0) {
-            len = cached_len[i];
+            len = string[i] ? (GLint) strlen(string[i]) + 1 : 1;
 
 //            rpc_send_bulk(&len, sizeof(GLint)); /* todo: this now violates the semantics of rpc_send_bulk. todo: check for other violations in GL */
 
@@ -5057,38 +5066,26 @@ GL_APICALL void GL_APIENTRY glShaderSource(GLuint shader, GLsizei count, const c
          GLint len;
 
          if (!length || length[i] < 0) {
-            len = cached_len[i];
+            len = string[i] ? strlen(string[i]) + 1 : 1;
          } else
-            len = cached_len[i];
+            len = length[i];
 
-         if (len > 0) {
-            rpc_send_bulk(thread, string[i], (uint32_t)len);
-         }
+         /* TODO: we currently treat null strings as empty strings
+          * But we shouldn't need to deal with them (VND-116)
+          */
+         rpc_send_bulk(thread, string[i] ? string[i] : "", (uint32_t)len);
       }
       rpc_end(thread);
-      if (cached_len != cached_len_buf) {
-         khrn_platform_free(cached_len);
-      }
 #else
       CLIENT_THREAD_STATE_T *thread = CLIENT_GET_THREAD_STATE();
       int total = (int)(rpc_pad_bulk(count * 4) + rpc_pad_bulk(count * 4) + rpc_pad_bulk(sizeof(GLint)));
       int i;
-      /* Optimization: Cache lengths to avoid redundant O(N) strlen() calls on large shader strings.
-       * We use a stack buffer for common small arrays to avoid malloc overhead. */
-      GLint cached_len_buf[32];
-      GLint *cached_len = (count <= 32) ? cached_len_buf : khrn_platform_malloc(count * sizeof(GLint), "glShaderSource lengths");
 
-      for (i = 0; i < count; i++) {
-         if (!string[i]) {
-            cached_len[i] = 0;
-         } else if (!length || length[i] < 0) {
-            cached_len[i] = (GLint)strlen(string[i]) + 1;
-            total += rpc_pad_bulk(cached_len[i]);
-         } else {
-            cached_len[i] = length[i];
+      for (i = 0; i < count; i++)
+         if (!length || length[i] < 0)
+            total += rpc_pad_bulk(string[i] ? (int)strlen(string[i]) + 1 : 1);
+         else
             total += rpc_pad_bulk(length[i]);
-         }
-      }
 
       rpc_begin(thread);
 
@@ -5107,20 +5104,19 @@ GL_APICALL void GL_APIENTRY glShaderSource(GLuint shader, GLsizei count, const c
          GLint len;
 
          if (!length || length[i] < 0) {
-            rpc_send_bulk(thread, &cached_len[i], sizeof(GLint));
-            len = cached_len[i];
+            len = string[i] ? (GLint) strlen(string[i]) + 1 : 1;
+
+            rpc_send_bulk(thread, &len, sizeof(GLint)); /* todo: this now violates the semantics of rpc_send_bulk. todo: check for other violations in GL */
          } else
-            len = cached_len[i];
+            len = length[i];
 
-         if (len > 0) {
-            rpc_send_bulk(thread, string[i], (uint32_t)len);
-         }
+         /* TODO: we currently treat null strings as empty strings
+          * But we shouldn't need to deal with them (VND-116)
+          */
+         rpc_send_bulk(thread, string[i] ? string[i] : "", (uint32_t)len);
       }
+
       rpc_end(thread);
-
-      if (cached_len != cached_len_buf) {
-         khrn_platform_free(cached_len);
-      }
 #endif
 #endif
    }
@@ -5296,14 +5292,8 @@ void glxx_client_BindFramebuffer(GLenum target, GLuint framebuffer)
                 RPC_ENUM(target),
                 RPC_UINT(framebuffer));
 
-      switch (target) {
-      case GL_FRAMEBUFFER:
-         state->default_framebuffer = (framebuffer == 0);
-         break;
-      default:
-         // do nothing, server will signal error
-         break;
-      }
+      //TODO: this may be set incorrectly if there's an error
+      state->default_framebuffer = (framebuffer == 0);
    }
 }
 

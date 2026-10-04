@@ -225,7 +225,6 @@ static void mmal_vc_handle_event_msg(VCHIQ_HEADER_T *vchiq_header,
    {
       LOG_ERROR("event buffer to small to receive event (%i/%i)",
                 (int)buffer->alloc_size, (int)msg->length);
-      mmal_buffer_header_release(buffer);
       goto error;
    }
    buffer->length = msg->length;
@@ -237,7 +236,6 @@ static void mmal_vc_handle_event_msg(VCHIQ_HEADER_T *vchiq_header,
           mmal_buffer_header_driver_data(buffer)->client_context->callback_event))
    {
       LOG_ERROR("event buffers not configured properly by component");
-      mmal_buffer_header_release(buffer);
       goto error;
    }
 
@@ -253,11 +251,8 @@ static void mmal_vc_handle_event_msg(VCHIQ_HEADER_T *vchiq_header,
       if (vst != VCHIQ_SUCCESS)
       {
          LOG_TRACE("queue event bulk rx len %d failed to start", buffer->length);
-         buffer->length = 0;
-         buffer->flags |= MMAL_BUFFER_HEADER_FLAG_TRANSMISSION_FAILED;
-         mmal_buffer_header_driver_data(buffer)->client_context->callback_event(port, buffer);
-         vchiq_release_message(service, vchiq_header);
-         return;
+         mmal_buffer_header_release(buffer);
+         goto error;
       }
    }
    else
@@ -273,6 +268,8 @@ static void mmal_vc_handle_event_msg(VCHIQ_HEADER_T *vchiq_header,
    return;
 
 error:
+   /* FIXME: How to abort bulk receive if necessary? */
+   msg->length = 0; /* FIXME: set a buffer flag to signal error */
    vchiq_release_message(service, vchiq_header);
 }
 

@@ -460,9 +460,8 @@ static int parse_cmdline(int argc, const char **argv, RASPISTILL_STATE *state)
          {
             state->linkname = malloc(len + 10);
             vcos_assert(state->linkname);
-            if (state->linkname) {
+            if (state->linkname)
                strncpy(state->linkname, argv[i + 1], len+1);
-            }
             i++;
          }
          else
@@ -528,8 +527,7 @@ static int parse_cmdline(int argc, const char **argv, RASPISTILL_STATE *state)
          {
             if (sscanf(argv[i + 1], "%u", &state->demoInterval) == 1)
             {
-               if (state->demoInterval == 0)
-                  state->demoInterval = 250; // ms
+               // TODO : What limits do we need for timeout?
                state->demoMode = 1;
                i++;
             }
@@ -1176,30 +1174,20 @@ static void destroy_encoder_component(RASPISTILL_STATE *state)
 static MMAL_STATUS_T add_exif_tag(RASPISTILL_STATE *state, const char *exif_tag)
 {
    MMAL_STATUS_T status;
-   MMAL_PARAMETER_EXIF_T *exif_param;
-   size_t exif_tag_len;
+   MMAL_PARAMETER_EXIF_T *exif_param = (MMAL_PARAMETER_EXIF_T*)calloc(sizeof(MMAL_PARAMETER_EXIF_T) + MAX_EXIF_PAYLOAD_LENGTH, 1);
 
    vcos_assert(state);
    vcos_assert(state->encoder_component);
 
    // Check to see if the tag is present or is indeed a key=value pair.
-   if (!exif_tag || strchr(exif_tag, '=') == NULL)
+   if (!exif_tag || strchr(exif_tag, '=') == NULL || strlen(exif_tag) > MAX_EXIF_PAYLOAD_LENGTH-1)
       return MMAL_EINVAL;
-
-   exif_tag_len = strlen(exif_tag);
-   if (exif_tag_len > MAX_EXIF_PAYLOAD_LENGTH-1)
-      return MMAL_EINVAL;
-
-   exif_param = (MMAL_PARAMETER_EXIF_T*)calloc(sizeof(MMAL_PARAMETER_EXIF_T) + MAX_EXIF_PAYLOAD_LENGTH, 1);
-   if (!exif_param)
-      return MMAL_ENOMEM;
 
    exif_param->hdr.id = MMAL_PARAMETER_EXIF;
 
    strncpy((char*)exif_param->data, exif_tag, MAX_EXIF_PAYLOAD_LENGTH-1);
 
-   // Optimize redundant O(N) evaluation of strlen
-   exif_param->hdr.size = sizeof(MMAL_PARAMETER_EXIF_T) + exif_tag_len;
+   exif_param->hdr.size = sizeof(MMAL_PARAMETER_EXIF_T) + strlen((char*)exif_param->data);
 
    status = mmal_port_parameter_set(state->encoder_component->output[0], &exif_param->hdr);
 

@@ -375,7 +375,6 @@ static int dtoverlay_set_node_name(DTBLOB_T *dtb, int node_off,
    int name_len;
    int offset;
    unsigned int fixup_idx;
-   const size_t num_fixups = ARRAY_SIZE(fixup_nodes);
    int err = 0;
 
    // Fixups and local-fixups both use node names, so this
@@ -426,7 +425,7 @@ static int dtoverlay_set_node_name(DTBLOB_T *dtb, int node_off,
    // a parent)  and replace with the new name
 
    dynstring_init(&prop_buf);
-   for (fixup_idx = 0; fixup_idx < num_fixups; fixup_idx++)
+   for (fixup_idx = 0; fixup_idx < ARRAY_SIZE(fixup_nodes); fixup_idx++)
    {
       int prop_off;
 
@@ -1857,8 +1856,7 @@ int dtoverlay_foreach_override_target(DTBLOB_T *dtb, const char *override_name,
       int override_type;
       int node_off = 0;
 
-      strncpy(target_value, override_value, sizeof(target_value) - 1);
-      target_value[sizeof(target_value) - 1] = '\0';
+      strcpy(target_value, override_value);
       override_type = dtoverlay_extract_override(override_name,
                                                  target_value, sizeof(target_value),
                                                  &target_phandle,
@@ -2609,7 +2607,7 @@ void dtoverlay_init_map(const char *overlay_dir, const char *compatible,
 
     /* Handle the possibility that the supplied directory may or may not end
        with a slash */
-    snprintf(map_file, sizeof(map_file), "%s%soverlay_map.dtb", overlay_dir,
+    sprintf(map_file, "%s%soverlay_map.dtb", overlay_dir,
             (!dir_len || overlay_dir[dir_len - 1] != '/') ? "/" : "");
     fp = fopen(map_file, "rb");
     dtoverlay_init_map_from_fp(fp, compatible, compatible_len);

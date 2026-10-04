@@ -513,24 +513,8 @@ static VC_CONTAINER_STATUS_T mp4_read_box_trak( VC_CONTAINER_T *p_ctx, int64_t s
    track->priv->module->sample_table[MP4_SAMPLE_TABLE_CTTS].entry_size = 8;
 
    status = mp4_read_boxes( p_ctx, size, MP4_BOX_TYPE_TRAK);
-   /* Sanity check track */
-   if(status == VC_CONTAINER_SUCCESS)
-   {
-      if(!track->priv->module->sample_table[MP4_SAMPLE_TABLE_STSZ].entries &&
-         !track->priv->module->sample_size) status = VC_CONTAINER_ERROR_CORRUPTED;
-      if(!track->priv->module->sample_table[MP4_SAMPLE_TABLE_STTS].entries) status = VC_CONTAINER_ERROR_CORRUPTED;
-      if(!track->priv->module->sample_table[MP4_SAMPLE_TABLE_STSC].entries) status = VC_CONTAINER_ERROR_CORRUPTED;
-      if(!track->priv->module->sample_table[MP4_SAMPLE_TABLE_STCO].entries &&
-         !track->priv->module->sample_table[MP4_SAMPLE_TABLE_CO64].entries) status = VC_CONTAINER_ERROR_CORRUPTED;
-   }
 
-   if(status != VC_CONTAINER_SUCCESS)
-   {
-      vc_container_free_track(p_ctx, track);
-      p_ctx->tracks[p_ctx->tracks_num] = NULL;
-      if(status == VC_CONTAINER_ERROR_CORRUPTED) status = VC_CONTAINER_SUCCESS;
-      return status;
-   }
+   /* TODO: Sanity check track */
 
    track->is_enabled = true;
    track->format->flags |= VC_CONTAINER_ES_FORMAT_FLAG_FRAMED;
@@ -1737,13 +1721,12 @@ static VC_CONTAINER_STATUS_T mp4_reader_seek(VC_CONTAINER_T *p_ctx,
    if(!*offset)
    {
       /* Initialise tracks */
-      for(i = 0, status = VC_CONTAINER_ERROR_CORRUPTED; i < p_ctx->tracks_num; i++)
+      for(i = 0; i < p_ctx->tracks_num; i++)
       {
-         VC_CONTAINER_STATUS_T track_status;
-         track_status = mp4_read_sample_header(p_ctx, i, &p_ctx->tracks[i]->priv->module->state);
-         if(track_status == VC_CONTAINER_SUCCESS) status = VC_CONTAINER_SUCCESS;
+         /* FIXME: we should check we've got at least one success */
+        mp4_read_sample_header(p_ctx, i, &p_ctx->tracks[i]->priv->module->state);
       }
-      return status;
+      return VC_CONTAINER_SUCCESS;
    }
 
    /* Find the first enabled video track */
@@ -1863,13 +1846,11 @@ VC_CONTAINER_STATUS_T mp4_reader_open( VC_CONTAINER_T *p_ctx )
    }
 
    /* Initialise tracks */
-   for(i = 0, status = VC_CONTAINER_ERROR_CORRUPTED; i < p_ctx->tracks_num; i++)
+   for(i = 0; i < p_ctx->tracks_num; i++)
    {
-      VC_CONTAINER_STATUS_T track_status;
-      track_status = mp4_read_sample_header(p_ctx, i, &p_ctx->tracks[i]->priv->module->state);
-      if(track_status == VC_CONTAINER_SUCCESS) status = VC_CONTAINER_SUCCESS;
+      /* FIXME: we should check we've got at least one success */
+      status = mp4_read_sample_header(p_ctx, i, &p_ctx->tracks[i]->priv->module->state);
    }
-   if(status != VC_CONTAINER_SUCCESS) goto error;
 
    status = SEEK(p_ctx, module->data_offset);
    if(status != VC_CONTAINER_SUCCESS) goto error;

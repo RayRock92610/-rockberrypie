@@ -189,7 +189,7 @@ OMX_ERRORTYPE OMX_APIENTRY OMX_GetHandle(
       return OMX_ErrorBadParameter;
    }
 
-#ifdef WANT_LOCAL_OMX
+#if defined(WANT_LOCAL_OMX) && 0
    if ((eError = vc_OMX_GetHandle(pHandle, cComponentName, pAppData, pCallBacks)) != OMX_ErrorNone)
 #endif
    {
@@ -248,13 +248,16 @@ OMX_ERRORTYPE OMX_APIENTRY OMX_FreeHandle(
    OMX_ERRORTYPE eError = OMX_ErrorNone;
    OMX_COMPONENTTYPE *pComp;
 
-   if (hComponent == NULL)
+   if (hComponent == NULL || ilcs_service == NULL)
       return OMX_ErrorBadParameter;
 
    pComp = (OMX_COMPONENTTYPE*)hComponent;
 
 #ifdef WANT_LOCAL_OMX
-   if (ilcs_service == NULL || !vcil_out_component_is_ilcs(ilcs_get_common(ilcs_service), hComponent))
+   // xxx: a bit of a bodge, we rely on knowing that
+   // the local core doesn't make use of this field but
+   // ILCS does...
+   if (pComp->pApplicationPrivate == NULL)
       return vc_OMX_FreeHandle(hComponent);
 #endif
 

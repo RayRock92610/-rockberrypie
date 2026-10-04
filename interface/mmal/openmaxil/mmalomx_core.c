@@ -1103,8 +1103,7 @@ static OMX_ERRORTYPE mmalomx_ComponentRoleEnum(
    if (!mmalomx_role_to_name(role))
       return OMX_ErrorNoMore;
 
-   strncpy((char *)cRole, mmalomx_role_to_name(role), OMX_MAX_STRINGNAME_SIZE - 1);
-   cRole[OMX_MAX_STRINGNAME_SIZE - 1] = '\0';
+   strcpy((char *)cRole, mmalomx_role_to_name(role));
    return OMX_ErrorNone;
 }
 

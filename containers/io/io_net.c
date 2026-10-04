@@ -84,11 +84,10 @@ typedef struct VC_CONTAINER_IO_MODULE_T
 static struct
 {
    const char *scheme;
-   size_t scheme_len;
    bool is_udp;
 } recognised_schemes[] = {
-   { "rtp:", 4, true },
-   { "rtsp:", 5, false },
+   { "rtp:", true },
+   { "rtsp:", false },
 };
 
 /******************************************************************************
@@ -136,7 +135,7 @@ static FILE *io_net_open_capture_file(const char *host_str,
       return NULL;
 
    /* Create the file */
-   snprintf(filename, sizeof(filename), format, host_str, port_str, is_udp ? 'u' : 't');
+   sprintf(filename, format, host_str, port_str, is_udp ? 'u' : 't');
    stream = fopen(filename, "wb");
    if (!stream)
       return NULL;
@@ -181,7 +180,7 @@ static bool io_net_recognise_scheme(const char *uri, bool *is_udp)
    for (ii = 0; ii < countof(recognised_schemes); ii++)
    {
       scheme = recognised_schemes[ii].scheme;
-      if (strncmp(scheme, uri, recognised_schemes[ii].scheme_len) == 0)
+      if (strncmp(scheme, uri, strlen(scheme)) == 0)
       {
          *is_udp = recognised_schemes[ii].is_udp;
          return true;

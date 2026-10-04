@@ -142,11 +142,13 @@ static uint32_t from_hex(const char *str, uint32_t str_len)
 /*****************************************************************************/
 static uint32_t escaped_length( const char *str, RESERVED_CHARS_TABLE_T reserved )
 {
+   uint32_t ii;
    uint32_t esclen = 0;
    char c;
 
-   while ((c = *str++) != '\0')
+   for (ii = strlen(str); ii > 0; ii--)
    {
+      c = *str++;
       if (URI_RESERVED(c, reserved))
       {
          /* Reserved character needs escaping as %xx */
@@ -163,12 +165,13 @@ static uint32_t escaped_length( const char *str, RESERVED_CHARS_TABLE_T reserved
 static uint32_t escape_string( const char *str, char *escaped,
       RESERVED_CHARS_TABLE_T reserved )
 {
+   uint32_t ii;
    uint32_t esclen = 0;
 
    if (!str)
       return 0;
 
-   while (*str != '\0')
+   for (ii = strlen(str); ii > 0; ii--)
    {
       char c = *str++;
 
@@ -284,14 +287,23 @@ static void to_lower_string( char *str )
 /*****************************************************************************/
 static const char *vc_uri_find_delimiter(const char *str, const char *delimiters)
 {
-   return str + strcspn(str, delimiters);
+   const char *ptr = str;
+   char c;
+
+   while ((c = *ptr) != 0)
+   {
+      if (strchr(delimiters, c) != 0)
+         break;
+      ptr++;
+   }
+
+   return ptr;
 }
 
 /*****************************************************************************/
 static void vc_uri_set_path_extension(VC_URI_PARTS_T *p_uri)
 {
    char *end;
-   size_t path_len;
 
    if (!p_uri)
       return;
@@ -301,10 +313,8 @@ static void vc_uri_set_path_extension(VC_URI_PARTS_T *p_uri)
    if (!p_uri->path)
       return;
 
-   path_len = strlen(p_uri->path);
-
    /* Look for the magic dot */
-   for (end = p_uri->path + path_len; *end != '.'; end--)
+   for (end = p_uri->path + strlen(p_uri->path); *end != '.'; end--)
       if (end == p_uri->path || *end == '/' || *end == '\\')
          return;
 

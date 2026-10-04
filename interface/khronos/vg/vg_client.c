@@ -234,16 +234,6 @@ static void set_error(VGErrorCode error)
              RPC_ENUM(error));
 }
 
-void vg_client_set_error(CLIENT_THREAD_STATE_T *thread, VGErrorCode error)
-{
-   if (thread) {
-      RPC_CALL1(vgSetError_impl,
-                thread,
-                VGSETERROR_ID,
-                RPC_ENUM(error));
-   }
-}
-
 static VGErrorCode get_error(void)
 {
    CLIENT_THREAD_STATE_T *thread = CLIENT_GET_THREAD_STATE();
@@ -1201,7 +1191,7 @@ static void set_ifv(
          don't store on client as it can change
       */
 
-      VGfloat glyph_origin[2] = {0, 0};
+      VGfloat glyph_origin[2];
       if (count != 2) { set_error(VG_ILLEGAL_ARGUMENT_ERROR); break; }
       (void)params_to_floats(
          glyph_origin,
@@ -2642,8 +2632,7 @@ VG_API_CALL VGMaskLayer VG_API_ENTRY vgCreateMaskLayer(
 
    if ((width <= 0) || (height <= 0) ||
       (width > VG_CONFIG_MAX_IMAGE_WIDTH) || (height > VG_CONFIG_MAX_IMAGE_HEIGHT) ||
-      ((width * height) > VG_CONFIG_MAX_IMAGE_PIXELS) ||
-      (((uint32_t)width * height) > VG_CONFIG_MAX_IMAGE_BYTES)) {
+      ((width * height) > VG_CONFIG_MAX_IMAGE_PIXELS)) {
       set_error(VG_ILLEGAL_ARGUMENT_ERROR);
       return VG_INVALID_HANDLE;
    }
@@ -3705,8 +3694,7 @@ VG_API_CALL VGImage VG_API_ENTRY vgCreateImage(
    if (!is_allowed_quality(allowed_quality) ||
       (width <= 0) || (height <= 0) ||
       (width > VG_CONFIG_MAX_IMAGE_WIDTH) || (height > VG_CONFIG_MAX_IMAGE_HEIGHT) ||
-      ((width * height) > VG_CONFIG_MAX_IMAGE_PIXELS) ||
-      (((uint32_t)width * height * (khrn_image_get_bpp((KHRN_IMAGE_FORMAT_T)format) >> 3)) > VG_CONFIG_MAX_IMAGE_BYTES)) {
+      ((width * height) > VG_CONFIG_MAX_IMAGE_PIXELS)) { /* todo: VG_CONFIG_MAX_IMAGE_BYTES */
       set_error(VG_ILLEGAL_ARGUMENT_ERROR);
       return VG_INVALID_HANDLE;
    }
@@ -3815,9 +3803,7 @@ VG_API_CALL void VG_API_ENTRY vgImageSubData(
 
    if (!data || !is_aligned_image_format(data, data_format) ||
       ((height != 1) && !is_aligned_image_format((void *)(uintptr_t)data_stride, data_format)) ||
-      (width <= 0) || (height <= 0) ||
-      ((width * height) > VG_CONFIG_MAX_IMAGE_PIXELS) ||
-      (((uint32_t)width * height * (khrn_image_get_bpp((KHRN_IMAGE_FORMAT_T)data_format) >> 3)) > VG_CONFIG_MAX_IMAGE_BYTES)) {
+      (width <= 0) || (height <= 0)) {
       set_error(VG_ILLEGAL_ARGUMENT_ERROR);
       return;
    }
@@ -3927,9 +3913,7 @@ VG_API_CALL void VG_API_ENTRY vgGetImageSubData(
 
    if (!data || !is_aligned_image_format(data, data_format) ||
       ((height != 1) && !is_aligned_image_format((void *)(uintptr_t)data_stride, data_format)) ||
-      (width <= 0) || (height <= 0) ||
-      ((width * height) > VG_CONFIG_MAX_IMAGE_PIXELS) ||
-      (((uint32_t)width * height * (khrn_image_get_bpp((KHRN_IMAGE_FORMAT_T)data_format) >> 3)) > VG_CONFIG_MAX_IMAGE_BYTES)) {
+      (width <= 0) || (height <= 0)) {
       set_error(VG_ILLEGAL_ARGUMENT_ERROR);
       return;
    }
@@ -4215,9 +4199,7 @@ VG_API_CALL void VG_API_ENTRY vgWritePixels(
 
    if (!data || !is_aligned_image_format(data, data_format) ||
       ((height != 1) && !is_aligned_image_format((void *)(uintptr_t)data_stride, data_format)) ||
-      (width <= 0) || (height <= 0) ||
-      ((width * height) > VG_CONFIG_MAX_IMAGE_PIXELS) ||
-      (((uint32_t)width * height * (khrn_image_get_bpp((KHRN_IMAGE_FORMAT_T)data_format) >> 3)) > VG_CONFIG_MAX_IMAGE_BYTES)) {
+      (width <= 0) || (height <= 0)) {
       set_error(VG_ILLEGAL_ARGUMENT_ERROR);
       return;
    }
@@ -4328,9 +4310,7 @@ VG_API_CALL void VG_API_ENTRY vgReadPixels(
 
    if (!data || !is_aligned_image_format(data, data_format) ||
       ((height != 1) && !is_aligned_image_format((void *)(uintptr_t)data_stride, data_format)) ||
-      (width <= 0) || (height <= 0) ||
-      ((width * height) > VG_CONFIG_MAX_IMAGE_PIXELS) ||
-      (((uint32_t)width * height * (khrn_image_get_bpp((KHRN_IMAGE_FORMAT_T)data_format) >> 3)) > VG_CONFIG_MAX_IMAGE_BYTES)) {
+      (width <= 0) || (height <= 0)) {
       set_error(VG_ILLEGAL_ARGUMENT_ERROR);
       return;
    }

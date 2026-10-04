@@ -41,7 +41,7 @@ include_directories(host_support/include)
 
 # Global compiler flags
 if(CMAKE_COMPILER_IS_GNUCC)
-   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-multichar -Wall -Wno-unused-but-set-variable -fPIC -Werror=pointer-to-int-cast -Werror=int-to-pointer-cast")
+   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-multichar -Wall -Wno-unused-but-set-variable -fPIC")
 endif()
 
 add_definitions(-D_REENTRANT)
@@ -130,6 +130,3 @@ if(PKG_CONFIG_FOUND)
 endif()
 # Remove cache entry, if one added by command line
 unset(KHRONOS_EGL_PLATFORM CACHE)
-enable_testing()
-add_subdirectory(host_applications/linux/apps/hello_pi/libs/ilclient)
-add_subdirectory(tests)

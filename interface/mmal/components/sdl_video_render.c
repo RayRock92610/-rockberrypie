@@ -247,8 +247,7 @@ static MMAL_BOOL_T sdl_do_processing(MMAL_COMPONENT_T *component)
    if (!buffer->length)
       goto end;
 
-   if (buffer->length < port->buffer_size_min)
-      goto end;
+   // FIXME: sanity check the size of the buffer
 
    /* Blit the buffer onto the overlay. */
    src_pitch = buffer->type->video.pitch;

@@ -95,7 +95,7 @@ VCOS_STATUS_T gx_priv_font_init(const char *font_dir)
 
    int fd = -1;
    // search for the font
-   snprintf(fname, sizeof(fname), "%s/%s", font_dir, default_font.file);
+   sprintf(fname, "%s/%s", font_dir, default_font.file);
    fd = open(fname, O_RDONLY);
 
    if (fd < 0)

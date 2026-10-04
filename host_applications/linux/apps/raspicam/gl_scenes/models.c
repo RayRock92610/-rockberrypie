@@ -152,36 +152,13 @@ static void renormalise(float *verts, int numvertices)
 static void deindex(float *dst, const float *src, const unsigned short *indexes, GLsizei size, GLsizei count)
 {
    int i;
-   // Runtime execution gate: Handle the standard 3D/XYZ or texture coordinate mapping
-   if (size == 3) {
-       for (i = 0; i < count; i++) {
-           int ind = 3 * (indexes[0] - 1);
-           *dst++ = src[ind + 0];
-           *dst++ = src[ind + 1];
-           *dst++ = src[ind + 2];
-           indexes += 3;
-       }
-   } else if (size == 2) {
-       for (i = 0; i < count; i++) {
-           int ind = 2 * (indexes[0] - 1);
-           *dst++ = src[ind + 0];
-           *dst++ = src[ind + 1];
-           indexes += 3;
-       }
-   } else {
-       // Fallback path to ensure architectural reliability for non-standard sizes (e.g., 1 or 4)
-       for (i = 0; i < count; i++) {
-           int ind = size * (indexes[0] - 1);
-           *dst++ = src[ind + 0];
-           *dst++ = src[ind + 1];
-           if (size >= 3) {
-               *dst++ = src[ind + 2];
-           }
-           if (size == 4) {
-               *dst++ = src[ind + 3];
-           }
-           indexes += 3;
-       }
+   for (i=0; i<count; i++) {
+      int ind = size * (indexes[0]-1);
+      *dst++ = src[ind + 0];
+      *dst++ = src[ind + 1];
+      // todo: optimise - move out of loop
+      if (size >= 3) *dst++ = src[ind + 2];
+      indexes += 3;
    }
 }
 
@@ -262,15 +239,14 @@ static int load_wavefront_obj(const char *modelname, WAVEFRONT_MODEL_T *model, s
 
       s = line;
 
-      size_t slen = strlen(s);
-      if (slen > 0 && s[slen-1] == 10) s[slen-1]=0;
+      if (s[strlen(s)-1] == 10) s[strlen(s)-1]=0;
       switch (s[0]) {
       case '#': break; // comment
       case '\r': case '\n': case '\0': break; // blank line
       case 'm': vc_assert(strncmp(s, "mtllib", sizeof "mtllib"-1)==0); break;
       case 'o': break;
       case 'u': 
-         if (sscanf(s, "usemtl %31s", /*MAX_MATERIAL_NAME-1, */model->material[m->num_materials].name) == 1) {
+         if (sscanf(s, "usemtl %s", /*MAX_MATERIAL_NAME-1, */model->material[m->num_materials].name) == 1) {
             if (m->num_materials < MAX_MATERIALS) {
                if (m->num_materials > 0 && ((pf-qf)/3 == m->material_index[m->num_materials-1] || strcmp(model->material[m->num_materials-1].name, model->material[m->num_materials].name)==0)) {
                   strcpy(model->material[m->num_materials-1].name, model->material[m->num_materials].name);
@@ -391,13 +367,8 @@ MODEL_T load_wavefront(const char *modelname, const char *texturename)
    struct wavefront_model_loading_s *m;
    int s=-1;
    char modelname_obj[128];
-   size_t modelname_len;
    model = malloc(sizeof *model);
    if (!model || !modelname) return NULL;
-
-   // Bolt: Optimization to avoid redundant O(N) evaluations of strlen
-   modelname_len = strlen(modelname);
-
    memset (model, 0, sizeof *model);
    model->texture = 0; //load_texture(texturename);
    m = allocbuffer(sizeof *m + 
@@ -405,13 +376,13 @@ MODEL_T load_wavefront(const char *modelname, const char *texturename)
       sizeof(unsigned short)*3*MAX_VERTICES); //each face has 9 vertices
    if (!m) return 0;
 
-   if (modelname_len + 5 <= sizeof modelname_obj) {
+   if (strlen(modelname) + 5 <= sizeof modelname_obj) {
       strcpy(modelname_obj, modelname);
       strcat(modelname_obj, ".dat");
       s = load_wavefront_dat(modelname_obj, model, m);
    }
    if (s==0) {}
-   else if (strncmp(modelname + modelname_len - 4, ".obj", 4) == 0) {
+   else if (strncmp(modelname + strlen(modelname) - 4, ".obj", 4) == 0) {
       #ifdef DUMP_OBJ_DAT
       int size;
       FILE *fp;
@@ -427,7 +398,7 @@ MODEL_T load_wavefront(const char *modelname, const char *texturename)
       fwrite(m, 1, size, fp);
       fclose(fp);
       #endif
-   } else if (strncmp(modelname + modelname_len - 4, ".dat", 4) == 0) {
+   } else if (strncmp(modelname + strlen(modelname) - 4, ".dat", 4) == 0) {
       s = load_wavefront_dat(modelname, model, m);
    }
    if (s != 0) return 0;

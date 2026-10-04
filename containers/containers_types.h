@@ -94,10 +94,7 @@ typedef unsigned long long uint64_t;
 #endif
 #endif /* __cplusplus */
 
-#if defined(__BIG_ENDIAN__) || defined(WORDS_BIGENDIAN) || defined(VC_CONTAINER_IS_BIG_ENDIAN) || (defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__)
-#define VC_FOURCC(a,b,c,d) (((a) << 24) | ((b) << 16) | ((c) << 8) | (d))
-#else
-#define VC_FOURCC(a,b,c,d) ((a) | ((b) << 8) | ((c) << 16) | ((d) << 24))
-#endif
+/* FIXME: should be different for big endian */
+#define VC_FOURCC(a,b,c,d) ((a) | (b << 8) | (c << 16) | (d << 24))
 
 #endif /* VC_CONTAINERS_TYPES_H */

@@ -34,7 +34,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <unistd.h>
 #include <sys/mman.h>
 #include <sys/ioctl.h>
-#include <sys/stat.h>
 
 
 #include <vmcs_sm_ioctl.h>
@@ -276,35 +275,13 @@ int vcsm_init_ex( int want_export, int fd )
 
    if (fd != -1)
    {
-      struct stat stat_fd, stat_dev;
-
       vcsm_handle = dup(fd);
 
-      if (fstat(vcsm_handle, &stat_fd) == 0 && S_ISCHR(stat_fd.st_mode))
-      {
-         if (stat(VCSM_CMA_DEVICE_NAME, &stat_dev) == 0 && stat_fd.st_rdev == stat_dev.st_rdev)
-         {
-            using_vc_sm_cma = 1;
-         }
-         else if (stat(VCSM_DEVICE_NAME, &stat_dev) == 0 && stat_fd.st_rdev == stat_dev.st_rdev)
-         {
-            using_vc_sm_cma = 0;
-         }
-         else
-         {
-            // Fallback if device doesn't match either known device
-            vcos_log_error("[%s]: provided fd does not match known vcsm devices", __func__);
-            if (want_export)
-               using_vc_sm_cma = 1;
-         }
-      }
-      else
-      {
-         // Fallback if fstat fails or not a character device
-         vcos_log_error("[%s]: fstat failed or fd is not a character device", __func__);
-         if (want_export)
-            using_vc_sm_cma = 1;
-      }
+      // FIXME: Sanity check which device that the fd actually relates to.
+      // For now we have to guess based on whether export is requested.
+      // (the main use case is from Chromium which will be requesting export).
+      if (want_export)
+         using_vc_sm_cma = 1;
 
       goto out;
    }
@@ -1482,14 +1459,9 @@ void *vcsm_lock_cache( unsigned int handle,
 
    if (using_vc_sm_cma)
    {
-      /* The CMA implementation doesn't currently support changing cache
-      ** behaviour on the fly, so we just fall back to normal lock
-      */
-      if (cache_result != NULL)
-      {
-         *cache_result = cache_update;
-      }
-      return vcsm_lock(handle);
+      //FIXME: IMPLEMENT THIS
+      vcos_log_error("[%s]: IMPLEMENT ME", __func__);
+      return NULL;
    }
    else
    {

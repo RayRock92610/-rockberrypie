@@ -30,9 +30,3 @@ build/
 *.pts
 *.ppm
 *.mkv
-node_modules/
-node_modules/
-dist/
-__pycache__/
-*.pyc
-

@@ -217,7 +217,7 @@ static VC_CONTAINER_STATUS_T simple_read_header( VC_CONTAINER_T *ctx )
          LOG_FORMAT(ctx, CONFIG_VARIANT": %i", value);
       }
       /* URI for elementary stream */
-      else if (sscanf(module->line, CONFIG_URI" %511s", track->priv->module->uri) == 1)
+      else if (sscanf(module->line, CONFIG_URI" %s", track->priv->module->uri) == 1)
          LOG_FORMAT(ctx, CONFIG_URI": %s", track->priv->module->uri);
       /* COCDEC_VARIANT of elementary stream */
       else if (sscanf(module->line, CONFIG_CODEC_VARIANT" %4c", (char *)&fourcc) == 1)
@@ -477,7 +477,6 @@ VC_CONTAINER_STATUS_T simple_reader_open( VC_CONTAINER_T *ctx )
    VC_CONTAINER_STATUS_T status = VC_CONTAINER_ERROR_FORMAT_INVALID;
    uint8_t h[sizeof(SIGNATURE_STRING)];
    unsigned int i;
-   size_t io_uri_len;
 
    /* Check for the signature */
    if (PEEK_BYTES(ctx, h, sizeof(h)) != sizeof(h) ||
@@ -497,14 +496,11 @@ VC_CONTAINER_STATUS_T simple_reader_open( VC_CONTAINER_T *ctx )
    if (status != VC_CONTAINER_SUCCESS)
       goto error;
 
-   io_uri_len = ctx->priv->io->uri ? strlen(ctx->priv->io->uri) : 0;
-
    /* Open all the elementary streams */
    for (i = 0; i < ctx->tracks_num; i++)
    {
       VC_CONTAINER_TRACK_T *track = ctx->tracks[i];
       char *uri;
-      size_t track_uri_len = track->priv->module->uri ? strlen(track->priv->module->uri) : 0;
 
       track->priv->module->io = vc_container_io_open(track->priv->module->uri,
          VC_CONTAINER_IO_MODE_READ, &status);
@@ -512,15 +508,15 @@ VC_CONTAINER_STATUS_T simple_reader_open( VC_CONTAINER_T *ctx )
       /* URI might be relative to the path of the metadata file so
        * try again with that new path */
       if (!track->priv->module->io &&
-          (uri = malloc(io_uri_len +
-              track_uri_len + 1)) != NULL)
+          (uri = malloc(strlen(ctx->priv->io->uri) +
+              strlen(track->priv->module->uri) + 1)) != NULL)
       {
          char *end;
 
          strcpy(uri, ctx->priv->io->uri);
 
          /* Find the last directory separator */
-         for (end = uri + io_uri_len + 1; end != uri; end--)
+         for (end = uri + strlen(ctx->priv->io->uri) + 1; end != uri; end--)
             if (*(end-1) == '/' || *(end-1) == '\\')
                break;
          strcpy(end, track->priv->module->uri);

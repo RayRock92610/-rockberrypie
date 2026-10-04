@@ -132,28 +132,22 @@ typedef struct rx_message_info {
 typedef struct {
    MESSAGE_EVENT_TYPE_T type;
 
-   union {
-      struct {
-         // for messages
-         void    *addr;           // address of message
-         uint16_t slot_delta;     // whether this message indicated slot delta
-         uint32_t len;            // length of message
-         RX_MSG_SLOTINFO_T *slot; // slot this message is in
-         vcos_fourcc_t service;   // service id this message is destined for
-         uint32_t tx_timestamp;   // timestamp from the header
-         uint32_t rx_timestamp;   // timestamp when we parsed it
-      } message;
+   struct {
+      // for messages
+      void    *addr;           // address of message
+      uint16_t slot_delta;     // whether this message indicated slot delta
+      uint32_t len;            // length of message
+      RX_MSG_SLOTINFO_T *slot; // slot this message is in
+      vcos_fourcc_t service;   // service id this message is destined for
+      uint32_t tx_timestamp;   // timestamp from the header
+      uint32_t rx_timestamp;   // timestamp when we parsed it
+   } message;
 
-      struct {
-         RX_MSG_SLOTINFO_T *rx_msg;
-         RX_BULK_SLOTINFO_T *rx_bulk;
-      } slot_reporting;
-
-      struct {
-         void *handle;
-         MESSAGE_TX_CHANNEL_T channel;
-      } tx;
-   };
+   // FIXME: cleanup slot reporting...
+   RX_MSG_SLOTINFO_T *rx_msg;
+   RX_BULK_SLOTINFO_T *rx_bulk;
+   void *tx_handle;
+   MESSAGE_TX_CHANNEL_T tx_channel;
 
 } MESSAGE_EVENT_T;
 
