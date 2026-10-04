@@ -24,6 +24,21 @@ jobs:
           chmod +x kessel_orchestrator.sh
           chmod +x scripts/witch_hunter/rules_engine.sh
 
+      - name: Run flake8
+        run: |
+          pip install flake8
+          flake8 scripts/ tests/
+
+      - name: Run shellcheck
+        run: |
+          sudo apt-get install -y shellcheck
+          find . -name "*.sh" -not -path "*/node_modules/*" -not -path "*/build/*" -not -path "*/.git/*" -exec shellcheck {} +
+
+      - name: Run pytest
+        run: |
+          pip install pytest
+          pytest -v tests/
+
       - name: Run Clive Roster Verification
         run: |
           python3 scripts/clive/verify_roster.py
