@@ -73,6 +73,25 @@ describe('HashChainedLogger', () => {
     expect(canonicalA).toBe(canonicalB);
   });
 
+  it('should properly canonicalize arrays, nulls, and undefined values', () => {
+    // Arrays should maintain order and undefined should be serialized as 'null' (per JSON.stringify behavior)
+    const arrayA = [1, null, undefined, 4];
+    const canonicalArrayA = logger.canonicalize(arrayA);
+    expect(canonicalArrayA).toBe('[1,null,null,4]');
+
+    // Objects should skip undefined values
+    const objWithUndefined = { a: 1, b: undefined, c: null };
+    const canonicalObj = logger.canonicalize(objWithUndefined);
+    expect(canonicalObj).toBe('{"a":1,"c":null}');
+
+    // Null as root should work
+    expect(logger.canonicalize(null)).toBe('null');
+
+    // Complex nested array
+    const complexArray = [undefined, null, [1, undefined]];
+    expect(logger.canonicalize(complexArray)).toBe('[null,null,[1,null]]');
+  });
+
   it('should log an event and correctly set Genesis hash for the first event', () => {
     const event = logger.logEvent(mockParams);
 
