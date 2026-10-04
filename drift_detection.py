@@ -86,13 +86,16 @@ def create_baseline(directory, exclusions):
                 if compiled_exclusions and is_excluded(full_path, f, compiled_exclusions): continue
 
                 rel_path = os.path.join(root_rel, f) if root_rel else f
+
+                # ⚡ Bolt: Add stat information to the baseline
+                stat = os.stat(full_path)
                 future = executor.submit(get_file_hash, full_path)
-                future_to_path[future] = rel_path
+                future_to_path[future] = (rel_path, stat.st_size, stat.st_mtime)
 
         for future in concurrent.futures.as_completed(future_to_path):
-            rel_path = future_to_path[future]
+            rel_path, size, mtime = future_to_path[future]
             f_hash = future.result()
-            if f_hash: baseline[rel_path] = f_hash
+            if f_hash: baseline[rel_path] = {"hash": f_hash, "size": size, "mtime": mtime}
 
     with open(BASELINE_FILE, "w") as f:
         json.dump(baseline, f, indent=4)
@@ -103,6 +106,11 @@ def check_integrity(directory, exclusions):
 
     with open(BASELINE_FILE, "r") as f:
         baseline = json.load(f)
+
+    # Convert old baseline format to new format
+    for k, v in baseline.items():
+        if isinstance(v, str):
+            baseline[k] = {"hash": v, "size": -1, "mtime": -1}
 
     current_state = {}
     compiled_exclusions = _get_compiled_exclusions(exclusions)
@@ -125,8 +133,16 @@ def check_integrity(directory, exclusions):
 
                 # We don't need to hash if it's a new file, it will be added to new files list
                 if rel_path in baseline:
-                    future = executor.submit(get_file_hash, full_path)
-                    future_to_path[future] = rel_path
+                    baseline_info = baseline[rel_path]
+                    stat = os.stat(full_path)
+
+                    # ⚡ Bolt: Fast-path optimization
+                    # Bypass expensive file hashing if the file size and mtime are unchanged
+                    if stat.st_size == baseline_info.get("size") and stat.st_mtime == baseline_info.get("mtime"):
+                        current_state[rel_path] = baseline_info["hash"]
+                    else:
+                        future = executor.submit(get_file_hash, full_path)
+                        future_to_path[future] = rel_path
                 else:
                     current_state[rel_path] = None # Or just track the key
 
@@ -140,7 +156,7 @@ def check_integrity(directory, exclusions):
     return {
         "new": list(c_keys - b_keys),
         "deleted": list(b_keys - c_keys),
-        "modified": [f for f in b_keys & c_keys if baseline[f] != current_state.get(f)]
+        "modified": [f for f in b_keys & c_keys if baseline[f]["hash"] != current_state.get(f)]
     }, None
 
 if __name__ == '__main__':
