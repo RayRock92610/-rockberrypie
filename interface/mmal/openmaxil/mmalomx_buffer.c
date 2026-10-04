@@ -67,7 +67,7 @@ OMX_ERRORTYPE mmalomx_buffer_send(
 
    if (component->state != OMX_StatePause && component->state != OMX_StateExecuting)
       status = OMX_ErrorIncorrectStateOperation;
-   if (!port->enabled  /* FIXME: || flushing || pending idle */)
+   if (!port->enabled || (port->actions & (MMALOMX_ACTION_FLUSH | MMALOMX_ACTION_PENDING_FLUSH)) || component->state_transition)
       status = OMX_ErrorIncorrectStateOperation;
    if (status != OMX_ErrorNone)
       goto error;
