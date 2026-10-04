@@ -361,7 +361,7 @@ static MMAL_STATUS_T spdif_input_port_format_commit(MMAL_PORT_T *in)
    /* Sanity check we cope with this format */
    if (in->format->encoding != MMAL_ENCODING_AC3 &&
        in->format->encoding != MMAL_ENCODING_EAC3)
-      return MMAL_ENOENT;
+      return MMAL_ENXIO;
 
    LOG_INFO("%4.4s, %iHz, %ichan, %ibps", (char *)&in->format->encoding,
       in->format->es->audio.sample_rate, in->format->es->audio.channels,

@@ -159,8 +159,6 @@ typedef struct VC_CONTAINER_MODULE_T
 {
    int object_level;
 
-   uint32_t header_objects;
-
    uint32_t packet_size;   /**< Size of a data packet */
    uint64_t packets_num;   /**< Number of packets contained in the data object */
 
@@ -463,18 +461,17 @@ static VC_CONTAINER_STATUS_T asf_read_object_header( VC_CONTAINER_T *p_ctx, int6
    /* Sanity check the size of the data */
    if((size -= 6) < 0) return VC_CONTAINER_ERROR_CORRUPTED;
 
-   module->header_objects = READ_U32(p_ctx, "Number of Header Objects");
+   SKIP_U32(p_ctx, "Number of Header Objects"); /* FIXME: could use that */
    SKIP_U8(p_ctx, "Reserved1");
    SKIP_U8(p_ctx, "Reserved2");
 
    /* Read contained objects */
    module->object_level++;
-   while(status == VC_CONTAINER_SUCCESS && size >= ASF_OBJECT_HEADER_SIZE && module->header_objects > 0)
+   while(status == VC_CONTAINER_SUCCESS && size >= ASF_OBJECT_HEADER_SIZE)
    {
       offset = STREAM_POSITION(p_ctx);
       status = asf_read_object(p_ctx, size);
       size -= (STREAM_POSITION(p_ctx) - offset);
-      module->header_objects--;
    }
    module->object_level--;
 

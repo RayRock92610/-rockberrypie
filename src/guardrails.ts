@@ -18,17 +18,11 @@ export class InputGuardrail {
     /drop\s+database/i,
   ];
 
-  private static COMBINED_PATTERN = new RegExp(
-    InputGuardrail.INJECTION_PATTERNS.map((p) => p.source).join('|'),
-    'i'
-  );
-
   /**
    * Computes SHA-256 digest of raw input
    */
   public static hashInput(input: string): string {
-    // ⚡ Bolt: Using native crypto.hash() for ~2x performance over createHash()
-    return crypto.hash('sha256', input, 'hex');
+    return crypto.createHash('sha256').update(input, 'utf8').digest('hex');
   }
 
   /**
@@ -38,13 +32,10 @@ export class InputGuardrail {
     const violations: string[] = [];
     let riskScore = 0.0;
 
-    // ⚡ Bolt: Use a combined RegExp for a fast-path rejection
-    if (this.COMBINED_PATTERN.test(input)) {
-      for (const pattern of this.INJECTION_PATTERNS) {
-        if (pattern.test(input)) {
-          violations.push(`Pattern match: ${pattern.source}`);
-          riskScore += 0.35;
-        }
+    for (const pattern of this.INJECTION_PATTERNS) {
+      if (pattern.test(input)) {
+        violations.push(`Pattern match: ${pattern.source}`);
+        riskScore += 0.35;
       }
     }
 
@@ -54,7 +45,6 @@ export class InputGuardrail {
 
     // Generate sanitized summary (stripping unsafe control characters)
     const sanitizedSummary = input
-      .slice(0, 1024)
       .replace(/[\u0000-\u001F\u007F-\u009F]/g, '')
       .trim()
       .slice(0, 256);
