@@ -30,7 +30,6 @@ git remote remove origin 2>/dev/null
 export GH_USER
 export JULES_KEY
 git remote add origin "https://github.com/${GH_USER}/${REPO_NAME}.git"
-git config --local credential.helper '!f() { echo "username=${GH_USER}"; echo "password=${JULES_KEY}"; }; f'
 
 # 5. THE DRAGON AUDIT (Final check before push)
 echo -e "${PEACH}[Dragon] Running final audit... Burning Witches at the source.${RESET}"
@@ -44,6 +43,6 @@ fi
 echo "[Jules] Committing Pillar 05 Standard updates..."
 git add .
 git commit -m "Kessel Flow: Pillar 05 Standardized Deployment (Automated by Jules)"
-git push -u origin main
+git -c credential.helper="!f() { echo \"username=\${GH_USER}\"; echo \"password=\${JULES_KEY}\"; }; f" push -u origin main
 
 echo -e "${PEACH}[Jules] Kessel Flow successfully pushed to GitHub. Sky is clear.${RESET}"
