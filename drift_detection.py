@@ -10,9 +10,16 @@ import concurrent.futures
 BASELINE_FILE = os.environ.get("K_BASELINE", "baseline.json")
 BUFFER_SIZE = 1048576
 
+EMPTY_FILE_SHA256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+
 def get_file_hash(filepath):
     try:
         with open(filepath, "rb") as f:
+            # ⚡ Bolt: Check for 0-byte files after opening via fstat to bypass
+            # hashing without adding extra stat syscalls for non-empty files.
+            if os.fstat(f.fileno()).st_size == 0:
+                return EMPTY_FILE_SHA256
+
             # ⚡ Bolt: Use hashlib.file_digest (Python 3.11+) to execute the read-and-update
             # loop entirely in C/OpenSSL, bypassing Python buffer allocations.
             if hasattr(hashlib, "file_digest"):

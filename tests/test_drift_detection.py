@@ -64,6 +64,16 @@ class TestDriftDetection(unittest.TestCase):
             # Restore permissions so tearDown can delete the temp_dir
             os.chmod(test_file, 0o666)
 
+    def test_get_file_hash_success_empty(self):
+        # Test empty file
+        test_file = os.path.join(self.temp_dir, "hash_test_empty.txt")
+        with open(test_file, "wb") as f:
+            pass
+
+        expected_hash = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        result = drift_detection.get_file_hash(test_file)
+        self.assertEqual(result, expected_hash)
+
     def test_get_file_hash_success_small(self):
         # Test file smaller than BUFFER_SIZE
         test_file = os.path.join(self.temp_dir, "hash_test_small.txt")
