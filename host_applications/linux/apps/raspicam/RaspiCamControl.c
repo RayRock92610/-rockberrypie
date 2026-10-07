@@ -1662,32 +1662,39 @@ int raspicamcontrol_set_annotate(MMAL_COMPONENT_T *camera, const int settings, c
          annotate.text[MMAL_CAMERA_ANNOTATE_MAX_TEXT_LEN_V3-1] = '\0';
       }
 
-      if (process_datetime && (settings & ANNOTATE_TIME_TEXT))
+      if (process_datetime && (settings & (ANNOTATE_TIME_TEXT | ANNOTATE_DATE_TEXT)))
       {
-         int current_len = strlen(annotate.text);
-         if(annotate.text[0] != '\0')
-         {
-            strftime(tmp, 32, " %X", &tm );
-         }
-         else
-         {
-            strftime(tmp, 32, "%X", &tm );
-         }
-         strncat(annotate.text, tmp, MMAL_CAMERA_ANNOTATE_MAX_TEXT_LEN_V3 - current_len - 1);
-      }
+         size_t current_len = strlen(annotate.text);
 
-      if (process_datetime && (settings & ANNOTATE_DATE_TEXT))
-      {
-         int current_len = strlen(annotate.text);
-         if(annotate.text[0] != '\0')
+         if (settings & ANNOTATE_TIME_TEXT)
          {
-            strftime(tmp, 32, " %x", &tm );
+            if(current_len > 0)
+            {
+               strftime(tmp, 32, " %X", &tm );
+            }
+            else
+            {
+               strftime(tmp, 32, "%X", &tm );
+            }
+            size_t space = MMAL_CAMERA_ANNOTATE_MAX_TEXT_LEN_V3 - current_len - 1;
+            strncat(annotate.text, tmp, space);
+            size_t tmp_len = strlen(tmp);
+            current_len += (tmp_len < space) ? tmp_len : space;
          }
-         else
+
+         if (settings & ANNOTATE_DATE_TEXT)
          {
-            strftime(tmp, 32, "%x", &tm );
+            if(current_len > 0)
+            {
+               strftime(tmp, 32, " %x", &tm );
+            }
+            else
+            {
+               strftime(tmp, 32, "%x", &tm );
+            }
+            size_t space = MMAL_CAMERA_ANNOTATE_MAX_TEXT_LEN_V3 - current_len - 1;
+            strncat(annotate.text, tmp, space);
          }
-         strncat(annotate.text, tmp, MMAL_CAMERA_ANNOTATE_MAX_TEXT_LEN_V3 - current_len - 1);
       }
 
       if (settings & ANNOTATE_SHUTTER_SETTINGS)
