@@ -1,3 +1,3 @@
-## 2023-10-06 - Empty file hashing performance
-**Learning:** Checking for 0-byte files using `os.fstat(f.fileno()).st_size == 0` after opening the file descriptor avoids an extra `stat` system call and safely short-circuits empty file hashes, although the real-world performance gain may be negligible unless the directory is overwhelmingly populated by empty files.
-**Action:** When calculating cryptographic hashes of files (e.g., in a traversal script), use `os.fstat(f.fileno()).st_size == 0` after opening the file to check if it is empty and return the known empty string hash (e.g., for SHA-256) directly.
+## $(date +%Y-%m-%d) - Optimize `RaspiCamControl.c` and `rtsp_reader.c`
+**Learning:** Naively updating a string length tracker using `current_len += strlen(tmp)` after `strncat(dest, tmp, limit)` can lead to incorrect lengths if `tmp` is truncated, potentially causing buffer overflow on subsequent operations.
+**Action:** Always account for string truncation when updating cached lengths. For example: `int space_left = MAX - current_len - 1; int tmp_len = strlen(tmp); current_len += (tmp_len < space_left) ? tmp_len : space_left;`.
