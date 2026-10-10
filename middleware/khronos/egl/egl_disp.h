@@ -40,7 +40,7 @@ typedef enum {
 } EGL_DISP_HANDLE_T;
 
 /* there are only a fixed number of handles available; EGL_DISP_HANDLE_INVALID
- * may be returned even when there is plenty of free memory. todo: fix this?
+ * may be returned even when there is plenty of free memory.
  *
  * khdispatch_send_async(ASYNC_COMMAND_POST, pid, sem) is called every time an
  * image comes off the display
