@@ -936,7 +936,10 @@ static VC_CONTAINER_STATUS_T rtsp_parse_rtpmap_attribute( VC_CONTAINER_T *p_ctx,
       return VC_CONTAINER_ERROR_FORMAT_INVALID;
    }
 
-   full_mime_type = (char *)malloc(strlen(t_module->media_type) + strlen(mime_sub_type) + 2);
+   // ⚡ Bolt: cache redundant strlen calculations to eliminate O(N) traversals
+   const size_t media_type_len = strlen(t_module->media_type);
+   const size_t mime_sub_type_len = strlen(mime_sub_type);
+   full_mime_type = (char *)malloc(media_type_len + mime_sub_type_len + 2);
    if (!full_mime_type)
    {
       LOG_ERROR(p_ctx, "RTSP: Failed to allocate space for full MIME type");

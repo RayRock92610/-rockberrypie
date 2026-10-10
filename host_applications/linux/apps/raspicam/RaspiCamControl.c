@@ -1647,6 +1647,8 @@ int raspicamcontrol_set_annotate(MMAL_COMPONENT_T *camera, const int settings, c
 
       annotate.enable = 1;
 
+      int current_len = 0;
+
       if (settings & (ANNOTATE_APP_TEXT | ANNOTATE_USER_TEXT))
       {
          if ((settings & (ANNOTATE_TIME_TEXT | ANNOTATE_DATE_TEXT)) && strchr(string,'%') != NULL)
@@ -1662,9 +1664,9 @@ int raspicamcontrol_set_annotate(MMAL_COMPONENT_T *camera, const int settings, c
          annotate.text[MMAL_CAMERA_ANNOTATE_MAX_TEXT_LEN_V3-1] = '\0';
       }
 
-      int current_len = 0;
       if (process_datetime && (settings & (ANNOTATE_TIME_TEXT | ANNOTATE_DATE_TEXT)))
       {
+         // ⚡ Bolt: cache redundant strlen calculations to eliminate O(N) traversals
          current_len = strlen(annotate.text);
       }
 
