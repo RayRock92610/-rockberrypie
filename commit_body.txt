@@ -1,11 +1,9 @@
-🎯 What:
-Removed the backward compatibility alias MMAL_ECONFIG, added missing status mappings, and handled the unhandled enum warnings in switch statements.
+feat(mmal/clock): use buffer flags for frame completeness with pts_delta fallback
 
-💡 Why:
-This improves maintainability and satisfies -Wswitch-enum / -Werror flags by removing an unnecessary legacy macro that was incorrectly mapped or causing warnings, and fully qualifying the expected POSIX status enums.
+Use buffer flags instead of timestamp deltas to determine if a complete frame has been received.
 
-✅ Verification:
-Compiled and checked RaspiHelpers.c and tests manually. Verified clang-format style changes didn't unnecessarily rewrite file indentation while fixing styles.
+This adds the `flags` field to `MMAL_CLOCK_BUFFER_INFO_T` so that the `MMAL_BUFFER_HEADER_FLAG_FRAME_END` and `MMAL_BUFFER_HEADER_FLAG_FRAME_START` buffer flags can be properly inspected for frame completeness in `clock_update_stream`.
 
-✨ Result:
-The compiler warnings surrounding unhandled enum properties have been fully addressed and the legacy macro has been safely removed.
+Legacy clients that omit buffer flags are still supported via the fallback `pts_delta` logic.
+
+Addresses the FIXME/XXX comment in `interface/mmal/components/clock.c`.

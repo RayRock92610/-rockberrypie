@@ -301,7 +301,8 @@ static MMAL_STATUS_T scheduler_port_send(MMAL_PORT_T *port, MMAL_BUFFER_HEADER_T
    /* notify the clock port */
    if (port->type == MMAL_PORT_TYPE_INPUT && !buffer->cmd)
    {
-      MMAL_CLOCK_BUFFER_INFO_T info = { buffer->pts, vcos_getmicrosecs() };
+      MMAL_CLOCK_BUFFER_INFO_T info = { buffer->pts, vcos_getmicrosecs(), 0 };
+      info.flags = buffer ? buffer->flags : 0;
       mmal_port_clock_input_buffer_info(port->component->clock[0], &info);
    }
 

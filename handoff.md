@@ -1,47 +1,67 @@
-## KesselFlow / BoneYard Handoff
+Create a structured handoff document summarizing this session, including:
+• current state of KesselFlow / BoneYard
+• key decisions and why
+• last 3–5 priorities
+• a “resume prompt” I can paste into the next session
 
-### Current State
-KesselFlow is a living DevOps ecosystem with daily 24hr SOP reviews. State and scripts are stored locally at `$HOME/kesselflow/` and persistently synced to Termux/BoneYard at `/sdcard/boneyard/`. The workflow tree includes the primary state file (`current_state.json`), operational scripts (`sop_sync.sh`), and the structured logging endpoints in BoneYard. SOPs and state files are updated daily without overwriting history, utilizing a Truth-First Veracity Check mechanism. Systemd has been configured to orchestrate daily drift detection.
 
-**Updated Workflow Tree:**
-```text
-/home/jules/kesselflow
-├── current_state.json
-└── scripts/
-    └── sop_sync.sh
+Resume from last session. Here’s the handoff for KesselFlow / BoneYard:
 
-/etc/systemd/system/
-├── kesselflow-sop.service
-└── kesselflow-sop.timer
+• Current State: KesselFlow is a living DevOps ecosystem with daily 24hr SOP reviews, stored in Termux/BoneYard as markdown/JSON. Workflow tree includes pillars (e.g., agents, services), scripts, and endpoints, with SOPs updated daily without overwrites.
+• Key Decisions: Daily 24hr SOP cadence for consistency, external memory via handoff docs, and structured handoffs for continuity.
+• Priorities: Solidify 24hr SOP automation, build handoff schema (handoff.json), extend workflow tree, test cross-session continuity, and optimize drift detection.
+Here’s my handoff from last session:
+ [paste handoff.md]
+ Continue from this as if it’s continuous.
 
-/sdcard/boneyard
-├── KesselFlow/
-│   └── SOPs/
-│       ├── history/
-│       └── master_state.json
-└── logs/
-    └── sop_delta.log
-```
+Continue from this as if it’s continuous. Focus on the next priority: implement the 24hr SOP in [Perplexity Task or Termux cron] and output the updated workflow tree and SOP delta.
 
-### Key Decisions
-- **Daily 24hr SOP cadence:** Maintained for consistency.
-- **External memory via handoff docs:** Confirmed using structured JSON (`handoff.json`) and Markdown (`handoff.md`).
-- **Structured handoffs:** Maintained for continuity across sessions.
-- **Drift Detection:** Implemented `sop_sync.sh` to perform lightweight `diff` checks between the current local state and the BoneYard master state, logging differences into a history directory rather than overwriting.
-- **Systemd Scheduler:** Because cron is unavailable in the environment, systemd timers were implemented for the 24hr automation.
+#!/bin/bash
+KesselFlow SOP Sync - Truth-First Veracity Check
+Path: $HOME/kesselflow/scripts/sop_sync.sh
 
-### Last Priorities
-1. Solidify 24hr SOP automation (Systemd `.service` and `.timer` added successfully).
-2. Build handoff schema (`handoff.json` created and maintained).
-3. Extend workflow tree (Directories structured and verified).
-4. Test cross-session continuity (State updates and delta logging tested successfully).
-5. Optimize drift detection (`sop_sync.sh` handles this efficiently).
+set -euo pipefail
 
-### Resume Prompt
-Resume from last session. Here's the handoff for KesselFlow / BoneYard:
+BY_PATH="/sdcard/boneyard/KesselFlow/SOPs"
+LOG_PATH="/sdcard/boneyard/logs/sop_delta.log"
+CURRENT="$HOME/kesselflow/current_state.json" MASTER="$BY_PATH/master_state.json"
+HISTORY_DIR="$BY_PATH/history" TIMESTAMP=$(date +%Y-%m-%d_%H%M)
 
-• Current State: KesselFlow is a living DevOps ecosystem with daily 24hr SOP reviews, stored locally and mirrored in BoneYard. Workflow tree includes `current_state.json`, `sop_sync.sh`, delta history logs, and systemd units for cron-like scheduling. SOPs are updated daily without overwrites via drift detection.
-• Key Decisions: Daily 24hr SOP cadence, external memory via handoff docs, structured handoffs, non-destructive drift detection logging via `sop_sync.sh`, and using systemd timers instead of cron.
-• Priorities: Monitor cross-session continuity with systemd timer, extend workflow tree further, and refine cross-session continuity testing.
+1. State Check: Verify BoneYard mount and expected files
+if [ ! -d "$BY_PATH" ]; then echo "ERROR: BoneYard not mounted at $BY_PATH" | tee -a "`$LOG_PATH"
+exit 1
+fi
 
-Continue from this as if it's continuous. Focus on the next priority: extending the workflow tree further or verifying the cross-session systemd logic.
+if [ ! -f "
+
+TIMESTAMP] ERROR: local current_state.json missing:
+
+LOG_PATH"
+exit 1
+fi
+
+if [ ! -d "
+
+HISTORY_DIR"
+echo "[
+
+HISTORY_DIR" | tee -a "$LOG_PATH"
+fi
+
+Ensure a canonical master_state exists to diff against
+if [ ! -f "$MASTER" ]; then cp "$CURRENT" "$MASTER" echo "[$TIMESTAMP] Initialized master_state.json from local copy" >> "`$LOG_PATH"
+fi
+
+2. Delta Generation: lightweight “changed?” check
+TMP_DIFF="/tmp/sop_delta_${TIMESTAMP}.diff"
+
+diff -q returns 0 if same, 1 if different, 2 if error
+if diff -q "$CURRENT" "$MASTER" > "$TMP_DIFF" 2>&1; then # Files are identical echo "[$TIMESTAMP] No drift detected. Veracity 100%." >> "$LOG_PATH" rm -f "$TMP_DIFF"
+else
+# Files differ (or diff failed; check the TMP_DIFF for error text)
+if [ $? -eq 1 ]; then echo "[$TIMESTAMP] Delta detected. Updating BoneYard SOPs." >> "$LOG_PATH" cp "$CURRENT" "$MASTER" cat "$TMP_DIFF" >> "${HISTORY_DIR}/delta_${TIMESTAMP}.log"
+rm -f "$TMP_DIFF" else # diff itself failed (e.g., I/O issue) echo "[$TIMESTAMP] ERROR: diff failed (I/O or permission issue)" | tee -a "$LOG_PATH" cat "$TMP_DIFF" >> "`$LOG_PATH" 2>/dev/null || true
+rm -f "$TMP_DIFF"
+exit 1
+fi
+fi
