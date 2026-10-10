@@ -471,7 +471,7 @@ extern "C" {
                         int src_width, int src_height,
                         int smooth_flag);
 
-   /* Resize YUV in strips. XXX this function has rather bizarre arguments. */
+   /* Resize YUV in strips. */
 
    void vc_image_resize_yuv_strip(VC_IMAGE_BUF_T * dest, VC_IMAGE_BUF_T * src,
                                   int src_x_offset, int src_width,
