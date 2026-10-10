@@ -2757,7 +2757,6 @@ VG_API_CALL void VG_API_ENTRY vgClear(
       return;
    }
 
-   //TODO: pixmap behaviour can be better optimized to handle clears
    if (state->render_callback)
       state->render_callback();
 

@@ -474,8 +474,7 @@ GL_API void GL_APIENTRY glClear (GLbitfield mask)
    if (IS_OPENGLES_11_OR_20(thread)) {
       GLXX_CLIENT_STATE_T *state = GLXX_GET_CLIENT_STATE(thread);
 
-      //TODO: pixmap behaviour can be better optimized to handle clears
-      if (state->render_callback)
+      if (state->render_callback && (IS_OPENGLES_11(thread) || state->default_framebuffer))
          state->render_callback();
 
       RPC_CALL1(glClear_impl,
