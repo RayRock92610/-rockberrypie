@@ -8,3 +8,7 @@
 ## 2026-10-10 - Fast-path sorting in canonicalization
 **Learning:** In hot hashing paths (like JSON canonicalization), calling `Array.prototype.sort()` on single-key or empty objects introduces avoidable overhead.
 **Action:** Fast-path `keys.length <= 1` before invoking `.sort()` to bypass this penalty in `logger.ts`.
+
+## $(date +%Y-%m-%d) - Optimize JSON canonicalization type-checking branch order
+**Learning:** In JavaScript/TypeScript hot paths involving custom JSON serialization, checking for primitive types (`string`, `boolean`, `number`) before checking for `object` can bypass the overhead of entering the object evaluation block for frequent leaf nodes.
+**Action:** Order type-checking branches to evaluate primitives before objects in high-frequency recursive functions like `canonicalize`.
