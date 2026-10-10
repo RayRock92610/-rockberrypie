@@ -35,13 +35,15 @@ export class InputGuardrail {
    * Evaluates input string against injection vectors and produces a sanitized summary
    */
   public static evaluate(input: string): GuardrailResult {
+    // ⚡ Bolt: Slice bounded input before regex sanitization to mitigate regex traversal overhead
+    const boundedInput = input.slice(0, 1024);
     const violations: string[] = [];
     let riskScore = 0.0;
 
     // ⚡ Bolt: Use a combined RegExp for a fast-path rejection
-    if (this.COMBINED_PATTERN.test(input)) {
+    if (this.COMBINED_PATTERN.test(boundedInput)) {
       for (const pattern of this.INJECTION_PATTERNS) {
-        if (pattern.test(input)) {
+        if (pattern.test(boundedInput)) {
           violations.push(`Pattern match: ${pattern.source}`);
           riskScore += 0.35;
         }
@@ -53,8 +55,7 @@ export class InputGuardrail {
     const passed = riskScore < 0.5;
 
     // Generate sanitized summary (stripping unsafe control characters)
-    const sanitizedSummary = input
-      .slice(0, 1024)
+    const sanitizedSummary = boundedInput
       .replace(/[\u0000-\u001F\u007F-\u009F]/g, '')
       .trim()
       .slice(0, 256);
