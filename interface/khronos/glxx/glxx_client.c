@@ -1388,13 +1388,11 @@ GL_API void GL_APIENTRY glFlush (void)
                     thread,
                     GLFLUSH_ID);
 
+      RPC_FLUSH(thread);
+
       if (state->flush_callback)
          state->flush_callback(false);
    }
-
-   //TODO: where exactly should we put RPC_FLUSH? Are there any other functions
-   //which need it? (e.g. eglSwapBuffers)
-   RPC_FLUSH(thread);
 }
 
 GL_API void GL_APIENTRY glFogf (GLenum pname, GLfloat param)
