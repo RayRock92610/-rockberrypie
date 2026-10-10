@@ -40,6 +40,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 extern VCOS_LOG_CAT_T khrn_client_log;
 
 static void *workspace; /* for scatter/gather bulks */
+static uint32_t workspace_size;
 static PLATFORM_MUTEX_T mutex;
 
 #define FOURCC_KHAN VCHIQ_MAKE_FOURCC('K', 'H', 'A', 'N')
@@ -228,12 +229,13 @@ void vc_vchi_khronos_init()
 bool khclient_rpc_init(void)
 {
    workspace = NULL;
+   workspace_size = 0;
    return platform_mutex_create(&mutex) == KHR_SUCCESS;
 }
 
 void rpc_term(void)
 {
-   if (workspace) { khrn_platform_free(workspace); }
+   if (workspace) { khrn_platform_free(workspace); workspace = NULL; workspace_size = 0; }
    platform_mutex_destroy(&mutex);
 }
 
@@ -250,10 +252,17 @@ static VCHIU_QUEUE_T *get_queue(CLIENT_THREAD_STATE_T *thread)
 
 static void check_workspace(uint32_t size)
 {
-   /* todo: find a better way to handle scatter/gather bulks */
-   vcos_assert(size <= KHDISPATCH_WORKSPACE_SIZE);
-   if (!workspace) {
-      workspace = khrn_platform_malloc(KHDISPATCH_WORKSPACE_SIZE, "rpc_workspace");
+   if (size > workspace_size) {
+      uint32_t alloc_size = (size + 4095) & ~4095;
+      if (workspace) {
+         khrn_platform_free(workspace);
+      }
+      workspace = khrn_platform_malloc(alloc_size, "rpc_workspace");
+      if (workspace) {
+         workspace_size = alloc_size;
+      } else {
+         workspace_size = 0;
+      }
       vcos_assert(workspace);
    }
 }
