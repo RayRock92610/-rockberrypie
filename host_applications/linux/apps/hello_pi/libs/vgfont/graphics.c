@@ -486,9 +486,7 @@ int32_t graphics_resource_render_text_ext( GRAPHICS_RESOURCE_HANDLE res,
 {
 
    /*
-   * FIXME: Not at all optimal - re-renders each time.
    * FIXME: Not UTF-8 safe
-   * FIXME: much better caching (or any caching)
    */
    VCOS_STATUS_T rc = gx_priv_render_text(
       &display, res, 

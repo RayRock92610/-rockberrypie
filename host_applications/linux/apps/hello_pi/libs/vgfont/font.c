@@ -150,9 +150,7 @@ void gx_priv_font_term(void)
 
 /** Render text.
   *
-  * FIXME: Not at all optimal - re-renders each time.
   * FIXME: Not UTF-8 aware
-  * FIXME: better caching
   */
 VCOS_STATUS_T gx_priv_render_text( GX_DISPLAY_T *disp,
                                    GRAPHICS_RESOURCE_HANDLE res,
