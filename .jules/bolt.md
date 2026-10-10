@@ -4,3 +4,7 @@
 ## 2026-10-10 - Precompile Static Regex in `InputGuardrail`
 **Learning:** Re-compiling a regex literal inside a hot path `.replace(/.../g, '')` adds overhead, particularly on high-volume evaluation functions like `InputGuardrail.evaluate`.
 **Action:** Always extract and hoist static `RegExp` literals into class statics or module-scope constants when they are heavily reused across loop iterations or high-frequency invocations, and use index-based `for` loops rather than `for..of` iterators.
+
+## 2026-10-10 - Fast-path sorting in canonicalization
+**Learning:** In hot hashing paths (like JSON canonicalization), calling `Array.prototype.sort()` on single-key or empty objects introduces avoidable overhead.
+**Action:** Fast-path `keys.length <= 1` before invoking `.sort()` to bypass this penalty in `logger.ts`.
