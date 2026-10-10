@@ -210,9 +210,9 @@ static INLINE void khrn_image_fill_vcimage(const KHRN_IMAGE_T *image, VC_IMAGE_T
       case RGB_565_TF:    vc_image->type = VC_IMAGE_TF_RGB565;   break;
       case RGBA_8888_RSO:
       case ABGR_8888_RSO:
-      case ARGB_8888_RSO: vc_image->type = VC_IMAGE_RGBA32;      break;   //TODO: color channels in the right order? Right upside-downness? (one of these is wrong!)
+      case ARGB_8888_RSO: vc_image->type = VC_IMAGE_RGBA32;      break;
       case RGBX_8888_RSO: vc_image->type = VC_IMAGE_RGBX32;      break;
-      case XBGR_8888_RSO: vc_image->type = VC_IMAGE_RGBX32;      break;   //TODO: color channels in the right order? Right upside-downness? (one of these is wrong!)
+      case XBGR_8888_RSO: vc_image->type = VC_IMAGE_RGBX32;      break;
       case RGB_565_RSO:   vc_image->type = VC_IMAGE_RGB565;      break;   //if you change these, make sure it doesn't break EGL_KHR_lock_surface
       case ARGB_4444_RSO: vc_image->type = VC_IMAGE_RGBA16;      break;
       default:
