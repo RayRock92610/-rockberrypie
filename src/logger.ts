@@ -83,7 +83,11 @@ export class HashChainedLogger {
       }
 
       const rec = obj as Record<string, unknown>;
-      const sortedKeys = Object.keys(rec).sort();
+      const sortedKeys = Object.keys(rec);
+      // ⚡ Bolt: Fast-path empty or single-key objects to avoid avoidable sorting overhead in hot hashing paths.
+      if (sortedKeys.length > 1) {
+          sortedKeys.sort();
+      }
       let result = '{';
       let first = true;
       for (let i = 0; i < sortedKeys.length; i++) {
