@@ -631,11 +631,6 @@ extern "C" {
    typedef struct vc_image_pool_s * VC_IMAGE_POOL_HANDLE_T;
    typedef VC_IMAGE_POOL_HANDLE_T VC_IMAGE_POOL_HANDLE; /* legacy */
 
-   /* Blt a region of an image onto a particular mipmap of a brcm1 image */
-   /* XXX do not use this function - the interface is likely to change as I decide
-    * what options are available here */
-   void vc_image_XXX_mipmap_blt_XXX(VC_IMAGE_BUF_T *dest, int x_offset, int y_offset, int width, int height,
-                                    VC_IMAGE_BUF_T *src, int src_x_offset, int src_y_offset, int miplvl, int cubeface, VC_IMAGE_TRANSFORM_T transform);
 
    /* Function to calculate the crc of the VC_IMAGE */
    VC_IMAGE_CRC_T vc_image_calc_crc_interlaced(VC_IMAGE_BUF_T *img, int cl, int cr, int ct, int cb, int field);
