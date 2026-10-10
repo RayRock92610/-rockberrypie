@@ -23,6 +23,8 @@ export class InputGuardrail {
     'i'
   );
 
+  private static UNSAFE_CHARS_PATTERN = /[\u0000-\u001F\u007F-\u009F]/g;
+
   /**
    * Computes SHA-256 digest of raw input
    */
@@ -40,9 +42,10 @@ export class InputGuardrail {
 
     // ⚡ Bolt: Use a combined RegExp for a fast-path rejection
     if (this.COMBINED_PATTERN.test(input)) {
-      for (const pattern of this.INJECTION_PATTERNS) {
-        if (pattern.test(input)) {
-          violations.push(`Pattern match: ${pattern.source}`);
+      const len = this.INJECTION_PATTERNS.length;
+      for (let i = 0; i < len; i++) {
+        if (this.INJECTION_PATTERNS[i].test(input)) {
+          violations.push(`Pattern match: ${this.INJECTION_PATTERNS[i].source}`);
           riskScore += 0.35;
         }
       }
@@ -55,7 +58,7 @@ export class InputGuardrail {
     // Generate sanitized summary (stripping unsafe control characters)
     const sanitizedSummary = input
       .slice(0, 1024)
-      .replace(/[\u0000-\u001F\u007F-\u009F]/g, '')
+      .replace(InputGuardrail.UNSAFE_CHARS_PATTERN, '')
       .trim()
       .slice(0, 256);
 
