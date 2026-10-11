@@ -69,6 +69,14 @@ export class HashChainedLogger {
   public canonicalize(obj: unknown): string {
     if (obj === null) return 'null';
     const type = typeof obj;
+
+    // ⚡ Bolt: Order type-checking branches for performance by checking primitives before objects.
+    if (type === 'string') {
+      return JSON.stringify(obj);
+    }
+    if (type === 'boolean') return obj ? 'true' : 'false';
+    if (type === 'number') return Number.isFinite(obj) ? String(obj) : 'null';
+
     if (type === 'object') {
       if (Array.isArray(obj)) {
         let result = '[';
@@ -99,11 +107,6 @@ export class HashChainedLogger {
       return result + '}';
     }
 
-    if (type === 'string') {
-      return JSON.stringify(obj);
-    }
-    if (type === 'boolean') return obj ? 'true' : 'false';
-    if (type === 'number') return Number.isFinite(obj) ? String(obj) : 'null';
     return JSON.stringify(obj) as unknown as string;
   }
 
