@@ -136,6 +136,7 @@ typedef struct MMAL_CLOCK_BUFFER_INFO_T
 {
    int64_t time_stamp;
    uint32_t arrival_time;
+   uint32_t flags;
 } MMAL_CLOCK_BUFFER_INFO_T;
 
 /** Clock latency settings used by the clock component */

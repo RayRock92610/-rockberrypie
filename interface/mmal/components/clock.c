@@ -274,7 +274,7 @@ static void clock_reset_stream(CLOCK_STREAM_T *stream)
 
 /** Update the internal state of a stream */
 static CLOCK_STREAM_EVENT_T clock_update_stream(CLOCK_STREAM_T *stream, TIME_T stc, TIME_T pts,
-                                                TIME_T discont_threshold)
+                                                TIME_T discont_threshold, uint32_t flags)
 {
    CLOCK_STREAM_EVENT_T event = CLOCK_STREAM_EVENT_NONE;
    TIME_T pts_delta, stc_delta;
@@ -292,11 +292,10 @@ static CLOCK_STREAM_EVENT_T clock_update_stream(CLOCK_STREAM_T *stream, TIME_T s
       return CLOCK_STREAM_EVENT_STARTED;
    }
 
-   /* XXX: This should really use the buffer flags to determine if a complete
-    * frame has been received.  However, not all clients set MMAL buffer flags
-    * correctly (if at all). */
    pts_delta = pts - stream->pts;
    stc_delta = stc - stream->stc;
+
+   int frame_complete;
 
    /* Check for discontinuities. */
    if ((ABS(pts_delta) > discont_threshold) || (ABS(stc_delta) > discont_threshold))
@@ -306,7 +305,17 @@ static CLOCK_STREAM_EVENT_T clock_update_stream(CLOCK_STREAM_T *stream, TIME_T s
       return CLOCK_STREAM_EVENT_DISCONT;
    }
 
-   if (pts_delta)
+   if (flags & (MMAL_BUFFER_HEADER_FLAG_FRAME_END | MMAL_BUFFER_HEADER_FLAG_FRAME_START))
+   {
+      frame_complete = (flags & MMAL_BUFFER_HEADER_FLAG_FRAME_END) != 0;
+   }
+   else
+   {
+      /* Fallback: legacy clients that do not populate MMAL buffer flags */
+      frame_complete = (pts_delta != 0);
+   }
+
+   if (frame_complete)
    {
       /* A complete frame has now been received, so update the stream's notion of media time */
       stream->mt_off = stream->pts - stream->stc;
@@ -602,7 +611,7 @@ static void clock_process_input_buffer_info_event(MMAL_COMPONENT_T *component, M
          return;
    }
 
-   stream_event = clock_update_stream(port_module->stream, stc, pts, module->discont_threshold.threshold);
+   stream_event = clock_update_stream(port_module->stream, stc, pts, module->discont_threshold.threshold, info->flags);
 
    clock_process_stream_event(component, port_module->stream, stream_event, stc);
 }
